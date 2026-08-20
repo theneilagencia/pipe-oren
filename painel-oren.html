@@ -512,7 +512,7 @@ const CHECKLISTS={
 };
 const CHECKETAPAS={governance:[5,6],payments:[3,4]};
 const CORF={payments:"#affa57",capital:"#62cc6d",governance:"#1da688"};
-const RESPS=["Paulo","Theo","Adriano","Adolfo","Vinícius","Darley","Patrícia"];
+const RESPS=["Paulo","Theo","Adriano","Adolfo"];
 const CINCO=[["pagamento","Capacidade de pagamento"],["contrato","Contrato"],["garantias","Garantias"],["valorImovel","Valor do imóvel"],["usoAlternativo","Uso alternativo"]];
 const SEIS=[["qualidadeEmpresa","Qualidade da empresa"],["contratoLongoPrazo","Contrato de longo prazo"],["garantias","Garantias"],["valorImovel","Valor do imóvel"],["trocaOcupante","Troca de ocupante"],["usoAlternativo","Uso alternativo"]];
 const NOTAS5=["Forte","Fraca","NaoAvaliada"];
@@ -1477,7 +1477,9 @@ function telaPainel(){
  let h='<div class="grid kpis">';
  cards.forEach(([id,txt,v,pv,nota])=>{
   let dl="";
-  if(v!=null){
+  /* Com o período em "Tudo" não existe período anterior, então nem a frase
+     "sem base de comparação" cabe: ela sugere dado faltando onde não falta. */
+  if(v!=null&&f){
    dl='<span class="delta soft">'+TEXTOS.semBase+"</span>";
    if(pv!=null&&pv!==0){const p=Math.round((v-pv)/Math.abs(pv)*100);
     dl='<span class="delta '+(p>=0?"up":"down")+'">'+(p>=0?"▲ ":"▼ ")+Math.abs(p)+"% contra o período anterior</span>";}
