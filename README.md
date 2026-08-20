@@ -46,6 +46,49 @@ Dois avisos sobre o plano free, que o `render.yaml` usa por padrão:
 Enquanto estiver no free, use **Exportar** de vez em quando: baixa um arquivo com
 todos os dados, que serve de cópia de segurança fora do Render.
 
+## Com Supabase (banco) + Render (aplicação)
+
+Esta é a montagem recomendada. O Supabase é Postgres puro, então **nenhuma linha
+de código muda** — é só a variável `DATABASE_URL`.
+
+**Use a string de _Connection pooling_, não a direta.** A conexão direta do
+Supabase é IPv6, e a maioria das hospedagens sai por IPv4: falha com "network
+unreachable" e ninguém entende por quê. A string do pooler compartilhado é IPv4 e
+funciona de qualquer lugar. No painel do Supabase, em Connect, escolha:
+
+```
+postgresql://postgres.SEU-REF:SENHA@aws-0-REGIAO.pooler.supabase.com:5432/postgres
+```
+
+A porta `5432` no host do pooler é o modo *session*, que aceita tudo o que este
+projeto usa (transação com `for update`). A porta `6543` é o modo *transaction* e
+também funciona.
+
+Passo a passo:
+
+1. No Supabase: **New project**. Guarde a senha do banco que ele mostra.
+2. Em **Connect**, copie a string de *Connection pooling*.
+3. No Render: **New → Blueprint** apontando para este repositório. Apague o bloco
+   `databases` do `render.yaml` antes, ou ignore o banco que ele criar.
+4. No serviço, em **Environment**, cole a string em `DATABASE_URL`.
+5. No primeiro deploy, veja os **Logs**: as senhas temporárias das pessoas
+   aparecem ali, uma única vez.
+
+O que o plano gratuito do Supabase cobra em troca: 500 MB (nosso documento tem
+menos de 100 KB) e **o projeto pausa depois de cerca de uma semana sem acesso** —
+para voltar, é um clique no painel do Supabase. Com a equipe usando toda semana,
+isso nunca acontece. Se ficar parado num feriado longo, o primeiro a entrar vai
+precisar despausar.
+
+De brinde, o Supabase tem editor de tabelas: dá para olhar e corrigir dado na mão
+sem saber SQL.
+
+Duas coisas que **não** estamos usando do Supabase: o login dele (Auth) e as
+regras de acesso por linha (RLS). Nosso login é da própria aplicação, e o banco
+só é acessado pelo servidor. Se um dia você quiser que o painel fale direto com o
+Supabase, sem servidor nenhum, aí é outro desenho — e o login passaria a ser o
+Auth deles.
+
 ## De graça, sem prazo de validade
 
 No Render, o que expira é **só o banco** — o serviço gratuito não expira, apenas

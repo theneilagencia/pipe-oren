@@ -1,9 +1,12 @@
 # Blueprint do Render. Em New → Blueprint, apontando para este repositório,
 # ele cria o banco e o serviço já ligados um no outro.
-# O Postgres free do Render EXPIRA 30 dias depois de criado (com 14 dias de
-# tolerância para migrar). Se quiser ficar de graça sem prazo, apague este bloco
-# "databases", crie um banco gratuito no Neon e cole a connection string na
-# variável DATABASE_URL do serviço (sync: false, para não ficar no repositório).
+# USANDO SUPABASE (recomendado): apague este bloco "databases" inteiro e cadastre
+# DATABASE_URL no painel do Render com a string de *Connection pooling* do
+# Supabase (host pooler.supabase.com, porta 5432). A conexão direta do Supabase é
+# IPv6 e não funciona a partir do Render.
+#
+# USANDO O BANCO DO RENDER: ele EXPIRA 30 dias depois de criado, com 14 dias de
+# tolerância. Serve para experimentar, não para valer.
 databases:
   - name: oren-db
     databaseName: oren
