@@ -4,11 +4,7 @@
 <meta charset="utf-8">
 <title>Oren · Painel comercial</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script id="oren-dataset" type="application/json">{
- "partners": [],
- "customers": [],
- "deals": []
-}</script>
+<script id="oren-dataset" type="application/json">{"partners":[],"customers":[],"deals":[]}</script>
 <style>
 /* ================= BASE (mobile first — 360px) ================= */
 *{box-sizing:border-box;margin:0;padding:0}
@@ -462,6 +458,10 @@ const TEXTOS={
   cinco:"Para avançar, responda as cinco perguntas de análise.",
   frenteCap:"Para buscar capital, informe a frente de capital.",
   perda:"Para marcar como perdido, escreva o motivo da perda.",
+  situacaoSegmento:"Para a etapa 4, informe a situação e o segmento.",
+  estruturaReq:"Para a etapa 5, informe a estrutura.",
+  comiteReq:"Para sair da aprovação, registre a decisão do comitê e até quando ela vale.",
+  investidorReq:"Acompanhamento exige o investidor definido.",
   titulo:"Escreva um nome para o negócio.",
   valor:"Informe um valor maior que zero.",
   importar:"Arquivo inválido: precisa ter parceiros, clientes e negócios."
@@ -481,11 +481,35 @@ const ETAPAS=[
 ];
 const FASES=["Originação","Análise","Decisão","Execução","Carteira"];
 const CORF={payments:"#affa57",capital:"#62cc6d",governance:"#1da688"};
-const RESPS=["Paulo","Theo","Adriano","Adolfo"];
+const RESPS=["Paulo","Theo","Adriano","Adolfo","Vinícius","Darley","Patrícia"];
 const CINCO=[["pagamento","Capacidade de pagamento"],["contrato","Contrato"],["garantias","Garantias"],["valorImovel","Valor do imóvel"],["usoAlternativo","Uso alternativo"]];
 const SEIS=[["qualidadeEmpresa","Qualidade da empresa"],["contratoLongoPrazo","Contrato de longo prazo"],["garantias","Garantias"],["valorImovel","Valor do imóvel"],["trocaOcupante","Troca de ocupante"],["usoAlternativo","Uso alternativo"]];
 const NOTAS5=["Forte","Fraca","NaoAvaliada"];
 const LBL5={Forte:"Forte",Fraca:"Fraca",NaoAvaliada:"Não avaliada"};
+/* Vocabularios fechados do ORC-01. O "" existe porque campo em branco e um
+   estado legitimo: melhor vazio do que um valor inventado. */
+const TESES={"":"—","Renda Imobiliária Corporativa":"Renda Imobiliária Corporativa",
+ "Capital com Garantia Imobiliária (em estudo)":"Capital com Garantia Imobiliária (em estudo)",
+ "Capital sobre Recebíveis (em estudo)":"Capital sobre Recebíveis (em estudo)"};
+const SITUACOES={"":"—",SLB:"SLB",BTS:"BTS"};
+const SEGMENTOS={"":"—",Supermercados:"Supermercados",Atacarejo:"Atacarejo",Academias:"Academias",Outros:"Outros"};
+const ORIGENS={"":"—","Liderança":"Liderança","Rede OREN":"Rede OREN","Parceiro estratégico":"Parceiro estratégico"};
+const ESTRUTURAS={"":"—","Sale & Leaseback":"Sale & Leaseback","Built to Suit":"Built to Suit"};
+const FRENTESCAP={"":"—","Capital no Brasil":"Capital no Brasil","Capital internacional":"Capital internacional",
+ "Fundos e parceiros estratégicos":"Fundos e parceiros estratégicos"};
+const STATUSCAP={"":"—","Não iniciada":"Não iniciada","Mapeando investidor":"Mapeando investidor",
+ "Em conversa":"Em conversa","Proposta enviada":"Proposta enviada",Comprometido:"Comprometido"};
+const PAPEIS=[["origina","Origina"],["estrutura","Estrutura"],["analisaRisco","Analisa risco"],
+ ["buscaCapital","Busca capital"],["executa","Executa"],["acompanha","Acompanha"]];
+const TERR=[["populacaoRenda","População e renda"],["areaInfluencia","Área de influência"],
+ ["concorrencia","Concorrência"],["crescimento","Crescimento"],["usoSolo","Uso do solo"],
+ ["liquidez","Liquidez"],["operadoresAlternativos","Operadores alternativos"],
+ ["potencialDesenvolvimento","Potencial de desenvolvimento"]];
+const COMITE=[["decisao","Decisão"],["condicoes","Condições"],["responsaveis","Responsáveis"],
+ ["excecoes","Exceções"],["validadeAte","Validade até"]];
+const novoPapeis=()=>{const o={};PAPEIS.forEach(([k])=>o[k]="");return o;};
+const novoTerritorio=()=>{const o={};TERR.forEach(([k])=>o[k]={status:"NaoAvaliada",obs:""});return o;};
+const novoComite=()=>{const o={};COMITE.forEach(([k])=>o[k]="");return o;};
 
 /* ============================ DADOS ============================ */
 const EMBEDDED=JSON.parse(document.getElementById("oren-dataset").textContent);
@@ -545,6 +569,13 @@ function validarEtapa(d,etapa){
  if(d.frente==="capital"&&!d.tese)return TEXTOS.erros.tese;
  if(n>=6&&CINCO.some(([k])=>(d.cincoPerguntas||{})[k]==="NaoAvaliada"||!(d.cincoPerguntas||{})[k])) return TEXTOS.erros.cinco;
  if(n>=7&&!d.frenteCapital)return TEXTOS.erros.frenteCap;
+ if(d.frente==="capital"){
+  const cm=d.comite||{};
+  if(n>=4&&(!d.situacao||!d.segmento))return TEXTOS.erros.situacaoSegmento;
+  if(n>=5&&!d.estrutura)return TEXTOS.erros.estruturaReq;
+  if(n>=7&&(!cm.decisao||!cm.validadeAte))return TEXTOS.erros.comiteReq;
+  if(n>=10&&!d.investidor)return TEXTOS.erros.investidorReq;
+ }
  return null;
 }
 function moverEtapa(id,etapa,quem){
@@ -852,6 +883,36 @@ function rosca(itens){
 /* Cada verbete tem título, o que o número significa e como é calculado.
    Sem fórmula com símbolos, sem jargão, no máximo 45 palavras. */
 const HINTS={
+ situacao:{t:"Situação",
+  a:"Se a operação é venda com locação de volta (SLB) ou construção sob medida (BTS).",
+  b:"A partir da etapa 4 o negócio não avança sem isto preenchido."},
+ segmento:{t:"Segmento",
+  a:"O ramo em que a empresa opera.",
+  b:"Também obrigatório para chegar à etapa 4. Serve para comparar operações parecidas."},
+ origem:{t:"Origem",
+  a:"Por onde a oportunidade chegou até a Oren.",
+  b:"Mostra quais caminhos de originação estão dando resultado."},
+ ufs:{t:"UFs",
+  a:"Os estados onde estão os imóveis da operação.",
+  b:"Escreva separado por vírgula, como MG, BA. Aceita também Nacional ou Nordeste quando ainda não há detalhe."},
+ territorio:{t:"Território",
+  a:"Oito olhares sobre a região do imóvel, cada um marcado como forte ou fraco.",
+  b:"Não trava etapa nenhuma. Serve para a conversa com o investidor não começar do zero."},
+ papeis:{t:"Papéis",
+  a:"Quem faz cada parte da operação, de originar até acompanhar.",
+  b:"Quem origina não aprova sozinho. Deixar em branco é honesto quando ainda não há quem faça."},
+ comite:{t:"Comitê",
+  a:"O que o comitê decidiu, com quais condições e até quando a decisão vale.",
+  b:"Decisão e validade são exigidas para sair da aprovação."},
+ motivoPerda:{t:"Motivo da perda",
+  a:"Por que o negócio não seguiu.",
+  b:"É pedido no momento de marcar como perdido, e fica editável depois."},
+ tipoConta:{t:"Tipo",
+  a:"Se a conta é uma empresa (PJ) ou uma pessoa (PF).",
+  b:"Não pode ficar vazio: é por este campo que a tela separa clientes de parceiros."},
+ novaconta:{t:"Nova conta",
+  a:"Cria um registro em branco e abre o painel para você preencher.",
+  b:"O registro já nasce com todos os campos que os outros têm, então nada some ao salvar."},
  kpi_aberto:{t:"Negócios em aberto (R$)",
   a:"Soma do valor de todos os negócios que ainda estão em andamento.",
   b:"Considera as etapas 1 a 8. Negócios em Fechamento, Acompanhamento ou Perdidos ficam de fora. O período selecionado não afeta este número."},
@@ -1226,6 +1287,8 @@ function telaContas(){
  let h='<div class="seg" style="margin-bottom:16px">'+
   ['clientes','parceiros'].map(k=>'<button data-aba="'+k+'" class="'+(state.aba===k?"on":"")+'">'+TEXTOS.abas[k]+"</button>").join("")+
   "</div>"+iconeHint("abas");
+ h+='<div style="margin-bottom:16px"><button data-novaconta="'+(state.aba==="clientes"?"cliente":"parceiro")+'">'+
+  (state.aba==="clientes"?"Novo cliente":"Novo parceiro")+"</button>"+iconeHint("novaconta")+"</div>";
  const q=state.filtros.busca.trim().toLowerCase();
  const negs=o=>state.data.deals.filter(d=>o.tipo?d.clienteId===o.id:d.parceiroId===o.id);
  const resumo=ds=>ds.length+" neg."+SEP+esc(brlV(ds.reduce((s,d)=>s+(+d.valor||0),0)));
@@ -1261,7 +1324,14 @@ function telaContas(){
  return h;
 }
 /* --- painel lateral --- */
-function abrirPainel(p){state.painel=p;state.secoes={};render();}
+function abrirPainel(p){
+ state.painel=p;
+ /* Em Capital o miolo da conversa esta nessas duas secoes. Nascendo fechadas,
+    os campos existem e ninguem acha. */
+ const d=p&&p.tipo==="deal"?state.data.deals.find(x=>x.id===p.id):null;
+ state.secoes=d&&d.frente==="capital"?{analise:true,capital:true}:{};
+ render();
+}
 function fecharPainel(){state.painel=null;render();}
 function renderPainelLateral(){
  const el=$("#panel");
@@ -1298,6 +1368,8 @@ function painelDeal(id){
  const d=state.data.deals.find(x=>x.id===id);
  if(!d)return "";
  const respOps={};RESPS.forEach(r=>respOps[r]=r);
+ const papelOps={"":"—"};RESPS.forEach(r=>papelOps[r]=r);
+ const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
  let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
   '<div class="lbl" style="color:#affa57">'+esc(TEXTOS.frentesLbl[d.frente])+" · "+esc(TEXTOS.tipoVenda[d.tipoVenda])+"</div>"+
   '<div style="font-size:20px;margin-top:6px">'+esc(contaNome(d))+"</div>"+
@@ -1309,6 +1381,18 @@ function painelDeal(id){
   '<span class="bar"></span><span class="n">'+e.n+'</span><span class="t">'+esc(e.nome)+"</span></button>").join("")+"</div>";
  if(state.erroCard&&state.erroCard.id===d.id)h+='<div class="err" style="margin-bottom:8px">'+esc(state.erroCard.msg)+"</div>";
  h+=fld(TEXTOS.col.etapa,esc(etapaNome(d.etapa))+(d.etapa==="perdido"?" · "+esc(d.motivoPerda||""):""),"etapa");
+ if(d.etapa==="perdido")h+=fld("Motivo da perda",ed("deal",d.id,"motivoPerda",d.motivoPerda,"text"),"motivoPerda");
+ h+=fld(TEXTOS.col.frente,ed("deal",d.id,"frente",d.frente,"select",frenteOps),"frente");
+ h+=fld("Tipo de venda",ed("deal",d.id,"tipoVenda",d.tipoVenda,"select",
+  {direta:TEXTOS.tipoVenda.direta,parceiro:TEXTOS.tipoVenda.parceiro}),"tipoVenda");
+ /* Conta vinculada: a lista muda com o tipo de venda, nas mesmas regras que
+    validarEtapa cobra. */
+ const cliOps={"":"—"};state.data.customers.forEach(c=>cliOps[c.id]=c.nome);
+ if(d.tipoVenda==="parceiro"){
+  const parOps={"":"—"};state.data.partners.forEach(p=>parOps[p.id]=p.nome);
+  h+=fld("Parceiro",ed("deal",d.id,"parceiroId",d.parceiroId||"","select",parOps),"parceiro");
+  h+=fld("Cliente (opcional)",ed("deal",d.id,"clienteId",d.clienteId||"","select",cliOps),"cliente");
+ }else h+=fld(TEXTOS.col.cliente,ed("deal",d.id,"clienteId",d.clienteId||"","select",cliOps),"cliente");
  h+=fld("Nome do negócio",ed("deal",d.id,"titulo",d.titulo,"text"),"titulo");
  h+=fld(TEXTOS.col.valor,ed("deal",d.id,"valor",d.valor,"money"),"valor");
  h+=fld(TEXTOS.col.resp,ed("deal",d.id,"responsavel",d.responsavel,"select",respOps),"resp");
@@ -1329,13 +1413,24 @@ function painelDeal(id){
   a+='<div class="lbl" style="margin:16px 0 4px">Seis camadas'+iconeHint("seis")+"</div>";
   SEIS.forEach(([k,l])=>{const c=(d.seisCamadas||{})[k]||{nota:0,obs:""};
    a+=fld(l,ed("seisnota",d.id,k,c.nota,"text")+" / 5 · "+ed("seisobs",d.id,k,c.obs,"text"));});
+  a+='<div class="lbl" style="margin:16px 0 4px">Território'+iconeHint("territorio")+"</div>";
+  TERR.forEach(([k,l])=>{const c=(d.territorio||{})[k]||{status:"NaoAvaliada",obs:""};
+   a+=fld(l,ed("territorio",d.id,k,c.status,"select",ops5)+" · "+ed("territorioobs",d.id,k,c.obs,"text"));});
   h+=sec("analise",TEXTOS.secoes.analise,"",a);
-  h+=sec("capital",TEXTOS.secoes.capital,"",
-   fld("Tese",ed("deal",d.id,"tese",d.tese,"text"),"tese")+
-   fld("Estrutura",ed("deal",d.id,"estrutura",d.estrutura,"text"),"estrutura")+
-   fld("Frente de capital",ed("deal",d.id,"frenteCapital",d.frenteCapital,"text"),"frenteCap")+
+  let cap=fld("Tese",ed("deal",d.id,"tese",d.tese,"select",TESES),"tese")+
+   fld("Situação",ed("deal",d.id,"situacao",d.situacao,"select",SITUACOES),"situacao")+
+   fld("Segmento",ed("deal",d.id,"segmento",d.segmento,"select",SEGMENTOS),"segmento")+
+   fld("Origem",ed("deal",d.id,"origem",d.origem,"select",ORIGENS),"origem")+
+   fld("UFs",ed("deal",d.id,"ufs",d.ufs,"text"),"ufs")+
+   fld("Estrutura",ed("deal",d.id,"estrutura",d.estrutura,"select",ESTRUTURAS),"estrutura")+
+   fld("Frente de capital",ed("deal",d.id,"frenteCapital",d.frenteCapital,"select",FRENTESCAP),"frenteCap")+
    fld("Investidor",ed("deal",d.id,"investidor",d.investidor,"text"),"investidor")+
-   fld("Status da captação",ed("deal",d.id,"statusCaptacao",d.statusCaptacao,"text"),"statusCaptacao"));
+   fld("Status da captação",ed("deal",d.id,"statusCaptacao",d.statusCaptacao,"select",STATUSCAP),"statusCaptacao");
+  cap+='<div class="lbl" style="margin:16px 0 4px">Papéis'+iconeHint("papeis")+"</div>";
+  PAPEIS.forEach(([k,l])=>{cap+=fld(l,ed("papeis",d.id,k,(d.papeis||{})[k]||"","select",papelOps));});
+  cap+='<div class="lbl" style="margin:16px 0 4px">Comitê'+iconeHint("comite")+"</div>";
+  COMITE.forEach(([k,l])=>{cap+=fld(l,ed("comite",d.id,k,(d.comite||{})[k]||"",k==="validadeAte"?"date":"text"));});
+  h+=sec("capital",TEXTOS.secoes.capital,"",cap);
  }
  const hist=(d.historico||[]).slice().reverse();
  h+=sec("hist",TEXTOS.secoes.hist,hist.length+"",hist.length?'<div class="rowlist">'+hist.map(x=>
@@ -1355,6 +1450,11 @@ function painelConta(kind,id){
   (isC?"Cliente":"Parceiro")+'</div><div style="font-size:20px;margin-top:6px">'+esc(o.nome)+"</div></div><div class=\"pb\">";
  h+=fld("Nome",ed(kind,o.id,"nome",o.nome,"text"));
  h+=fld(TEXTOS.col.resp,ed(kind,o.id,"responsavel",o.responsavel,"select",respOps),"resp");
+ /* Tipo nao aceita vazio: a tela Contas usa a presenca de "tipo" para saber
+    se a conta e cliente ou parceiro. */
+ if(isC){h+=fld("Tipo",ed(kind,o.id,"tipo",o.tipo||"PJ","select",{PJ:"PJ",PF:"PF"}),"tipoConta");
+  const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
+  h+=fld(TEXTOS.col.frente,ed(kind,o.id,"frente",o.frente,"select",frenteOps),"frente");}
  h+=fld("Setor",ed(kind,o.id,"setor",o.setor,"text"));
  h+=fld("Nível",ed(kind,o.id,"tier",o.tier,"select",{T1:"T1",T2:"T2",T3:"T3"}),"tier");
  h+=fld("Situação",ed(kind,o.id,"status",o.status,"select",{Ativo:"Ativo",Prospect:"Prospect",Pausado:"Pausado",Encerrado:"Encerrado"}));
@@ -1426,7 +1526,24 @@ function setCampo(kind,id,campo,valor){
   else d.seisCamadas[campo].obs=valor;
   d.atualizadoEm=agora();marcar();return;
  }
+ if(kind==="territorio"||kind==="territorioobs"){
+  const d=state.data.deals.find(x=>x.id===id);d.territorio=d.territorio||novoTerritorio();
+  d.territorio[campo]=d.territorio[campo]||{status:"NaoAvaliada",obs:""};
+  if(kind==="territorio")d.territorio[campo].status=valor;else d.territorio[campo].obs=valor;
+  d.atualizadoEm=agora();marcar();return;
+ }
+ if(kind==="papeis"){
+  const d=state.data.deals.find(x=>x.id===id);d.papeis=d.papeis||novoPapeis();
+  d.papeis[campo]=valor;d.atualizadoEm=agora();marcar();return;
+ }
+ if(kind==="comite"){
+  const d=state.data.deals.find(x=>x.id===id);d.comite=d.comite||novoComite();
+  d.comite[campo]=valor;d.atualizadoEm=agora();marcar();return;
+ }
  if(!alvo)return;
+ /* Venda direta nao pode ter parceiro: sem isto a troca de tipo deixa o
+    negocio num estado que validarEtapa recusa, sem explicar por que. */
+ if(kind==="deal"&&campo==="tipoVenda"&&valor==="direta")alvo.parceiroId=null;
  if(["valor","chance","receitaRecorrente","potencial"].indexOf(campo)>=0){
   let v=Number(String(valor).replace(/[^\d,-]/g,"").replace(",","."))||0;
   if(campo==="chance")v=Math.max(0,Math.min(100,v));
@@ -1479,7 +1596,9 @@ document.addEventListener("click",e=>{
  if(el=g("[data-sec]")){state.secoes[el.dataset.sec]=!state.secoes[el.dataset.sec];renderPainelLateral();return;}
  if(el=g("[data-fechar]")){state.erroCard=null;fecharPainel();return;}
  if(el=g("[data-mover]")){const [id,et]=el.dataset.mover.split(":");
+  if(et==="perdido"&&!pedirMotivo(id)){render();return;}
   const err=moverEtapa(id,et);state.erroCard=err?{id:id,msg:err}:null;if(err)render();return;}
+ if(el=g("[data-novaconta]")){criarConta(el.dataset.novaconta);return;}
  if(el=g("[data-novapend]")){
   const d=state.data.deals.find(x=>x.id===el.dataset.novapend);
   snapshot();d.pendencias=d.pendencias||[];
@@ -1504,6 +1623,7 @@ document.addEventListener("change",e=>{
  const t=e.target;
  if(t.matches("[data-filtro]")){state.filtros[t.dataset.filtro]=t.value;render();return;}
  if(t.matches("[data-etapa]")){
+  if(t.value==="perdido"&&!pedirMotivo(t.dataset.etapa)){render();return;}
   const err=moverEtapa(t.dataset.etapa,t.value);
   state.erroCard=err?{id:t.dataset.etapa,msg:err}:null;render();return;}
  if(t.matches("[data-pend]")){
@@ -1572,9 +1692,35 @@ function criar(){
   chance:Math.max(0,Math.min(100,Number(n.chance)||0)),pendencias:[],tese:n.tese||"",estrutura:"",frenteCapital:"",
   investidor:"",statusCaptacao:"",cincoPerguntas:{pagamento:"NaoAvaliada",contrato:"NaoAvaliada",garantias:"NaoAvaliada",valorImovel:"NaoAvaliada",usoAlternativo:"NaoAvaliada"},
   seisCamadas:{qualidadeEmpresa:{nota:0,obs:""},contratoLongoPrazo:{nota:0,obs:""},garantias:{nota:0,obs:""},valorImovel:{nota:0,obs:""},trocaOcupante:{nota:0,obs:""},usoAlternativo:{nota:0,obs:""}},
+  tags:[],situacao:"",segmento:"",origem:"",ufs:"",papeis:novoPapeis(),territorio:novoTerritorio(),comite:novoComite(),
   motivoPerda:"",notas:"",exemplo:false,criadoEm:agora(),atualizadoEm:agora(),fechadoEm:null,
   historico:[{de:"—",para:"Entrada da oportunidade",quando:new Date().toISOString(),quem:n.responsavel}]});
  state.painel=null;marcar();
+}
+/* Mesmo conjunto de campos dos registros que ja existem no dataset. Um campo
+   a menos aqui e um campo que desaparece na primeira gravacao. */
+function criarConta(kind){
+ snapshot();
+ const base={id:uid(kind==="cliente"?"C":"P"),nome:kind==="cliente"?"Novo cliente":"Novo parceiro",
+  responsavel:RESPS[0],tier:"",status:"",porte:"",setor:"",notas:"",
+  exemplo:false,criadoEm:agora(),atualizadoEm:agora()};
+ if(kind==="cliente"){
+  const o=Object.assign(base,{tipo:"PJ",frente:"capital",uf:"",receitaRecorrente:0,parceiroId:null});
+  state.data.customers.push(o);state.aba="clientes";state.painel={tipo:"conta",kind:"cliente",id:o.id};
+ }else{
+  const o=Object.assign(base,{frentes:[],potencial:"",contato:""});
+  state.data.partners.push(o);state.aba="parceiros";state.painel={tipo:"conta",kind:"parceiro",id:o.id};
+ }
+ marcar();
+}
+/* Perdido exige motivo. Sem pedir aqui, a etapa fica inalcancavel. */
+function pedirMotivo(id){
+ const d=state.data.deals.find(x=>x.id===id);
+ if(!d||d.motivoPerda)return true;
+ const m=prompt("Por que este negócio foi perdido?","");
+ if(m==null||!m.trim())return false;
+ d.motivoPerda=m.trim();d.atualizadoEm=agora();
+ return true;
 }
 function menuAcao(k){
  if(k==="salvar")salvarArquivo();
