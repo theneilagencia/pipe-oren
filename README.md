@@ -113,6 +113,28 @@ leitor se promover a editor.
 token depois do `#`. Para isso funcionar, o **Site URL** em Authentication, URL
 Configuration precisa ser o endereço publicado.
 
+## Publicar
+
+Tudo o que vai para o ar sai deste repositório, com um comando:
+
+```
+./publicar.sh
+```
+
+Ele monta a pasta de trabalho com os três arquivos que o Vercel serve — o painel
+como `index.html`, a página de administração em `admin/index.html` e a função de
+servidor em `api/admin.js` — e chama `npx vercel --prod`. Copiar arquivo à mão foi
+o que já colocou no ar um deploy sem a página `/admin`.
+
+A função de administração precisa de quatro variáveis no projeto Vercel:
+`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE` e `ADMIN_EMAIL`.
+A chave secreta fica só ali, nunca no repositório e nunca no navegador. Variável
+nova só passa a valer no deploy seguinte.
+
+No banco, `supabase/admin.sql` precisa ter rodado uma vez: ele acrescenta o e-mail
+e a marca de senha provisória no perfil, e a função que a pessoa usa para desligar
+essa marca depois de trocar a senha.
+
 ## No dia a dia
 
 Salva sozinho. Cada alteração vai para o banco em menos de um segundo e o canto do
