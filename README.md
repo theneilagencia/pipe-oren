@@ -46,6 +46,28 @@ Dois avisos sobre o plano free, que o `render.yaml` usa por padrão:
 Enquanto estiver no free, use **Exportar** de vez em quando: baixa um arquivo com
 todos os dados, que serve de cópia de segurança fora do Render.
 
+## De graça, sem prazo de validade
+
+No Render, o que expira é **só o banco** — o serviço gratuito não expira, apenas
+dorme. Então a saída é separar as duas coisas:
+
+| Peça | Onde | O que você aceita |
+|---|---|---|
+| Aplicação | Render, plano free | dorme sem uso; o primeiro acesso demora cerca de um minuto |
+| Banco | Neon, plano free | 0,5 GB e pausa por inatividade, mas **não expira e não apaga dado** |
+
+Nosso documento tem menos de 100 KB, então 0,5 GB é folga de sobra.
+
+Para montar assim: apague o bloco `databases` do `render.yaml`, crie o banco no
+Neon, e cole a connection string dele na variável `DATABASE_URL` do serviço, pelo
+painel do Render. Nenhuma linha de código muda — o servidor liga TLS sozinho
+quando o banco não é local.
+
+Se um minuto de espera no primeiro acesso for inaceitável, as saídas são pagar o
+plano mais barato do Render, ou levar o contêiner para o Google Cloud Run, que
+tem cota gratuita permanente e acorda mais rápido — em troca de exigir cartão
+cadastrado e um Dockerfile.
+
 ## Como os dados são guardados
 
 O pipeline inteiro é um documento JSON numa linha só da tabela `pipeline`, com um

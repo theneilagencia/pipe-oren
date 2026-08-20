@@ -8,10 +8,19 @@ if (!url) {
   process.exit(1);
 }
 
+// Banco na nuvem exige TLS; banco local, não. Em vez de listar provedores um a
+// um (e esquecer o próximo), a regra é: se não é a sua máquina, é com TLS.
+export function precisaTls(u) {
+  if (/sslmode=(require|verify-ca|verify-full)/.test(u)) return true;
+  if (/sslmode=disable/.test(u)) return false;
+  const host = (u.match(/@([^/:?]+)/) || [])[1] || "";
+  if (!host || u.includes("host=/")) return false; // socket unix
+  return !/^(localhost|127\.0\.0\.1|\[::1\]|host\.docker\.internal|postgres|db)$/.test(host);
+}
+
 export const pool = new pg.Pool({
   connectionString: url,
-  // O Postgres do Render exige TLS; o local, não.
-  ssl: /render\.com|amazonaws\.com/.test(url) ? { rejectUnauthorized: false } : false,
+  ssl: precisaTls(url) ? { rejectUnauthorized: false } : false,
   max: 5,
   idleTimeoutMillis: 30000,
 });

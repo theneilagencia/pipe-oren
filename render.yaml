@@ -1,10 +1,14 @@
 # Blueprint do Render. Em New → Blueprint, apontando para este repositório,
 # ele cria o banco e o serviço já ligados um no outro.
+# O Postgres free do Render EXPIRA 30 dias depois de criado (com 14 dias de
+# tolerância para migrar). Se quiser ficar de graça sem prazo, apague este bloco
+# "databases", crie um banco gratuito no Neon e cole a connection string na
+# variável DATABASE_URL do serviço (sync: false, para não ficar no repositório).
 databases:
   - name: oren-db
     databaseName: oren
     region: virginia
-    plan: free # ATENÇÃO: o plano free expira. Para uso real, troque para basic-256mb ou maior.
+    plan: free
 
 services:
   - type: web
