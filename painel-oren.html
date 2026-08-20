@@ -399,12 +399,12 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
     <input id="lsenha" name="senha" type="password" autocomplete="current-password" required>
     <div class="erro" id="lerro"></div>
     <button type="submit" id="lbtn">Entrar</button>
+    <button type="button" id="lesqueci" style="background:none;border:0;color:var(--mid);
+      text-decoration:underline;margin-top:12px;padding:8px 0">Esqueci minha senha</button>
   </form>
   <form id="senhaform" style="display:none">
     <div class="marca">Trocar senha</div>
     <div class="sub" id="squem"></div>
-    <label for="satual">Senha atual</label>
-    <input id="satual" type="password" autocomplete="current-password" required>
     <label for="snova">Nova senha (mínimo 8 caracteres)</label>
     <input id="snova" type="password" autocomplete="new-password" minlength="8" required>
     <div class="erro" id="serro"></div>
@@ -417,6 +417,13 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
 <input id="fileimp" type="file" accept="application/json" style="display:none">
 
 <script>
+/* ====================== ONDE FICA O SEU SUPABASE ======================
+   Estes dois valores são públicos por natureza: quem protege o dado são as
+   regras de acesso do banco (RLS), não o segredo destas linhas.
+   Troque pelos do seu projeto (Supabase → Project Settings → API). */
+const SUPABASE_URL="https://ktnngkyyocvfhnqfajmz.supabase.co";
+const SUPABASE_KEY="sb_publishable_BZgO_66U6hFiY2ZwhqtnkQ_-vNXSvVq";
+
 /* ============================ TEXTOS ============================ */
 const TEXTOS={
  app:"Painel comercial",
@@ -427,6 +434,7 @@ const TEXTOS={
  conflitoAviso:"Outra pessoa salvou antes de você. Recarreguei os dados do servidor.",
  entrando:"Entrando…",erroLogin:"E-mail ou senha inválidos.",erroRede:"Não consegui falar com o servidor.",
  sair:"Sair",somenteLeitura:"Seu acesso é somente leitura.",
+ semPerfil:"Sua conta entrou, mas não tem perfil cadastrado. Peça para criarem o seu.",
  novo:"Novo negócio",
  periodos:{mes:"Este mês",tri:"Trimestre",ano:"Ano",tudo:"Tudo"},
  kpi:{aberto:"Negócios em aberto (R$)",ponderada:"Chance ponderada (R$)",fechado:"Fechado no mês (R$)",conversao:"Taxa de conversão (%)"},
@@ -570,43 +578,109 @@ function boot(){
 }
 function maisRecente(d){let m="";(d.deals||[]).forEach(x=>{if(x.atualizadoEm>m)m=x.atualizadoEm;});return m;}
 function marcar(){state.dirty=true;if(state.servidor)salvarServidor();else salvarLocal();render();}
-/* Grava o documento inteiro no banco, com a versão que recebemos. Se alguém
-   gravou antes, o servidor devolve 409 com os dados novos — aí recarregamos e
-   avisamos, em vez de passar por cima do trabalho da outra pessoa. */
+
+/* ====================== CONVERSA COM O SUPABASE ======================
+   Sem servidor no meio: o painel fala direto com o banco. O token vive no
+   próprio navegador e é renovado quando vence. */
+const SESSAO_CHAVE="oren.sessao.v1";
+function sessaoGuardada(){
+ try{return JSON.parse(localStorage.getItem(SESSAO_CHAVE)||"null");}catch(e){return null;}
+}
+function guardarSessao(s){
+ try{if(s)localStorage.setItem(SESSAO_CHAVE,JSON.stringify(s));else localStorage.removeItem(SESSAO_CHAVE);}catch(e){}
+}
+function cabecalhos(comToken,extras){
+ const h={"apikey":SUPABASE_KEY,"content-type":"application/json"};
+ const s=sessaoGuardada();
+ if(comToken&&s&&s.access_token)h["Authorization"]="Bearer "+s.access_token;
+ return Object.assign(h,extras||{});
+}
+async function renovarSessao(){
+ const s=sessaoGuardada();
+ if(!s||!s.refresh_token)return false;
+ const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",
+  {method:"POST",headers:cabecalhos(false),body:JSON.stringify({refresh_token:s.refresh_token})});
+ if(!r.ok){guardarSessao(null);return false;}
+ guardarSessao(await r.json());
+ return true;
+}
+/* Toda chamada tenta uma vez; se o token venceu, renova e repete. */
+async function sb(caminho,opcoes,jaRenovou){
+ const o=Object.assign({},opcoes);
+ const extras=o.extras;delete o.extras;
+ const r=await fetch(SUPABASE_URL+caminho,Object.assign(o,{headers:cabecalhos(true,extras)}));
+ if(r.status===401&&!jaRenovou&&await renovarSessao())return sb(caminho,opcoes,true);
+ return r;
+}
+async function entrar(email,senha){
+ const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",
+  {method:"POST",headers:cabecalhos(false),body:JSON.stringify({email:email,password:senha})});
+ if(!r.ok){
+  const e=await r.json().catch(()=>({}));
+  throw new Error(/Invalid login/i.test(e.error_description||e.msg||"")?TEXTOS.erroLogin:(e.msg||e.error_description||TEXTOS.erroLogin));
+ }
+ guardarSessao(await r.json());
+ const ok=await carregarPerfil();
+ if(!ok)throw new Error(TEXTOS.semPerfil);
+ return carregarDoServidor();
+}
+async function carregarPerfil(){
+ const s=sessaoGuardada();
+ if(!s||!s.user)return false;
+ const r=await sb("/rest/v1/perfil?select=nome,papel&id=eq."+encodeURIComponent(s.user.id),{method:"GET"});
+ if(!r.ok)return false;
+ const linhas=await r.json();
+ if(!linhas.length)return false;
+ state.usuario={nome:linhas[0].nome,papel:linhas[0].papel,email:s.user.email};
+ return true;
+}
+async function carregarDoServidor(){
+ const r=await sb("/rest/v1/pipeline?select=dados,versao,atualizado_em,atualizado_por&id=eq.1",{method:"GET"});
+ if(r.status===401){mostrarLogin();return false;}
+ if(!r.ok){state.semRede=true;renderTopo();return false;}
+ const linhas=await r.json();
+ const linha=linhas[0]||{dados:{partners:[],customers:[],deals:[]},versao:0};
+ state.data=linha.dados;state.versao=linha.versao;state.dirty=false;state.servidor=true;state.semRede=false;
+ esconderLogin();render();
+ return true;
+}
+/* Grava com a versão em mãos. Se outra pessoa gravou antes, o banco não
+   encontra a linha para atualizar e devolve lista vazia — é o sinal de
+   conflito. Versão, data e autor são carimbados pelo próprio banco. */
 function salvarServidor(){
+ if(state.usuario&&state.usuario.papel==="leitor"){state.dirty=false;toast(TEXTOS.somenteLeitura,true);return;}
  clearTimeout(state.dbTimer);
  state.salvando=true;state.semRede=false;renderTopo();
  state.dbTimer=setTimeout(async()=>{
   try{
-   const r=await fetch("/api/pipeline",{method:"PUT",credentials:"same-origin",
-    headers:{"content-type":"application/json"},
-    body:JSON.stringify({dados:state.data,versao:state.versao})});
+   const r=await sb("/rest/v1/pipeline?id=eq.1&versao=eq."+encodeURIComponent(state.versao),
+    {method:"PATCH",body:JSON.stringify({dados:state.data}),
+     extras:{"Prefer":"return=representation"}});
    if(r.status===401){state.salvando=false;mostrarLogin();return;}
-   if(r.status===403){state.salvando=false;toast(TEXTOS.somenteLeitura,true);return;}
-   if(r.status===409){
-    const d=await r.json();
-    state.data=d.dados;state.versao=d.versao;state.dirty=false;state.salvando=false;
-    state.painel=null;render();toast(TEXTOS.conflitoAviso,true);return;}
    if(!r.ok)throw new Error("http "+r.status);
-   const d=await r.json();
-   state.versao=d.versao;state.dirty=false;state.salvando=false;renderTopo();
+   const linhas=await r.json();
+   if(!linhas.length){ // ninguém atualizado: versão velha ou acesso de leitura
+    state.salvando=false;
+    await carregarDoServidor();
+    toast(TEXTOS.conflitoAviso,true);
+    return;
+   }
+   state.versao=linhas[0].versao;state.dirty=false;state.salvando=false;renderTopo();
   }catch(e){state.salvando=false;state.semRede=true;renderTopo();}
  },800);
 }
-async function entrar(email,senha){
- const r=await fetch("/api/login",{method:"POST",credentials:"same-origin",
-  headers:{"content-type":"application/json"},body:JSON.stringify({email:email,senha:senha})});
- if(!r.ok)throw new Error(r.status===401?TEXTOS.erroLogin:TEXTOS.erroRede);
- state.usuario=await r.json();
- return carregarDoServidor();
+async function sair(){
+ try{await sb("/auth/v1/logout",{method:"POST"});}catch(e){}
+ guardarSessao(null);mostrarLogin();
 }
-async function carregarDoServidor(){
- const r=await fetch("/api/pipeline",{credentials:"same-origin"});
- if(r.status===401){mostrarLogin();return false;}
- const d=await r.json();
- state.data=d.dados;state.versao=d.versao;state.dirty=false;state.servidor=true;
- esconderLogin();render();
- return true;
+async function trocarSenha(nova){
+ const r=await sb("/auth/v1/user",{method:"PUT",body:JSON.stringify({password:nova})});
+ if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.msg||"Não consegui trocar a senha.");}
+}
+async function pedirRecuperacao(email){
+ const r=await fetch(SUPABASE_URL+"/auth/v1/recover",
+  {method:"POST",headers:cabecalhos(false),body:JSON.stringify({email:email})});
+ if(!r.ok)throw new Error("Não consegui enviar o e-mail.");
 }
 function mostrarLogin(){
  state.usuario=null;state.data={partners:[],customers:[],deals:[]};
@@ -617,16 +691,12 @@ function esconderLogin(){$("#login").className="";}
 function abrirTrocaSenha(){
  $("#squem").textContent=state.usuario?state.usuario.email:"";
  $("#loginform").style.display="none";$("#senhaform").style.display="";
- $("#serro").className="erro";$("#satual").value="";$("#snova").value="";
- $("#login").className="on";setTimeout(()=>$("#satual").focus(),50);
+ $("#serro").className="erro";$("#snova").value="";
+ $("#login").className="on";setTimeout(()=>$("#snova").focus(),50);
 }
 function fecharTrocaSenha(){
  $("#senhaform").style.display="none";$("#loginform").style.display="";
  if(state.usuario)esconderLogin();
-}
-async function sair(){
- try{await fetch("/api/logout",{method:"POST",credentials:"same-origin"});}catch(e){}
- mostrarLogin();
 }
 function salvarLocal(){
  clearTimeout(state.dbTimer);
@@ -653,6 +723,7 @@ function baixar(nome,tipo,txt){
 }
 function exportarJSON(){baixar("oren-negocios.json","application/json",JSON.stringify(state.data,null,1));}
 function importarJSON(txt){
+ if(state.servidor&&!confirm("Isto substitui TODOS os dados no banco, para todo mundo. Continuar?"))return;
  try{const o=JSON.parse(txt);
   if(!o||!Array.isArray(o.deals)||!Array.isArray(o.customers)||!Array.isArray(o.partners))throw 0;
   snapshot();state.data=o;marcar();
@@ -996,7 +1067,9 @@ function renderMenu(){
  /* No servidor os dados vivem no banco: salvar arquivo, importar, limpar e
     recomeçar sairiam por cima do trabalho de todo mundo. Sobram exportar
     (cópia de segurança) e imprimir. */
- const permitidos=state.servidor?["exportar","imprimir"]:Object.keys(TEXTOS.menu);
+ const permitidos=state.servidor
+  ?(state.usuario&&state.usuario.papel==="editor"?["importar","exportar","imprimir"]:["exportar","imprimir"])
+  :Object.keys(TEXTOS.menu);
  const linha=esc_=>permitidos.map(k=>'<div class="menur"><button data-menu="'+k+'">'+
   TEXTOS.menu[k]+"</button>"+iconeHint("m_"+k,esc_)+"</div>").join("");
  $("#menu").innerHTML=linha(true);$("#menu2").innerHTML=linha(false);
@@ -1527,34 +1600,33 @@ $("#fileimp").addEventListener("change",e=>{
 /* Descobre em que mundo estamos: servidor com sessão, servidor pedindo login,
    ou arquivo aberto direto do computador (aí segue exatamente como antes). */
 (async function iniciar(){
- let modo="arquivo";
- try{
-  const r=await fetch("/api/eu",{credentials:"same-origin"});
-  if(r.status===401)modo="login";
-  else if(r.ok){state.usuario=await r.json();modo="servidor";}
- }catch(e){modo="arquivo";}
- if(modo==="servidor"){state.servidor=true;await carregarDoServidor();return;}
- if(modo==="login"){state.servidor=true;state.data={partners:[],customers:[],deals:[]};render();mostrarLogin();return;}
- boot();render();
+ state.servidor=true;
+ state.data={partners:[],customers:[],deals:[]};
+ if(sessaoGuardada()&&await carregarPerfil()){
+  if(await carregarDoServidor())return;
+ }
+ render();mostrarLogin();
 })();
 $("#senhaform").addEventListener("submit",async e=>{
  e.preventDefault();
  const b=$("#sbtn"),err=$("#serro");
  b.disabled=true;b.textContent="Salvando…";err.className="erro";
  try{
-  const r=await fetch("/api/senha",{method:"POST",credentials:"same-origin",
-   headers:{"content-type":"application/json"},
-   body:JSON.stringify({atual:$("#satual").value,nova:$("#snova").value})});
-  if(r.status===401)throw new Error("Senha atual incorreta.");
-  if(r.status===400)throw new Error("A nova senha precisa ter pelo menos 8 caracteres.");
-  if(!r.ok)throw new Error(TEXTOS.erroRede);
+  await trocarSenha($("#snova").value);
   fecharTrocaSenha();toast("Senha alterada.",true);
  }catch(x){err.textContent=x.message;err.className="erro on";}
  finally{b.disabled=false;b.textContent="Salvar nova senha";}
 });
 $("#scancel").addEventListener("click",fecharTrocaSenha);
+$("#lesqueci").addEventListener("click",async()=>{
+ const err=$("#lerro"),email=$("#lemail").value.trim();
+ if(!email){err.textContent="Escreva seu e-mail primeiro.";err.className="erro on";return;}
+ try{await pedirRecuperacao(email);err.textContent="Enviei um link para "+email+".";err.className="erro on";
+  err.style.color="var(--pos)";}
+ catch(x){err.textContent=x.message;err.className="erro on";err.style.color="";}
+});
 /* Limpa a mensagem de erro assim que a pessoa começa a corrigir. */
-["#satual","#snova"].forEach(id=>$(id).addEventListener("input",()=>{$("#serro").className="erro";}));
+["#snova"].forEach(id=>$(id).addEventListener("input",()=>{$("#serro").className="erro";}));
 ["#lemail","#lsenha"].forEach(id=>$(id).addEventListener("input",()=>{$("#lerro").className="erro";}));
 $("#loginform").addEventListener("submit",async e=>{
  e.preventDefault();
