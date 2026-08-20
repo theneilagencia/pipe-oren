@@ -158,8 +158,13 @@ padding:12px;min-height:44px;min-width:0;cursor:pointer}
 .rosca>svg{width:100%;max-width:180px;height:auto;align-self:center;flex:0 0 auto}
 .rosca>.rowlist{flex:1 1 auto;min-width:0}
 /* ================= QUADRO ================= */
-#board{display:flex;gap:12px;align-items:flex-start;overflow-x:auto;overflow-y:visible;
+.board{display:flex;gap:12px;align-items:flex-start;overflow-x:auto;overflow-y:visible;
 scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px 12px}
+.bwrap+.bwrap{margin-top:24px}
+.bh{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.fun+.fun{margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)}
+#pubseg{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:16px 16px 0;min-width:0}
+.badge.b2c{border-color:#9ec7a8;background:#eef7f0;color:#1a6e3a}
 .col{flex:0 0 86vw;scroll-snap-align:start;min-width:0;background:var(--surf);
 border:1px solid var(--bd);min-height:200px;display:flex;flex-direction:column}
 .col.over{border-color:var(--mid);background:#f2f8f4}
@@ -284,7 +289,8 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
  .card{padding:16px}
  #content{padding:24px}
  #chips{padding:24px 24px 0}
- #board{margin:0 -24px;padding:0 24px 12px}
+ .board{margin:0 -24px;padding:0 24px 12px}
+ #pubseg{padding:24px 24px 0}
  #hint{left:auto;right:auto;bottom:auto;top:0;width:280px;max-width:280px;padding:12px;
   border:1px solid var(--bdf);box-shadow:none}
  #hint .hintx{margin-top:12px}
@@ -311,9 +317,12 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
  .g2.w14{grid-template-columns:1.4fr 1fr}
  .chip button{min-height:24px;min-width:24px}
  .chip select{padding:4px 8px}
- #board{display:grid;grid-template-columns:repeat(5,1fr);align-items:start;
-  overflow:visible;scroll-snap-type:none;margin:0;padding:0}
- .col{flex:none;scroll-snap-align:none}
+ /* Antes eram cinco colunas fixas, uma por fase. Agora as colunas são as
+    etapas do funil, que variam de sete a dez, então a faixa continua rolando
+    na horizontal e cada coluna tem largura própria: nome de etapa por
+    extenso não caberia em dez colunas espremidas. */
+ .board{margin:0;padding:0 0 12px}
+ .col{flex:0 0 248px;scroll-snap-align:start}
  .dc select{padding:4px;font-size:11px}
  #panel{top:0;left:auto;right:0;width:520px;height:100vh;padding-bottom:0;
   border-left:1px solid var(--bdf);transform:translateX(100%);
@@ -328,7 +337,7 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
  .dc:hover{border-color:var(--bd)}
  .ci:hover{border-color:var(--bd)}
  .dc{-webkit-user-drag:none;-webkit-user-select:none;user-select:none}
- #board,.trk{touch-action:pan-x pan-y}
+ .board,.trk{touch-action:pan-x pan-y}
  [data-edit]::after{content:none}
  .hint::after{content:"";position:absolute;top:-14px;right:-14px;bottom:-14px;left:-14px}
 }
@@ -343,11 +352,11 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
 @media (prefers-reduced-motion:reduce){
  #panel{transition:none}
  #bnav button{transition:none}
- #board,.trk{scroll-behavior:auto}
+ .board,.trk{scroll-behavior:auto}
 }
 /* ================= IMPRESSÃO ================= */
 @media print{
- #side,#top,#chips,#panel,#shade,#toast,#bnav,#fab,#hint,.hint,.seg,.noprint{display:none!important}
+ #side,#top,#chips,#pubseg,#panel,#shade,#toast,#bnav,#fab,#hint,.hint,.seg,.noprint{display:none!important}
  body{min-width:0;display:block;background:#fff}
  #main{padding-bottom:0}
  #content{display:none}
@@ -377,6 +386,7 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
     <input id="busca" type="search" autocomplete="off">
     <button type="button" id="hbusca" class="hint esc" data-hint="busca" aria-label="O que é isto" aria-expanded="false">?</button>
   </header>
+  <div id="pubseg"></div>
   <div id="chips"></div>
   <div id="content"></div>
 </div>
@@ -438,14 +448,15 @@ const TEXTOS={
  periodoLbl:"Período de fechamento",
  periodoAfeta:"afeta só Fechado no mês, Taxa de conversão e Atividade recente",
  semPeriodo:"fotografia do agora · não muda com o período",
- funil:"Funil por fase",frentes:"Divisão por frente",atencao:"Precisa de atenção",
+ funil:"Funil por etapa",frentes:"Divisão por frente",atencao:"Precisa de atenção",publicoLbl:"Público",
  porResp:"Por responsável",recente:"Atividade recente",
  motivos:{prazo:"Prazo vencido",passo:"Sem próximo passo definido",pend:"Pendência bloqueante",parado:"Parado há mais de 30 dias"},
  quadro:"Quadro",lista:"Lista",verPerdidos:"ver perdidos",voltarQuadro:"voltar ao funil",
  col:{cliente:"Cliente",frente:"Frente",etapa:"Etapa",resp:"Responsável",valor:"Valor",passo:"Próximo passo",prazo:"Prazo"},
  abas:{clientes:"Clientes",parceiros:"Parceiros"},
- secoes:{pend:"Pendências",analise:"Análise",capital:"Capital",hist:"Histórico",notas:"Anotações"},
- vazio:{grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas."},
+ secoes:{pend:"Pendências",analise:"Análise",capital:"Capital",check:"Compliance e KYC",hist:"Histórico",notas:"Anotações"},
+ vazio:{grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
+  b2c:"Nenhum negócio marcado como B2C ainda. A aba fica aqui para quando o primeiro aparecer."},
  excluir:"Excluir",confirmaExcluir:"Excluir este registro? A ação pode ser desfeita por 8 segundos.",
  desfazer:"Desfazer",moveu:"Negócio movido.",excluiu:"Negócio excluído.",
  tipoVenda:{direta:"Venda direta",parceiro:"Venda por parceiro"},
@@ -464,22 +475,40 @@ const TEXTOS={
   investidorReq:"Acompanhamento exige o investidor definido.",
   titulo:"Escreva um nome para o negócio.",
   valor:"Informe um valor maior que zero.",
+  semUsuario:"Entre na sua conta para mover etapas.",
   importar:"Arquivo inválido: precisa ter parceiros, clientes e negócios."
  }
 };
-const ETAPAS=[
- {n:1,nome:"Entrada da oportunidade",fase:"Originação"},
- {n:2,nome:"Qualificação",fase:"Originação"},
- {n:3,nome:"Coleta de documentos",fase:"Análise"},
- {n:4,nome:"Análise financeira e imobiliária",fase:"Análise"},
- {n:5,nome:"Estrutura indicativa",fase:"Análise"},
- {n:6,nome:"Aprovação",fase:"Decisão"},
- {n:7,nome:"Busca de capital",fase:"Decisão"},
- {n:8,nome:"Documentação",fase:"Execução"},
- {n:9,nome:"Fechamento",fase:"Execução"},
- {n:10,nome:"Acompanhamento",fase:"Carteira"}
-];
-const FASES=["Originação","Análise","Decisão","Execução","Carteira"];
+/* Um funil por frente. O mesmo número quer dizer etapas diferentes em funis
+   diferentes, então nada aqui pode ser lido sem saber de que frente é o
+   negócio. Antes existia um funil único, desenhado para Capital, e as etapas
+   3 a 7 nunca foram ocupadas por Governance porque não existem lá. */
+const FUNIS={
+ capital:["Entrada","Qualificação","Coleta de documentos",
+  "Análise financeira e imobiliária","Estrutura indicativa","Aprovação",
+  "Busca de capital","Documentação","Fechamento","Acompanhamento"],
+ governance:["Entrada","Qualificação","Proposta enviada","Pagamento",
+  "Coleta de documentos","Execução e entrega","Acompanhamento"],
+ payments:["Entrada","Qualificação","Coleta de documentos",
+  "Análise de compliance","Aprovação","Ativação","Acompanhamento"]
+};
+/* Onde a venda termina em cada funil. ganho é a etapa que conta como fechada;
+   posVenda é a primeira etapa de depois da venda, que não é pipeline aberto. */
+const CORTE={capital:{ganho:9,posVenda:10},governance:{ganho:4,posVenda:5},payments:{ganho:6,posVenda:7}};
+/* B2C não tem funil próprio: usa o funil da frente, igual a um B2B. */
+const PUBLICOS={"":"Todos",B2B:"B2B",B2C:"B2C"};
+/* Compliance e KYC são checklist, não etapa. Chave estável à esquerda para o
+   texto poder mudar sem perder o que já foi marcado. */
+const CHECKLISTS={
+ governance:[["docSocietarios","Documentos societários recebidos"],
+  ["idSocios","Identificação dos sócios"],["endereco","Endereço comprovado"]],
+ paymentsB2B:[["docSocietarios","Documentos societários recebidos"],
+  ["idSocios","Identificação dos sócios"],["restricao","Consulta de restrição"],
+  ["parecerMesa","Parecer da mesa"]],
+ paymentsB2C:[["docIdentidade","Documento de identidade"],
+  ["compEndereco","Comprovante de endereço"],["restricao","Consulta de restrição"]]
+};
+const CHECKETAPAS={governance:[5,6],payments:[3,4]};
 const CORF={payments:"#affa57",capital:"#62cc6d",governance:"#1da688"};
 const RESPS=["Paulo","Theo","Adriano","Adolfo","Vinícius","Darley","Patrícia"];
 const CINCO=[["pagamento","Capacidade de pagamento"],["contrato","Contrato"],["garantias","Garantias"],["valorImovel","Valor do imóvel"],["usoAlternativo","Uso alternativo"]];
@@ -517,7 +546,7 @@ const CHAVE="oren.pipeline.v1";
 
 /* ============================ ESTADO ============================ */
 const state={
- data:null,tela:"painel",vista:"quadro",perdidos:false,aba:"clientes",
+ data:null,tela:"painel",vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
  painel:null,secoes:{},dirty:false,undo:null,undoTimer:null,dbTimer:null,
@@ -533,9 +562,35 @@ const dt=v=>v?String(v).slice(0,10).split("-").reverse().join("/"):"—";
 const hoje=()=>new Date();
 const dias=(a,b)=>Math.round((b-a)/864e5);
 const iniciais=n=>String(n||"").trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();
-const etapaNome=e=>e==="perdido"?"Perdido":(ETAPAS.find(x=>x.n===Number(e))||{}).nome||"—";
-const etapaFase=e=>e==="perdido"?null:(ETAPAS.find(x=>x.n===Number(e))||{}).fase||null;
-const primeiraEtapa=f=>ETAPAS.find(x=>x.fase===f).n;
+/* Frente ausente ou desconhecida cai em governance, com aviso no console.
+   A tela nunca quebra por causa de um registro torto. */
+const frentesAvisadas={};
+function frenteDe(d){
+ const f=d&&d.frente;
+ if(FUNIS[f])return f;
+ const k=String(f);
+ if(!frentesAvisadas[k]){frentesAvisadas[k]=1;
+  console.warn("Frente desconhecida ("+k+") em "+((d&&d.id)||"registro sem id")+". Tratando como governance.");}
+ return "governance";
+}
+const funilDe=d=>FUNIS[frenteDe(d)];
+const corteDe=d=>CORTE[frenteDe(d)];
+/* Recebe o negócio, e não só o número, porque o número sozinho não diz nada. */
+function etapaNome(d,e){
+ const v=e===undefined?(d||{}).etapa:e;
+ if(v==="perdido")return "Perdido";
+ return funilDe(d)[Number(v)-1]||"—";
+}
+const publicoDe=r=>(r&&r.publico==="B2C")?"B2C":"B2B";
+const ehB2C=r=>publicoDe(r)==="B2C";
+function checklistDe(d){
+ const fr=frenteDe(d);
+ if(fr==="governance")return CHECKLISTS.governance;
+ if(fr==="payments")return ehB2C(d)?CHECKLISTS.paymentsB2C:CHECKLISTS.paymentsB2B;
+ return null;
+}
+const checklistVisivel=d=>{const e=CHECKETAPAS[frenteDe(d)];
+ return !!(e&&d.etapa!=="perdido"&&e.indexOf(Number(d.etapa))>=0);};
 const cliente=id=>state.data.customers.find(c=>c.id===id);
 const parceiro=id=>state.data.partners.find(p=>p.id===id);
 const contaNome=d=>{const c=cliente(d.clienteId);if(c)return c.nome;const p=parceiro(d.parceiroId);return p?p.nome:d.titulo;};
@@ -548,6 +603,10 @@ const ehCel=()=>mq("(max-width:767px)");
 const ehMobile=()=>mq("(max-width:1023px)");
 const faixaTela=()=>ehCel()?"cel":ehMobile()?"tab":"mesa";
 const brlV=v=>ehMobile()?brlC(v):brl(v);
+/* Valor de um registro. Aqui o zero nunca foi digitado por ninguém: é campo
+   em branco, e campo em branco aparece como travessão, não como R$ 0. Somas
+   continuam com brlV, porque uma soma é um número calculado de verdade. */
+const brlD=v=>(v===null||v===undefined||v===""||Number(v)===0)?"—":brlV(v);
 const SEP='<span class="sep" aria-hidden="true">\u00b7</span>';
 function itemLinha(principal,partes,attrs){
  const sub=(partes||[]).filter(x=>x!=null&&x!=="").join(SEP);
@@ -567,10 +626,13 @@ function validarEtapa(d,etapa){
  if(etapa==="perdido")return d.motivoPerda?null:TEXTOS.erros.perda;
  const n=Number(etapa);
  if(d.frente==="capital"&&!d.tese)return TEXTOS.erros.tese;
- if(n>=6&&CINCO.some(([k])=>(d.cincoPerguntas||{})[k]==="NaoAvaliada"||!(d.cincoPerguntas||{})[k])) return TEXTOS.erros.cinco;
- if(n>=7&&!d.frenteCapital)return TEXTOS.erros.frenteCap;
+ /* As exigências abaixo são de Capital. Antes valiam para todas as frentes, e
+    com os funis novos isso travaria Governance na etapa 6 pedindo campos que
+    a frente não tem. */
  if(d.frente==="capital"){
   const cm=d.comite||{};
+  if(n>=6&&CINCO.some(([k])=>(d.cincoPerguntas||{})[k]==="NaoAvaliada"||!(d.cincoPerguntas||{})[k])) return TEXTOS.erros.cinco;
+  if(n>=7&&!d.frenteCapital)return TEXTOS.erros.frenteCap;
   if(n>=4&&(!d.situacao||!d.segmento))return TEXTOS.erros.situacaoSegmento;
   if(n>=5&&!d.estrutura)return TEXTOS.erros.estruturaReq;
   if(n>=7&&(!cm.decisao||!cm.validadeAte))return TEXTOS.erros.comiteReq;
@@ -581,13 +643,18 @@ function validarEtapa(d,etapa){
 function moverEtapa(id,etapa,quem){
  const d=state.data.deals.find(x=>x.id===id);if(!d)return null;
  if(String(d.etapa)===String(etapa))return null;
+ /* Sem ninguém logado não existe autor. Cair no responsável do negócio, como
+    era antes, gravava que o Paulo moveu algo que o Paulo não moveu. */
+ if(!quem&&!(state.usuario&&state.usuario.nome))return TEXTOS.erros.semUsuario;
  const e=validarEtapa(d,etapa);if(e)return e;
  snapshot();
  d.historico=d.historico||[];
- d.historico.push({de:etapaNome(d.etapa),para:etapaNome(etapa),quando:new Date().toISOString(),
-  quem:quem||(state.usuario?state.usuario.nome:d.responsavel)});
+ d.historico.push({de:etapaNome(d),para:etapaNome(d,etapa),quando:new Date().toISOString(),
+  quem:quem||state.usuario.nome});
  d.etapa=etapa==="perdido"?"perdido":Number(etapa);
- if(d.etapa===9||d.etapa===10){if(!d.fechadoEm)d.fechadoEm=agora();}else{d.fechadoEm=null;}
+ /* Fechou quando alcançou a etapa de ganho da própria frente. */
+ if(d.etapa!=="perdido"&&Number(d.etapa)>=corteDe(d).ganho){if(!d.fechadoEm)d.fechadoEm=agora();}
+ else{d.fechadoEm=null;}
  d.atualizadoEm=agora();
  marcar();toast(TEXTOS.moveu);
  return null;
@@ -667,14 +734,101 @@ async function carregarPerfil(){
   senhaProvisoria:!!linhas[0].senha_provisoria};
  return true;
 }
-async function carregarDoServidor(){
+async function carregarDoServidor(semRender){
  const r=await sb("/rest/v1/pipeline?select=dados,versao,atualizado_em,atualizado_por&id=eq.1",{method:"GET"});
  if(r.status===401){mostrarLogin();return false;}
  if(!r.ok){state.semRede=true;renderTopo();return false;}
  const linhas=await r.json();
  const linha=linhas[0]||{dados:{partners:[],customers:[],deals:[]},versao:0};
  state.data=linha.dados;state.versao=linha.versao;state.dirty=false;state.servidor=true;state.semRede=false;
- esconderLogin();render();
+ esconderLogin();
+ if(!semRender)render();
+ return true;
+}
+/* Gravação direta, sem o atraso de salvarServidor. A migração precisa saber se
+   gravou antes de seguir, e o debounce não devolve resposta. */
+async function gravarAgora(){
+ try{
+  const r=await sb("/rest/v1/pipeline?id=eq.1&versao=eq."+encodeURIComponent(state.versao),
+   {method:"PATCH",body:JSON.stringify({dados:state.data}),extras:{"Prefer":"return=representation"}});
+  if(r.status===401){mostrarLogin();return false;}
+  if(!r.ok)return false;
+  const linhas=await r.json();
+  if(!linhas.length){await carregarDoServidor(true);return false;}
+  state.versao=linhas[0].versao;state.dirty=false;renderTopo();
+  return true;
+ }catch(e){state.semRede=true;renderTopo();return false;}
+}
+/* ---------------------------- MIGRAÇÃO ----------------------------
+   Converte o formato antigo (funil único de dez etapas para as três frentes,
+   sem campo de público) no schema 2. Roda uma vez: depois de gravado o
+   schema, nunca mais. Converte em memória primeiro e só grava se quem está
+   logado puder gravar. */
+const MAPA_GOV={1:1,2:2,8:3,9:4};
+function migrar(origem){
+ const d=JSON.parse(JSON.stringify(origem||{}));
+ d.partners=d.partners||[];d.customers=d.customers||[];d.deals=d.deals||[];
+ const rel={antes:d.deals.length+d.customers.length+d.partners.length,
+  depois:0,porEtapa:{},porFrente:{},porPublico:{},revisar:[]};
+ d.deals.forEach(x=>{
+  x.publico=x.publico==="B2C"?"B2C":"B2B";
+  if(x.mandatoAssinadoEm===undefined)x.mandatoAssinadoEm="";
+  if(!x.checklist||typeof x.checklist!=="object")x.checklist={};
+  if(!FUNIS[x.frente])x.frente="governance";
+  if(x.etapa==="perdido")return;                       /* perdido é marca, preserva motivo */
+  if(x.frente!=="governance")return;                   /* Capital e Payments ficam onde estão */
+  const de=Number(x.etapa),para=MAPA_GOV[de];
+  if(para){
+   x.etapa=para;
+   if(para===4&&!x.fechadoEm)x.fechadoEm=agora();
+  }else{
+   x.etapa=2;
+   x.tags=Array.isArray(x.tags)?x.tags:[];
+   if(x.tags.indexOf("revisar-migracao")<0)x.tags.push("revisar-migracao");
+   rel.revisar.push(x.id+" (vinha da etapa "+de+")");
+  }
+ });
+ d.customers.forEach(c=>{c.publico=c.tipo==="PF"?"B2C":"B2B";});
+ d.partners.forEach(x=>{x.publico="B2B";});            /* parceiro é sempre B2B */
+ d.schema=2;
+ rel.depois=d.deals.length+d.customers.length+d.partners.length;
+ d.deals.forEach(x=>{
+  const k=String(x.etapa);
+  rel.porEtapa[k]=(rel.porEtapa[k]||0)+1;
+  rel.porFrente[x.frente]=(rel.porFrente[x.frente]||0)+1;
+  rel.porPublico[x.publico]=(rel.porPublico[x.publico]||0)+1;
+ });
+ return {dados:d,rel:rel};
+}
+async function migrarSeNecessario(){
+ for(let tentativa=1;tentativa<=3;tentativa++){
+  if(!state.data||state.data.schema===2)return;
+  const {dados,rel}=migrar(state.data);
+  if(rel.antes!==rel.depois){
+   console.error("Migração interrompida: "+rel.antes+" registros antes e "+rel.depois+" depois. Nada foi gravado.");
+   return;
+  }
+  console.log("Migração para schema 2 — registros antes: "+rel.antes+" · depois: "+rel.depois+
+   " (negócios: "+dados.deals.length+" · clientes: "+dados.customers.length+
+   " · parceiros: "+dados.partners.length+")");
+  console.log("Negócios por etapa:",rel.porEtapa);
+  console.log("Negócios por frente:",rel.porFrente);
+  console.log("Negócios por público:",rel.porPublico);
+  if(rel.revisar.length)console.warn("Marcados como revisar-migracao:",rel.revisar);
+  state.data=dados;
+  if(state.usuario&&state.usuario.papel==="leitor"){
+   console.log("Perfil somente leitura: dados convertidos apenas na tela, sem gravar.");
+   return;
+  }
+  if(await gravarAgora()){console.log("Migração gravada.");return;}
+  console.log("Conflito ao gravar a migração. Recarreguei do servidor e vou converter de novo (tentativa "+tentativa+" de 3).");
+ }
+ console.warn("Não consegui gravar a migração depois de três tentativas. Os dados na tela estão convertidos.");
+}
+async function carregarEMigrar(){
+ if(!await carregarDoServidor(true))return false;
+ await migrarSeNecessario();
+ render();
  return true;
 }
 /* Grava com a versão em mãos. Se outra pessoa gravou antes, o banco não
@@ -839,21 +993,29 @@ function negocios(){
   if(state.filtros.frente&&d.frente!==state.filtros.frente)return false;
   if(state.filtros.responsavel&&d.responsavel!==state.filtros.responsavel)return false;
   if(state.filtros.tipoVenda&&d.tipoVenda!==state.filtros.tipoVenda)return false;
+  if(state.publico&&publicoDe(d)!==state.publico)return false;
   if(q&&textoBusca(d).indexOf(q)<0)return false;
   return true;
  });
 }
-/* RÉGUA ÚNICA — todos os blocos usam estas três funções, sem interpretação própria.
-   em aberto = etapas 1 a 8 · fechado = 9 (Fechamento) e 10 (Acompanhamento) · perdido = "perdido" */
-const emAberto=d=>d.etapa!=="perdido"&&Number(d.etapa)>=1&&Number(d.etapa)<=8;
-const fechado=d=>d.etapa===9||d.etapa===10;
+/* RÉGUA ÚNICA — todos os blocos usam estas três funções, sem interpretação
+   própria. O corte agora vem de CORTE[frente], porque cada funil termina a
+   venda numa etapa diferente:
+     em aberto = etapas antes do ganho
+     fechado   = a etapa de ganho e as de pós-venda
+     perdido   = "perdido"
+   Capital fecha em 9 e acompanha em 10. Governance fecha em 4 (Pagamento) e
+   entrega de 5 a 7. Payments fecha em 6 (Ativação) e acompanha em 7. */
+const emAberto=d=>d.etapa!=="perdido"&&Number(d.etapa)>=1&&Number(d.etapa)<corteDe(d).ganho;
+const fechado=d=>d.etapa!=="perdido"&&Number(d.etapa)>=corteDe(d).ganho;
 const perdido=d=>d.etapa==="perdido";
 function kpis(lista){
  const ab=lista.filter(emAberto),fe=lista.filter(fechado),pe=lista.filter(perdido);
  const soma=a=>a.reduce((s,d)=>s+(Number(d.valor)||0),0);
  const conv=(fe.length+pe.length)?fe.length/(fe.length+pe.length)*100:null;
  return{aberto:soma(ab),ponderada:ab.reduce((s,d)=>s+(Number(d.valor)||0)*(Number(d.chance)||0)/100,0),
-  fechado:soma(fe),conversao:conv,n:lista.length};
+  fechado:soma(fe),conversao:conv,n:lista.length,
+  nAberto:ab.length,nFechado:fe.length,nPerdido:pe.length};
 }
 function atencao(lista){
  const h=hoje(),out=[];
@@ -867,6 +1029,93 @@ function atencao(lista){
  });
  return out.sort((a,b)=>(Number(b.d.valor)||0)-(Number(a.d.valor)||0)).slice(0,15);
 }
+
+/* ---------------------------- AUDITORIA ----------------------------
+   Roda sob demanda, no console: auditoria(). Só lê e imprime. Nenhuma
+   correção automática, porque quase toda lacuna aqui precisa de decisão
+   humana e um palpite gravado é pior que um campo vazio. */
+function auditoria(){
+ if(!state.data){console.warn("Sem dados carregados.");return[];}
+ const d=state.data,achados=[];
+ const add=(tipo,id,detalhe)=>achados.push({tipo:tipo,id:id,detalhe:detalhe});
+ const dataOk=v=>!v||/^\d{4}-\d{2}-\d{2}$/.test(String(v).slice(0,10))&&!isNaN(new Date(String(v).slice(0,10)));
+ const perfis={};RESPS.forEach(r=>perfis[r]=1);
+ const hojeISO=agora();
+
+ /* ids duplicados */
+ [["deals",d.deals],["customers",d.customers],["partners",d.partners]].forEach(([nome,lista])=>{
+  const visto={};
+  (lista||[]).forEach(r=>{
+   if(visto[r.id])add("id duplicado",r.id,"repetido em "+nome);
+   visto[r.id]=1;
+  });
+ });
+
+ (d.deals||[]).forEach(x=>{
+  /* integridade referencial */
+  if(x.clienteId&&!cliente(x.clienteId))add("cliente inexistente",x.id,"clienteId "+x.clienteId);
+  if(x.parceiroId&&!parceiro(x.parceiroId))add("parceiro inexistente",x.id,"parceiroId "+x.parceiroId);
+  if(!x.clienteId&&!x.parceiroId)add("negócio sem conta",x.id,"aparece pelo título, não por uma conta");
+  if(x.tipoVenda==="direta"&&x.parceiroId)add("venda direta com parceiro",x.id,"parceiroId "+x.parceiroId);
+  if(x.tipoVenda==="parceiro"&&!x.parceiroId)add("venda por parceiro sem parceiro",x.id,"");
+  /* coerência de estado */
+  const fr=frenteDe(x),f=FUNIS[fr],c=CORTE[fr];
+  if(x.etapa!=="perdido"){
+   const e=Number(x.etapa);
+   if(!(e>=1&&e<=f.length))add("etapa fora do funil",x.id,"etapa "+x.etapa+" em "+fr+" (funil vai até "+f.length+")");
+   if(e>=c.ganho&&!x.fechadoEm)add("fechado sem data",x.id,"etapa "+e+" já é ganho ou pós-venda");
+   if(e<c.ganho&&x.fechadoEm)add("data de fechamento em negócio aberto",x.id,"fechadoEm "+x.fechadoEm);
+  }else if(!x.motivoPerda||!String(x.motivoPerda).trim())add("perdido sem motivo",x.id,"");
+  const ch=Number(x.chance);
+  if(!(ch>=0&&ch<=100))add("chance fora de 0 a 100",x.id,String(x.chance));
+  if(x.valor!==null&&x.valor!==undefined&&x.valor!==""){
+   const v=Number(x.valor);
+   if(isNaN(v))add("valor não numérico",x.id,String(x.valor));
+   else if(v<0)add("valor negativo",x.id,String(v));
+  }
+  /* datas */
+  ["prazo","criadoEm","atualizadoEm","fechadoEm","mandatoAssinadoEm"].forEach(k=>{
+   if(x[k]&&!dataOk(x[k]))add("data inválida",x.id,k+" = "+x[k]);
+  });
+  if(x.criadoEm&&x.criadoEm>hojeISO)add("criado no futuro",x.id,x.criadoEm);
+  if(x.criadoEm&&x.atualizadoEm&&x.atualizadoEm<x.criadoEm)add("atualizado antes de criado",x.id,x.atualizadoEm+" < "+x.criadoEm);
+  /* pessoas */
+  if(!x.responsavel||!perfis[x.responsavel])
+   add("responsável fora da lista",x.id,String(x.responsavel)+" — o negócio desaparece de Por responsável e do filtro");
+  /* histórico */
+  let ant="";
+  (x.historico||[]).forEach((h,i)=>{
+   if(!h.quando||isNaN(new Date(h.quando)))add("histórico com data inválida",x.id,"evento "+i+": "+h.quando);
+   else{
+    if(ant&&String(h.quando)<ant)add("histórico fora de ordem",x.id,"evento "+i+": "+h.quando+" vem depois de "+ant);
+    ant=String(h.quando);
+   }
+   if(h.quem&&!perfis[h.quem])add("autor do histórico sem perfil",x.id,'"'+h.quem+'" não corresponde a ninguém em RESPS');
+  });
+ });
+
+ (d.customers||[]).concat(d.partners||[]).forEach(c=>{
+  if(c.responsavel&&!perfis[c.responsavel])add("responsável fora da lista",c.id,String(c.responsavel));
+  ["criadoEm","atualizadoEm"].forEach(k=>{if(c[k]&&!dataOk(c[k]))add("data inválida",c.id,k+" = "+c[k]);});
+ });
+
+ /* exibição: valor ausente não é zero */
+ (d.deals||[]).forEach(x=>{
+  if(x.valor===0||x.valor===null||x.valor===undefined||x.valor==="")
+   add("valor não informado",x.id,"a tela mostra travessão, não R$ 0");
+ });
+
+ const porTipo={};achados.forEach(a=>{porTipo[a.tipo]=(porTipo[a.tipo]||0)+1;});
+ console.log("=== Auditoria Oren ===");
+ console.log("Negócios: "+(d.deals||[]).length+" · clientes: "+(d.customers||[]).length+
+  " · parceiros: "+(d.partners||[]).length+" · schema: "+(d.schema||1));
+ console.log("Achados: "+achados.length,porTipo);
+ if(achados.length&&console.table)console.table(achados);
+ else achados.forEach(a=>console.log(a.tipo+" · "+a.id+" · "+a.detalhe));
+ console.log("Nada foi alterado. Corrija pelo painel ou peça a correção.");
+ return achados;
+}
+window.auditoria=auditoria;
 
 /* ============================ GRAFICOS ============================ */
 function barras(itens,total,porContagem){
@@ -949,19 +1198,19 @@ const HINTS={
   b:"O registro já nasce com todos os campos que os outros têm, então nada some ao salvar."},
  kpi_aberto:{t:"Negócios em aberto (R$)",
   a:"Soma do valor de todos os negócios que ainda estão em andamento.",
-  b:"Considera as etapas 1 a 8. Negócios em Fechamento, Acompanhamento ou Perdidos ficam de fora. O período selecionado não afeta este número."},
+  b:"Cada frente termina a venda numa etapa diferente, e o que já foi vendido fica de fora. O período selecionado não afeta este número."},
  kpi_ponderada:{t:"Chance ponderada (R$)",
   a:"Quanto do pipeline em aberto tende a se concretizar, segundo a sua própria estimativa.",
   b:"Cada negócio entra pelo valor multiplicado pela chance de fechar que você definiu nele. Um negócio de R$ 100 mil com 40% entra como R$ 40 mil."},
  kpi_fechado:{t:"Fechado no mês (R$)",
-  a:"Soma do valor dos negócios que chegaram a Fechamento ou Acompanhamento dentro do período selecionado.",
-  b:"Usa a data de fechamento do negócio, não a data em que ele foi cadastrado."},
+  a:"Soma dos negócios que chegaram à etapa de venda ganha dentro do período selecionado.",
+  b:"Ganho é Fechamento em Capital, Pagamento em Governance e Ativação em Payments. Usa a data de fechamento, não a de cadastro."},
  kpi_conversao:{t:"Taxa de conversão (%)",
-  a:"De tudo que foi decidido no período, quanto virou negócio fechado.",
+  a:"De tudo que foi decidido no período, quanto virou venda ganha na etapa própria de cada frente.",
   b:'Divide os fechados pela soma de fechados mais perdidos. Negócios ainda em andamento não entram na conta. Sem nenhuma decisão no período, aparece "sem base de comparação".'},
- funil:{t:"Funil por fase",
-  a:"Onde estão os negócios em aberto ao longo do processo.",
-  b:"O tamanho da barra é dado pela quantidade de negócios, não pelo valor, porque nem todo negócio tem valor definido. O rótulo mostra os dois."},
+ funil:{t:"Funil por etapa",
+  a:"Onde estão os negócios em aberto, com um funil para cada frente, porque cada frente tem as suas etapas.",
+  b:"A barra é desenhada pela quantidade de negócios e o rótulo mostra também o valor. Escolhendo uma frente no filtro, aparece só ela."},
  frentes:{t:"Divisão por frente",
   a:"Como o pipeline se distribui entre Payments, Capital e Governance.",
   b:"Considera apenas negócios em aberto."},
@@ -972,23 +1221,32 @@ const HINTS={
   a:"Negócios que exigem uma ação sua agora.",
   b:"Um negócio entra aqui quando o prazo já passou, quando não tem próximo passo escrito, quando tem pendência bloqueante em aberto, ou quando não se move há mais de 30 dias."},
  recente:{t:"Atividade recente",
-  a:"Últimas movimentações de etapa registradas, com quem moveu e quando.",
-  b:"Segue o período selecionado."},
+  a:"Últimas movimentações de etapa, mostrando quem moveu e quem responde pelo negócio.",
+  b:"São duas pessoas diferentes com frequência: quem moveu pode não ser o responsável. Segue o período selecionado."},
+ publico:{t:"Público",
+  a:"Separa negócio de empresa (B2B) de negócio de pessoa física (B2C).",
+  b:"Filtra a tela inteira e não muda as etapas: um negócio B2C usa o mesmo funil da frente dele."},
+ mandato:{t:"Mandato assinado em",
+  a:"A data em que o cliente assinou o mandato.",
+  b:"É diferente da aprovação do comitê, e fica vazio enquanto não houver assinatura."},
+ check:{t:"Compliance e KYC",
+  a:"Os documentos e as checagens que precisam estar em ordem nesta altura do processo.",
+  b:"Marcar salva na hora. Em Payments a lista muda quando o negócio é de pessoa física."},
  periodo:{t:"Período de fechamento",
   a:"Afeta apenas Fechado no mês, Taxa de conversão e Atividade recente.",
   b:"Os demais blocos mostram sempre a situação atual do pipeline, independente do período."},
- fases:{t:"Fases do quadro",
-  a:"As cinco colunas agrupam as dez etapas do processo.",
-  b:"Originação reúne as etapas 1 e 2, Análise as etapas 3 a 5, Decisão as etapas 6 e 7, Execução as etapas 8 e 9, e Carteira a etapa 10."},
+ fases:{t:"Quadro por frente",
+  a:"Cada frente tem o seu quadro, e cada coluna é uma etapa do funil dela.",
+  b:"Capital tem dez etapas; Governance e Payments têm sete. A faixa rola para o lado quando não cabe na tela."},
  arrastar:{t:"Arrastar um card",
-  a:"Arrastar move o negócio para a primeira etapa da fase de destino.",
-  b:"Para escolher a etapa exata, use o seletor no card ou abra o negócio."},
+  a:"Arrastar move o negócio para a etapa da coluna de destino, e salva na hora.",
+  b:"Só dentro do quadro da própria frente, porque a mesma etapa quer dizer outra coisa em outro funil."},
  perdidos:{t:"Ver perdidos",
   a:"Negócios encerrados sem fechamento.",
   b:"Ficam fora do quadro para não poluir a leitura, mas continuam contando na taxa de conversão."},
  trilha:{t:"Trilha de etapas",
-  a:"O caminho completo do negócio. A etapa atual aparece destacada.",
-  b:"Algumas etapas exigem informação preenchida para serem alcançadas, e o sistema avisa qual falta."},
+  a:"O caminho completo do negócio na frente dele, com a etapa atual destacada.",
+  b:"Capital tem dez etapas; Governance e Payments têm sete. Algumas exigem informação preenchida, e o sistema avisa qual falta."},
  chance:{t:"Chance de fechar",
   a:"Sua estimativa de que o negócio se concretize.",
   b:"Alimenta o indicador Chance ponderada do Painel. É um julgamento seu, não um cálculo automático."},
@@ -1055,7 +1313,7 @@ const HINTS={
   b:"Não entra em nenhum cálculo, serve para você reconhecer a operação."},
  valor:{t:"Valor",
   a:"Quanto a operação deve gerar. Entra em Negócios em aberto e em Chance ponderada.",
-  b:'Zero significa que o valor ainda não foi definido, e aparece como "valor a definir" nos gráficos.'},
+  b:'Zero quer dizer que o valor ainda não foi definido: aparece como travessão nas listas e como "valor a definir" nos gráficos.'},
  resp:{t:"Responsável",
   a:"Quem conduz o negócio.",
   b:"Alimenta o gráfico Por responsável e o filtro de responsável."},
@@ -1126,7 +1384,7 @@ function fecharHint(devolveFoco){
 /* ============================ TELAS ============================ */
 function render(){
  fecharHint(false);
- renderTopo();renderNav();renderMenu();renderChips();
+ renderTopo();renderNav();renderMenu();renderPubSeg();renderChips();
  const c=$("#content");
  if(state.tela==="painel")c.innerHTML=telaPainel();
  else if(state.tela==="negocios")c.innerHTML=telaNegocios();
@@ -1169,6 +1427,14 @@ function renderMenu(){
   TEXTOS.menu[k]+"</button>"+iconeHint("m_"+k,esc_)+"</div>").join("");
  $("#menu").innerHTML=linha(true);$("#menu2").innerHTML=linha(false);
 }
+/* Público é filtro, não navegação: fica dentro da tela, acima dos chips, e
+   vale para as três telas. Em Contas ele filtra só a lista de clientes. */
+function renderPubSeg(){
+ $("#pubseg").innerHTML='<span class="soft" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase">'+
+  esc(TEXTOS.publicoLbl)+iconeHint("publico")+"</span>"+
+  '<div class="seg">'+Object.keys(PUBLICOS).map(k=>
+   '<button data-pub="'+k+'" class="'+(state.publico===k?"on":"")+'">'+esc(PUBLICOS[k])+"</button>").join("")+"</div>";
+}
 function renderChips(){
  const f=state.filtros,ch=[];
  if(state.tela==="painel"){
@@ -1196,10 +1462,15 @@ function telaPainel(){
  const lista=negocios(),k=kpis(lista);
  const desfechados=ff=>lista.filter(d=>noDesfecho(d,ff));
  const kf=kpis(desfechados(f)),kfa=f?kpis(desfechados(f.ant)):null;
+ /* Ticket de pessoa física é baixo: só o total em reais escondia o volume. */
+ const qtd=(nn)=>state.publico==="B2C"?" · "+nn+(nn===1?" negócio":" negócios"):"";
+ /* Soma zero com negócios dentro não é zero: é valor não cadastrado. Mostrar
+    "R$ 0" aqui diria que nada foi fechado, quando foram oito. */
+ const soma=(v,nn)=>(nn>0&&!v)?nn+(nn===1?" negócio":" negócios")+" · valor a definir":brlV(v)+qtd(nn);
  const cards=[
-  ["aberto",brlV(k.aberto),null,null,TEXTOS.semPeriodo],
-  ["ponderada",brlV(k.ponderada),null,null,TEXTOS.semPeriodo],
-  ["fechado",brlV(kf.fechado),kf.fechado,kfa&&kfa.fechado,TEXTOS.periodoLbl+": "+per],
+  ["aberto",soma(k.aberto,k.nAberto),null,null,TEXTOS.semPeriodo],
+  ["ponderada",soma(k.ponderada,k.nAberto),null,null,TEXTOS.semPeriodo],
+  ["fechado",soma(kf.fechado,kf.nFechado),kf.fechado,kfa&&kfa.fechado,TEXTOS.periodoLbl+": "+per],
   ["conversao",kf.conversao==null?"—":Math.round(kf.conversao)+"%",kf.conversao,kfa?kfa.conversao:null,TEXTOS.periodoLbl+": "+per]];
  let h='<div class="grid kpis">';
  cards.forEach(([id,txt,v,pv,nota])=>{
@@ -1214,17 +1485,28 @@ function telaPainel(){
    dl+'<div class="delta soft">'+esc(nota)+"</div></div>";
  });
  h+="</div>";
- const porFase=FASES.map(fa=>{const a=lista.filter(d=>emAberto(d)&&etapaFase(d.etapa)===fa);
-  return{nome:fa,n:a.length,valor:a.reduce((s,d)=>s+(+d.valor||0),0),cor:"#0e5351"};}).filter(x=>x.n);
- const totFase=porFase.reduce((s,i)=>s+i.valor,0);
+ /* Um funil por frente. Com o filtro de frente em "todas", os três aparecem
+    empilhados: misturar etapas de funis diferentes numa barra só era o que
+    fazia o quadro mentir sobre Governance e Payments. */
+ const frentesFunil=state.filtros.frente?[state.filtros.frente]:["payments","capital","governance"];
+ const funilH=frentesFunil.map(fr=>{
+  const abertos=lista.filter(d=>frenteDe(d)===fr&&emAberto(d));
+  const itens=FUNIS[fr].slice(0,CORTE[fr].ganho-1).map((nome,i)=>{
+   const a=abertos.filter(d=>Number(d.etapa)===i+1);
+   return{nome:(i+1)+" · "+nome,n:a.length,valor:a.reduce((s,d)=>s+(+d.valor||0),0),cor:CORF[fr]};
+  }).filter(x=>x.n);
+  return '<div class="fun"><div class="lbl" style="margin:0 0 8px"><span class="dot" style="background:'+
+   CORF[fr]+'"></span>'+esc(TEXTOS.frentesLbl[fr])+"</div>"+
+   barras(itens,itens.reduce((t,i)=>t+i.valor,0),true)+"</div>";
+ }).join("");
  const porFrente=["payments","capital","governance"].map(fr=>{const a=lista.filter(d=>emAberto(d)&&d.frente===fr);
   return{nome:TEXTOS.frentesLbl[fr],valor:a.reduce((s,d)=>s+(+d.valor||0),0),cor:CORF[fr]};});
  h+='<div class="grid g2 w14 mt16">'+
-  '<div class="card"><h2>'+TEXTOS.funil+iconeHint("funil")+"</h2>"+barras(porFase,totFase,true)+"</div>"+
+  '<div class="card"><h2>'+TEXTOS.funil+iconeHint("funil")+"</h2>"+funilH+"</div>"+
   '<div class="card"><h2>'+TEXTOS.frentes+iconeHint("frentes")+"</h2>"+rosca(porFrente)+"</div></div>";
  const at=atencao(lista);
  let ah=at.length?'<div class="rowlist">'+at.map(x=>itemLinha(esc(contaNome(x.d)),
-  ['<span class="mut">'+esc(brlV(x.d.valor))+"</span>",
+  ['<span class="mut">'+esc(brlD(x.d.valor))+"</span>",
    '<span class="'+(x.motivo===TEXTOS.motivos.parado?"soft":"late")+'">'+esc(x.motivo)+"</span>"],
   ' data-abre="'+x.d.id+'" style="cursor:pointer"')).join("")+"</div>"
   :'<div class="empty">'+TEXTOS.vazio.atencao+"</div>";
@@ -1237,9 +1519,12 @@ function telaPainel(){
  const ev=[];lista.forEach(d=>(d.historico||[]).forEach(x=>{
   if(naFaixa(String(x.quando).slice(0,10),f))ev.push({d:d,x:x});}));
  ev.sort((a,b)=>String(b.x.quando).localeCompare(String(a.x.quando)));
+ /* Dois nomes diferentes na mesma linha: quem moveu a etapa e quem responde
+    pelo negócio. Sem rótulo, o leitor confundia um com o outro. */
  const evh=ev.length?'<div class="rowlist">'+ev.slice(0,10).map(e=>itemLinha(esc(contaNome(e.d)),
   ['<span class="mut">'+esc(e.x.de+" → "+e.x.para)+"</span>",
-   '<span class="soft">'+esc(e.x.quem)+"</span>",
+   '<span class="soft">Movido por '+esc(e.x.quem||"—")+"</span>",
+   '<span class="soft">Responsável: '+esc(e.d.responsavel||"—")+"</span>",
    '<span class="soft">'+dt(e.x.quando)+"</span>"],
   ' data-abre="'+e.d.id+'" style="cursor:pointer"')).join("")+"</div>"
   :'<div class="empty">'+TEXTOS.vazio.hist+"</div>";
@@ -1253,38 +1538,57 @@ function telaNegocios(){
   '<div class="seg"><button data-vista="quadro" class="'+(state.vista==="quadro"?"on":"")+'">'+TEXTOS.quadro+"</button>"+
   '<button data-vista="lista" class="'+(state.vista==="lista"?"on":"")+'">'+TEXTOS.lista+"</button></div>"+
   iconeHint("vista")+iconeHint("fases")+(state.vista==="quadro"?iconeHint("arrastar"):"")+
-  '<span class="soft">'+lista.filter(d=>d.etapa!=="perdido").length+" negócios · "+
+  '<span class="soft">'+lista.filter(d=>d.etapa!=="perdido").length+" negócios"+
+  (state.publico?" · "+PUBLICOS[state.publico]:"")+" · "+
   brlV(lista.filter(d=>d.etapa!=="perdido").reduce((s,d)=>s+(+d.valor||0),0))+"</span>"+
   '<button data-perdidos="1" class="lnk">'+
   (state.perdidos?TEXTOS.voltarQuadro:TEXTOS.verPerdidos+" ("+lista.filter(d=>d.etapa==="perdido").length+")")+"</button>"+
   iconeHint("perdidos")+"</div>";
  if(state.perdidos)return h+tabela(lista.filter(d=>d.etapa==="perdido"));
  if(state.vista==="lista")return h+tabela(lista.filter(d=>d.etapa!=="perdido"));
- h+='<div id="board">';
- FASES.forEach(fa=>{
-  const ds=lista.filter(d=>etapaFase(d.etapa)===fa).sort((a,b)=>(+b.valor||0)-(+a.valor||0));
-  h+='<div class="col" data-fase="'+esc(fa)+'"><div class="colh"><div class="n">'+esc(fa)+"</div>"+
-   '<div class="m">'+ds.length+" · "+brlC(ds.reduce((s,d)=>s+(+d.valor||0),0))+"</div></div>"+
-   '<div class="cards">'+ds.map(cardHTML).join("")+"</div></div>";
+ /* Um quadro por frente, porque as colunas são as etapas e cada frente tem
+    as suas. Com uma frente escolhida no filtro, aparece só ela. */
+ const frs=state.filtros.frente?[state.filtros.frente]:["payments","capital","governance"];
+ const vivos=lista.filter(d=>d.etapa!=="perdido");
+ if(!vivos.length)return h+'<div class="card"><div class="empty" style="border:0">'+
+  esc(state.publico==="B2C"?TEXTOS.vazio.b2c:TEXTOS.vazio.lista)+"</div></div>";
+ frs.forEach(fr=>{
+  const daFrente=vivos.filter(d=>frenteDe(d)===fr);
+  /* Sem o filtro de frente, frente sem negócio nenhum não vira uma faixa de
+     colunas vazias: o funil do Painel já diz que ela está vazia. */
+  if(!daFrente.length&&!state.filtros.frente)return;
+  h+='<div class="bwrap"><div class="lbl bh"><span class="dot" style="background:'+CORF[fr]+'"></span>'+
+   esc(TEXTOS.frentesLbl[fr])+'<span class="soft">'+daFrente.length+" · "+
+   brlC(daFrente.reduce((t,d)=>t+(+d.valor||0),0))+"</span></div>"+
+   '<div class="board">'+FUNIS[fr].map((nome,i)=>{
+    const et=i+1,ds=daFrente.filter(d=>Number(d.etapa)===et).sort((a,b)=>(+b.valor||0)-(+a.valor||0));
+    return '<div class="col" data-etapa="'+et+'" data-frente="'+fr+'"><div class="colh">'+
+     '<div class="n">'+et+" · "+esc(nome)+"</div>"+
+     '<div class="m">'+ds.length+" · "+brlC(ds.reduce((t,d)=>t+(+d.valor||0),0))+"</div></div>"+
+     '<div class="cards">'+ds.map(cardHTML).join("")+"</div></div>";
+   }).join("")+"</div></div>";
  });
- return h+"</div>";
+ return h;
 }
 function cardHTML(d){
  const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
  const err=state.erroCard&&state.erroCard.id===d.id?'<div class="err">'+esc(state.erroCard.msg)+"</div>":"";
  return '<div class="dc" draggable="'+(ehMobile()?"false":"true")+'" data-id="'+d.id+'">'+
   '<div class="cl">'+esc(contaNome(d))+"</div>"+
-  '<div class="rw"><span class="vl">'+esc(brlV(d.valor))+'</span><span class="badge"><span class="dot" style="background:'+
-  CORF[d.frente]+'"></span>'+esc(TEXTOS.frentesLbl[d.frente])+'</span><span class="ini" style="margin-left:auto" title="'+esc(d.responsavel)+'">'+esc(iniciais(d.responsavel))+"</span></div>"+
+  '<div class="rw"><span class="vl">'+esc(brlD(d.valor))+'</span><span class="badge"><span class="dot" style="background:'+
+  CORF[d.frente]+'"></span>'+esc(TEXTOS.frentesLbl[d.frente])+"</span>"+marcaB2C(d)+
+  '<span class="ini" style="margin-left:auto" title="'+esc(d.responsavel)+'">'+esc(iniciais(d.responsavel))+"</span></div>"+
   '<div class="np">'+(d.proximoPasso?esc(d.proximoPasso):'<span class="soft">'+TEXTOS.motivos.passo+"</span>")+"</div>"+
   '<div class="rw"><span class="'+(late?"late":"soft")+'" style="font-size:11px">'+TEXTOS.col.prazo+": "+dt(d.prazo)+"</span></div>"+
   selEtapa(d)+err+"</div>";
 }
 function selEtapa(d){
- return '<select data-etapa="'+d.id+'">'+ETAPAS.map(e=>
-  '<option value="'+e.n+'"'+(Number(d.etapa)===e.n?" selected":"")+">"+e.n+" · "+esc(e.nome)+"</option>").join("")+
+ return '<select data-etapa="'+d.id+'">'+funilDe(d).map((nome,i)=>
+  '<option value="'+(i+1)+'"'+(Number(d.etapa)===i+1?" selected":"")+">"+(i+1)+" · "+esc(nome)+"</option>").join("")+
   '<option value="perdido"'+(d.etapa==="perdido"?" selected":"")+">Perdido</option></select>";
 }
+/* Só na aba Todos: na aba B2C a marca seria repetição em cada linha. */
+const marcaB2C=d=>(!state.publico&&ehB2C(d))?'<span class="badge b2c">B2C</span>':"";
 function ordenarLista(lista){
  const o=state.ord;
  const val=(d,c)=>c==="cliente"?contaNome(d):c==="etapa"?(d.etapa==="perdido"?99:Number(d.etapa)):c==="valor"?+d.valor||0:String(d[c]||"");
@@ -1297,7 +1601,7 @@ function cartoesNegocios(lista){
  return '<div class="clist">'+ds.map(d=>{
   const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
   return '<div class="ci" data-abre="'+d.id+'"><span class="t">'+esc(contaNome(d))+"</span>"+
-   '<span class="s">'+esc(etapaNome(d.etapa))+SEP+esc(d.responsavel)+SEP+esc(brlV(d.valor))+
+   '<span class="s">'+esc(etapaNome(d))+(!state.publico&&ehB2C(d)?SEP+"B2C":"")+SEP+esc(d.responsavel)+SEP+esc(brlD(d.valor))+
    SEP+'<span class="'+(late?"late":"soft")+'" title="'+esc(TEXTOS.col.prazo)+'">'+dt(d.prazo)+"</span></span></div>";
  }).join("")+"</div>";
 }
@@ -1313,7 +1617,7 @@ function tabela(lista,paraImpressao){
   ds.map(d=>{const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
    return '<tr class="clk" data-abre="'+d.id+'"><td>'+esc(contaNome(d))+"</td>"+
    '<td><span class="dot" style="background:'+CORF[d.frente]+'"></span>'+esc(TEXTOS.frentesLbl[d.frente])+"</td>"+
-   "<td>"+esc(etapaNome(d.etapa))+"</td><td>"+esc(d.responsavel)+'</td><td style="font-variant-numeric:tabular-nums">'+esc(brl(d.valor))+"</td>"+
+   "<td>"+esc(etapaNome(d))+marcaB2C(d)+"</td><td>"+esc(d.responsavel)+'</td><td style="font-variant-numeric:tabular-nums">'+esc(brlD(d.valor))+"</td>"+
    '<td class="mut">'+(d.proximoPasso?esc(d.proximoPasso):'<span class="soft">—</span>')+"</td>"+
    '<td class="'+(late?"late":"")+'">'+dt(d.prazo)+"</td></tr>";}).join("")+"</tbody></table></div>";
 }
@@ -1327,7 +1631,10 @@ function telaContas(){
  const negs=o=>state.data.deals.filter(d=>o.tipo?d.clienteId===o.id:d.parceiroId===o.id);
  const resumo=ds=>ds.length+" neg."+SEP+esc(brlV(ds.reduce((s,d)=>s+(+d.valor||0),0)));
  if(state.aba==="clientes"){
-  const cs=state.data.customers.filter(c=>!q||c.nome.toLowerCase().indexOf(q)>=0);
+  /* A aba de público vale para clientes. Parceiro é sempre B2B e ignora,
+     em vez de desaparecer da tela sem explicação. */
+  const cs=state.data.customers.filter(c=>(!q||c.nome.toLowerCase().indexOf(q)>=0)&&
+   (!state.publico||publicoDe(c)===state.publico));
   if(ehCel()){
    h+=cs.length?'<div class="clist">'+cs.map(c=>'<div class="ci" data-conta="cliente:'+c.id+'">'+
     '<span class="t">'+esc(c.nome)+'</span><span class="s">'+esc(TEXTOS.frentesLbl[c.frente]||c.frente)+SEP+
@@ -1364,6 +1671,9 @@ function abrirPainel(p){
     os campos existem e ninguem acha. */
  const d=p&&p.tipo==="deal"?state.data.deals.find(x=>x.id===p.id):null;
  state.secoes=d&&d.frente==="capital"?{analise:true,capital:true}:{};
+ /* Checklist fechado é checklist que ninguém marca. Se ele aparece nesta
+    etapa, aparece aberto. */
+ if(d&&checklistVisivel(d)&&checklistDe(d))state.secoes.check=true;
  render();
 }
 function fecharPainel(){state.painel=null;render();}
@@ -1407,14 +1717,17 @@ function painelDeal(id){
  let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
   '<div class="lbl" style="color:#affa57">'+esc(TEXTOS.frentesLbl[d.frente])+" · "+esc(TEXTOS.tipoVenda[d.tipoVenda])+"</div>"+
   '<div style="font-size:20px;margin-top:6px">'+esc(contaNome(d))+"</div>"+
-  '<div style="font-size:15px;margin-top:4px;color:#affa57">'+esc(brlV(d.valor))+"</div></div>";
+  '<div style="font-size:15px;margin-top:4px;color:#affa57">'+esc(brlD(d.valor))+"</div></div>";
  h+='<div class="pb">';
  h+='<div class="lbl" style="margin-top:16px">'+esc(HINTS.trilha.t)+iconeHint("trilha")+"</div>";
- h+='<div class="trk">'+ETAPAS.map(e=>'<button data-mover="'+d.id+":"+e.n+'" class="'+
-  (d.etapa!=="perdido"&&Number(d.etapa)>e.n?"done":Number(d.etapa)===e.n?"now":"")+'" title="'+esc(e.nome)+'">'+
-  '<span class="bar"></span><span class="n">'+e.n+'</span><span class="t">'+esc(e.nome)+"</span></button>").join("")+"</div>";
+ h+='<div class="trk">'+funilDe(d).map((nome,i)=>{const et=i+1;
+  return '<button data-mover="'+d.id+":"+et+'" class="'+
+   (d.etapa!=="perdido"&&Number(d.etapa)>et?"done":Number(d.etapa)===et?"now":"")+'" title="'+esc(nome)+'">'+
+   '<span class="bar"></span><span class="n">'+et+'</span><span class="t">'+esc(nome)+"</span></button>";
+ }).join("")+"</div>";
  if(state.erroCard&&state.erroCard.id===d.id)h+='<div class="err" style="margin-bottom:8px">'+esc(state.erroCard.msg)+"</div>";
- h+=fld(TEXTOS.col.etapa,esc(etapaNome(d.etapa))+(d.etapa==="perdido"?" · "+esc(d.motivoPerda||""):""),"etapa");
+ h+=fld(TEXTOS.col.etapa,esc(etapaNome(d))+(d.etapa==="perdido"?" · "+esc(d.motivoPerda||""):""),"etapa");
+ h+=fld(TEXTOS.publicoLbl,ed("deal",d.id,"publico",publicoDe(d),"select",{B2B:"B2B",B2C:"B2C"}),"publico");
  if(d.etapa==="perdido")h+=fld("Motivo da perda",ed("deal",d.id,"motivoPerda",d.motivoPerda,"text"),"motivoPerda");
  h+=fld(TEXTOS.col.frente,ed("deal",d.id,"frente",d.frente,"select",frenteOps),"frente");
  h+=fld("Tipo de venda",ed("deal",d.id,"tipoVenda",d.tipoVenda,"select",
@@ -1440,6 +1753,17 @@ function painelDeal(id){
    '<span style="flex:1">'+esc(p.texto)+'<br><span class="soft" style="font-size:11px">'+esc(p.responsavel)+" · "+dt(p.prazo)+"</span></span>"+
    (p.bloqueante?'<span class="blk">BLOQUEIA</span>':"")+"</div>").join(""):'<div class="soft">Sem pendências.</div>')+
   '<button data-novapend="'+d.id+'" style="margin-top:12px">Adicionar pendência</button>',"pend");
+ /* Compliance e KYC como checklist, não como etapa. Aparece só nas etapas em
+    que o assunto está na mesa, e em Payments muda de conteúdo para pessoa
+    física: é a única diferença de comportamento entre B2B e B2C. */
+ const itensCheck=checklistDe(d);
+ if(itensCheck&&checklistVisivel(d)){
+  const marcados=itensCheck.filter(([k])=>(d.checklist||{})[k]).length;
+  h+=sec("check",TEXTOS.secoes.check,marcados+" de "+itensCheck.length,
+   itensCheck.map(([k,l])=>'<div class="pend'+((d.checklist||{})[k]?" done":"")+'">'+
+    '<input type="checkbox" data-check="'+d.id+":"+k+'"'+((d.checklist||{})[k]?" checked":"")+">"+
+    '<span style="flex:1">'+esc(l)+"</span></div>").join(""),"check");
+ }
  if(d.frente==="capital"){
   const ops5={};NOTAS5.forEach(n=>ops5[n]=LBL5[n]);
   let a='<div class="lbl" style="margin-bottom:4px">Cinco perguntas'+iconeHint("cinco")+"</div>";
@@ -1464,11 +1788,18 @@ function painelDeal(id){
   PAPEIS.forEach(([k,l])=>{cap+=fld(l,ed("papeis",d.id,k,(d.papeis||{})[k]||"","select",papelOps));});
   cap+='<div class="lbl" style="margin:16px 0 4px">Comitê'+iconeHint("comite")+"</div>";
   COMITE.forEach(([k,l])=>{cap+=fld(l,ed("comite",d.id,k,(d.comite||{})[k]||"",k==="validadeAte"?"date":"text"));});
+  /* Aprovação do comitê e assinatura do cliente são dois eventos. O segundo
+     não tinha onde ser registrado, e não vale uma etapa nova. */
+  cap+=fld("Mandato assinado em",ed("deal",d.id,"mandatoAssinadoEm",d.mandatoAssinadoEm||"","date"),"mandato");
   h+=sec("capital",TEXTOS.secoes.capital,"",cap);
  }
  const hist=(d.historico||[]).slice().reverse();
+ /* O histórico guarda o nome da etapa por extenso, e nomes de etapas que já
+    não existem no funil continuam aqui: é o registro do que aconteceu. */
  h+=sec("hist",TEXTOS.secoes.hist,hist.length+"",hist.length?'<div class="rowlist">'+hist.map(x=>
-  itemLinha(esc(x.de+" → "+x.para),['<span class="soft">'+esc(x.quem)+"</span>",'<span class="soft">'+dt(x.quando)+"</span>"])).join("")+"</div>"
+  itemLinha(esc(x.de+" → "+x.para),['<span class="soft">Movido por '+esc(x.quem||"—")+"</span>",
+   '<span class="soft">Responsável: '+esc(d.responsavel||"—")+"</span>",
+   '<span class="soft">'+dt(x.quando)+"</span>"])).join("")+"</div>"
   :'<div class="soft">'+TEXTOS.vazio.hist+"</div>","hist");
  h+=sec("notas",TEXTOS.secoes.notas,"",ed("deal",d.id,"notas",d.notas,"textarea"),"notas");
  h+='<div style="margin-top:24px;display:flex;gap:8px"><button data-excluir="'+d.id+'" style="border-color:#b00020;color:#b00020">'+TEXTOS.excluir+"</button>"+iconeHint("excluir")+"</div>";
@@ -1487,6 +1818,8 @@ function painelConta(kind,id){
  /* Tipo nao aceita vazio: a tela Contas usa a presenca de "tipo" para saber
     se a conta e cliente ou parceiro. */
  if(isC){h+=fld("Tipo",ed(kind,o.id,"tipo",o.tipo||"PJ","select",{PJ:"PJ",PF:"PF"}),"tipoConta");
+  /* Parceiro não tem este campo: parceiro é sempre B2B. */
+  h+=fld(TEXTOS.publicoLbl,ed(kind,o.id,"publico",publicoDe(o),"select",{B2B:"B2B",B2C:"B2C"}),"publico");
   const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
   h+=fld(TEXTOS.col.frente,ed(kind,o.id,"frente",o.frente,"select",frenteOps),"frente");}
  h+=fld("Setor",ed(kind,o.id,"setor",o.setor,"text"));
@@ -1498,7 +1831,7 @@ function painelConta(kind,id){
  h+=fld("Anotações",ed(kind,o.id,"notas",o.notas,"textarea"),"notas");
  h+='<h2 style="font-size:15px;font-weight:500;margin:24px 0 8px">Negócios desta conta</h2>';
  h+=ds.length?'<div class="rowlist">'+ds.map(d=>itemLinha(esc(d.titulo),
-  ['<span class="soft">'+esc(etapaNome(d.etapa))+"</span>",'<span class="mut">'+esc(brlV(d.valor))+"</span>"],
+  ['<span class="soft">'+esc(etapaNome(d))+"</span>",'<span class="mut">'+esc(brlD(d.valor))+"</span>"],
   ' data-abre="'+d.id+'" style="cursor:pointer"')).join("")+
   itemLinha("<b>Total</b>",["<b>"+esc(brlV(ds.reduce((s,d)=>s+(+d.valor||0),0)))+"</b>"])+"</div>"
   :'<div class="soft">Nenhum negócio.</div>';
@@ -1522,6 +1855,9 @@ function painelNovo(){
  }
  h+=fld(TEXTOS.col.frente,'<select data-novo="frente">'+["payments","capital","governance"].map(f=>
   '<option value="'+f+'"'+(n.frente===f?" selected":"")+">"+TEXTOS.frentesLbl[f]+"</option>").join("")+"</select>","frente");
+ /* Cliente PJ nasce B2B, PF nasce B2C. Sugestão, não imposição. */
+ h+=fld(TEXTOS.publicoLbl,'<select data-novo="publico">'+["B2B","B2C"].map(v=>
+  '<option value="'+v+'"'+(n.publico===v?" selected":"")+">"+v+"</option>").join("")+"</select>","publico");
  if(n.frente==="capital")h+=fld("Tese",'<input data-novo="tese" value="'+esc(n.tese)+'" style="width:100%;border:1px solid #d4d8d4;padding:8px">'+err("tese"),"tese");
  h+=fld(TEXTOS.col.valor,'<input data-novo="valor" inputmode="numeric" value="'+esc(n.valor)+'" style="width:100%;border:1px solid #d4d8d4;padding:8px">'+err("valor"),"valor");
  h+=fld(TEXTOS.col.resp,'<select data-novo="responsavel">'+RESPS.map(r=>
@@ -1628,6 +1964,7 @@ document.addEventListener("click",e=>{
  if(el=g("[data-ord]")){const c=el.dataset.ord;
   if(state.ord.campo===c)state.ord.dir*=-1;else state.ord={campo:c,dir:1};render();return;}
  if(el=g("[data-sec]")){state.secoes[el.dataset.sec]=!state.secoes[el.dataset.sec];renderPainelLateral();return;}
+ if(el=g("[data-pub]")){state.publico=el.dataset.pub;render();return;}
  if(el=g("[data-fechar]")){state.erroCard=null;fecharPainel();return;}
  if(el=g("[data-mover]")){const [id,et]=el.dataset.mover.split(":");
   if(et==="perdido"&&!pedirMotivo(id)){render();return;}
@@ -1664,8 +2001,22 @@ document.addEventListener("change",e=>{
   const [id,pid]=t.dataset.pend.split(":");
   const d=state.data.deals.find(x=>x.id===id),p=d.pendencias.find(x=>x.id===pid);
   snapshot();p.resolvida=t.checked;d.atualizadoEm=agora();marcar();return;}
+ /* Marcar salva na hora, como as pendências. */
+ if(t.matches("[data-check]")){
+  const [id,chave]=t.dataset.check.split(":");
+  const d=state.data.deals.find(x=>x.id===id);if(!d)return;
+  snapshot();d.checklist=d.checklist||{};d.checklist[chave]=t.checked;
+  d.atualizadoEm=agora();marcar();return;}
  if(t.matches("[data-novo]")){
   state.novo[t.dataset.novo]=t.value;
+  if(t.dataset.novo==="publico")state.novo.publicoManual=true;
+  /* Trocar o cliente atualiza a sugestão, desde que ninguém tenha mexido
+     no campo à mão. */
+  if(t.dataset.novo==="clienteId"&&!state.novo.publicoManual){
+   const c=cliente(t.value);
+   state.novo.publico=(c&&c.tipo==="PF")?"B2C":"B2B";
+   renderPainelLateral();
+  }
   if(["tipoVenda","frente"].indexOf(t.dataset.novo)>=0)renderPainelLateral();return;}
 });
 document.addEventListener("input",e=>{
@@ -1675,7 +2026,11 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("keydown",e=>{
  if(e.key==="Escape"&&state.hintBtn){e.preventDefault();fecharHint(true);return;}
- if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();salvarArquivo();}
+ /* Ctrl+S baixa um HTML com o dataset embutido, que no servidor está vazio.
+    O arquivo baixado seria uma casca sem dados. */
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();
+  if(state.servidor)toast("No servidor os dados ficam no banco. Use Exportar.",true);
+  else salvarArquivo();}
  else if(e.key==="Escape"&&state.painel)fecharPainel();
 });
 /* arrastar */
@@ -1691,7 +2046,11 @@ document.addEventListener("drop",e=>{
  const col=e.target.closest(".col");if(!col)return;
  e.preventDefault();col.classList.remove("over");
  const id=e.dataTransfer.getData("text/plain");
- const err=moverEtapa(id,primeiraEtapa(col.dataset.fase));
+ /* Cada quadro é de uma frente. Arrastar para o quadro de outra frente não
+    faz sentido: o número da etapa lá quer dizer outra coisa. */
+ const d=state.data.deals.find(x=>x.id===id);
+ if(!d||frenteDe(d)!==col.dataset.frente)return;
+ const err=moverEtapa(id,Number(col.dataset.etapa));
  state.erroCard=err?{id:id,msg:err}:null;render();
 });
 window.addEventListener("beforeunload",e=>{if(state.dirty){e.preventDefault();e.returnValue="";}});
@@ -1708,6 +2067,7 @@ $("#hint").addEventListener("keydown",e=>{
 });
 function novoNegocio(){
  state.novo={titulo:"",tipoVenda:"direta",clienteId:"",parceiroId:"",frente:"payments",tese:"",
+  publico:"B2B",publicoManual:false,
   valor:"",responsavel:RESPS[0],proximoPasso:"",prazo:agora(),chance:"50",erros:null};
  abrirPainel({tipo:"novo"});
 }
@@ -1723,12 +2083,14 @@ function criar(){
  state.data.deals.push({id:uid("N"),titulo:n.titulo.trim(),frente:n.frente,tipoVenda:n.tipoVenda,
   parceiroId:n.tipoVenda==="parceiro"?n.parceiroId:null,clienteId:n.clienteId||null,responsavel:n.responsavel,
   valor:Number(String(n.valor).replace(/\D/g,"")),etapa:1,proximoPasso:n.proximoPasso,prazo:n.prazo,
+  publico:n.publico==="B2C"?"B2C":"B2B",mandatoAssinadoEm:"",checklist:{},
   chance:Math.max(0,Math.min(100,Number(n.chance)||0)),pendencias:[],tese:n.tese||"",estrutura:"",frenteCapital:"",
   investidor:"",statusCaptacao:"",cincoPerguntas:{pagamento:"NaoAvaliada",contrato:"NaoAvaliada",garantias:"NaoAvaliada",valorImovel:"NaoAvaliada",usoAlternativo:"NaoAvaliada"},
   seisCamadas:{qualidadeEmpresa:{nota:0,obs:""},contratoLongoPrazo:{nota:0,obs:""},garantias:{nota:0,obs:""},valorImovel:{nota:0,obs:""},trocaOcupante:{nota:0,obs:""},usoAlternativo:{nota:0,obs:""}},
   tags:[],situacao:"",segmento:"",origem:"",ufs:"",papeis:novoPapeis(),territorio:novoTerritorio(),comite:novoComite(),
   motivoPerda:"",notas:"",exemplo:false,criadoEm:agora(),atualizadoEm:agora(),fechadoEm:null,
-  historico:[{de:"—",para:"Entrada da oportunidade",quando:new Date().toISOString(),quem:n.responsavel}]});
+  historico:[{de:"—",para:FUNIS[FUNIS[n.frente]?n.frente:"governance"][0],
+   quando:new Date().toISOString(),quem:(state.usuario&&state.usuario.nome)||n.responsavel}]});
  state.painel=null;marcar();
 }
 /* Mesmo conjunto de campos dos registros que ja existem no dataset. Um campo
@@ -1769,6 +2131,10 @@ function menuAcao(k){
   state.data.partners=state.data.partners.filter(p=>!p.exemplo);
   state.painel=null;marcar();toast("Dados de exemplo removidos.");
  }else if(k==="recomecar"){
+  /* No servidor o dataset embutido está vazio de propósito: recomeçar gravaria
+     essa base vazia por cima do trabalho de todo mundo. O menu já esconde o
+     item nesse modo; isto é a tranca de dentro. */
+  if(state.servidor){toast("Recomeçar não existe no modo servidor.",true);return;}
   if(!confirm("Recomeçar apaga tudo o que foi editado e volta aos dados originais do arquivo. Continuar?"))return;
   snapshot();state.data=JSON.parse(JSON.stringify(EMBEDDED));state.painel=null;marcar();toast("Dados originais recarregados.");
  }
@@ -1786,11 +2152,11 @@ $("#fileimp").addEventListener("change",e=>{
  if(daUrl&&await completarSessao(daUrl.sessao)&&await carregarPerfil()){
   render();
   if(daUrl.recuperacao||state.usuario.senhaProvisoria){exigirTroca();return;}
-  if(await carregarDoServidor())return;
+  if(await carregarEMigrar())return;
  }
  if(sessaoGuardada()&&await carregarPerfil()){
   if(state.usuario.senhaProvisoria){render();exigirTroca();return;}
-  if(await carregarDoServidor())return;
+  if(await carregarEMigrar())return;
  }
  render();mostrarLogin();
 })();
