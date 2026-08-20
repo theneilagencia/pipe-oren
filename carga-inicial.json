@@ -802,7 +802,7 @@
    "responsavel": "Paulo",
    "frente": "capital",
    "setor": "Atacarejo",
-   "uf": "PE",
+   "uf": "",
    "tier": "",
    "status": "",
    "porte": "",
@@ -819,7 +819,7 @@
    "parceiroId": null,
    "responsavel": "Paulo",
    "frente": "capital",
-   "setor": "Supermercados",
+   "setor": "Atacarejo",
    "uf": "MG",
    "tier": "",
    "status": "",
@@ -838,7 +838,7 @@
    "responsavel": "Paulo",
    "frente": "capital",
    "setor": "Academias",
-   "uf": "SP",
+   "uf": "",
    "tier": "",
    "status": "",
    "porte": "",
@@ -901,6 +901,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -990,6 +1043,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -1077,6 +1183,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -1166,6 +1325,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -1253,6 +1465,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -1342,6 +1607,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -1429,6 +1747,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -1518,6 +1889,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -1606,6 +2030,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -1681,6 +2158,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -1758,6 +2288,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -1833,6 +2416,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -1910,6 +2546,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -1986,6 +2675,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -2061,6 +2803,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -2144,6 +2939,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -2225,6 +3073,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -2308,6 +3209,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -2390,6 +3344,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "On Hold. Valor a definir.",
    "tags": [
@@ -2466,6 +3473,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "On Hold. Valor a definir.",
@@ -2544,6 +3604,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "On Hold. Valor a definir.",
    "tags": [
@@ -2620,6 +3733,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "On Hold. Valor a definir.",
@@ -2698,6 +3864,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "On Hold. Valor a definir.",
    "tags": [
@@ -2774,6 +3993,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "On Hold. Valor a definir.",
@@ -2852,6 +4124,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -2914,6 +4239,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -2978,6 +4356,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -3040,6 +4471,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -3104,6 +4588,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -3166,6 +4703,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -3230,6 +4820,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -3292,6 +4935,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -3356,6 +5052,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -3418,6 +5167,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor a definir.",
@@ -3482,6 +5284,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -3545,6 +5400,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor a definir.",
    "tags": [
@@ -3607,6 +5515,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "Sem interesse no modelo de parceria",
    "notas": "Valor a definir.",
@@ -3690,6 +5651,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "Sem interesse no modelo de parceria",
    "notas": "Valor a definir.",
    "tags": [
@@ -3765,6 +5779,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "Sem interesse no modelo de parceria",
    "notas": "Valor a definir.",
@@ -3848,6 +5915,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "Sem interesse no modelo de parceria",
    "notas": "Valor a definir.",
    "tags": [
@@ -3923,6 +6043,59 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "Sem interesse no modelo de parceria",
    "notas": "Valor a definir.",
@@ -4006,6 +6179,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "Sem interesse no modelo de parceria",
    "notas": "Valor a definir.",
    "tags": [
@@ -4082,6 +6308,59 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "",
+   "origem": "",
+   "ufs": "",
+   "papeis": {
+    "origina": "",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "Sem interesse no modelo de parceria",
    "notas": "Valor a definir.",
    "tags": [
@@ -4133,136 +6412,13 @@
      "prazo": "2026-09-15",
      "bloqueante": false,
      "resolvida": false
-    }
-   ],
-   "tese": "Renda Imobiliária Corporativa",
-   "estrutura": "",
-   "frenteCapital": "",
-   "investidor": "",
-   "statusCaptacao": "",
-   "cincoPerguntas": {
-    "pagamento": "NaoAvaliada",
-    "contrato": "NaoAvaliada",
-    "garantias": "NaoAvaliada",
-    "valorImovel": "NaoAvaliada",
-    "usoAlternativo": "NaoAvaliada"
-   },
-   "seisCamadas": {
-    "qualidadeEmpresa": {
-     "nota": 0,
-     "obs": ""
     },
-    "contratoLongoPrazo": {
-     "nota": 0,
-     "obs": ""
-    },
-    "garantias": {
-     "nota": 0,
-     "obs": ""
-    },
-    "valorImovel": {
-     "nota": 0,
-     "obs": ""
-    },
-    "trocaOcupante": {
-     "nota": 0,
-     "obs": ""
-    },
-    "usoAlternativo": {
-     "nota": 0,
-     "obs": ""
-    }
-   },
-   "motivoPerda": "",
-   "notas": "Valor indicativo. Depende de diligência, estrutura final e aprovação.",
-   "tags": [],
-   "exemplo": false,
-   "criadoEm": "2026-05-16",
-   "atualizadoEm": "2026-08-13",
-   "fechadoEm": null,
-   "historico": []
-  },
-  {
-   "id": "N-045",
-   "titulo": "Rede de atacarejo do Nordeste",
-   "frente": "capital",
-   "tipoVenda": "direta",
-   "parceiroId": null,
-   "clienteId": "C-02",
-   "responsavel": "Paulo",
-   "valor": 400000000,
-   "etapa": 1,
-   "proximoPasso": "Confirmar interesse em liberar capital do balanço",
-   "prazo": "",
-   "chance": 10,
-   "pendencias": [],
-   "tese": "Renda Imobiliária Corporativa",
-   "estrutura": "",
-   "frenteCapital": "",
-   "investidor": "",
-   "statusCaptacao": "",
-   "cincoPerguntas": {
-    "pagamento": "NaoAvaliada",
-    "contrato": "NaoAvaliada",
-    "garantias": "NaoAvaliada",
-    "valorImovel": "NaoAvaliada",
-    "usoAlternativo": "NaoAvaliada"
-   },
-   "seisCamadas": {
-    "qualidadeEmpresa": {
-     "nota": 0,
-     "obs": ""
-    },
-    "contratoLongoPrazo": {
-     "nota": 0,
-     "obs": ""
-    },
-    "garantias": {
-     "nota": 0,
-     "obs": ""
-    },
-    "valorImovel": {
-     "nota": 0,
-     "obs": ""
-    },
-    "trocaOcupante": {
-     "nota": 0,
-     "obs": ""
-    },
-    "usoAlternativo": {
-     "nota": 0,
-     "obs": ""
-    }
-   },
-   "motivoPerda": "",
-   "notas": "Valor indicativo. Depende de diligência, estrutura final e aprovação.",
-   "tags": [],
-   "exemplo": false,
-   "criadoEm": "2026-06-28",
-   "atualizadoEm": "2026-08-08",
-   "fechadoEm": null,
-   "historico": []
-  },
-  {
-   "id": "N-046",
-   "titulo": "Rede de atacado e varejo em Minas Gerais",
-   "frente": "capital",
-   "tipoVenda": "direta",
-   "parceiroId": null,
-   "clienteId": "C-03",
-   "responsavel": "Paulo",
-   "valor": 400000000,
-   "etapa": 1,
-   "proximoPasso": "Mapear quem decide investimento imobiliário no grupo",
-   "prazo": "",
-   "chance": 10,
-   "pendencias": [
     {
-     "id": "PD-8WKD3N",
-     "texto": "Levantar organograma da diretoria financeira",
+     "id": "PD-4TL9RA",
+     "texto": "Definir prazo da etapa atual",
      "responsavel": "Paulo",
-     "prazo": "2026-09-30",
-     "bloqueante": false,
+     "prazo": "",
+     "bloqueante": true,
      "resolvida": false
     }
    ],
@@ -4304,29 +6460,91 @@
      "obs": ""
     }
    },
+   "situacao": "",
+   "segmento": "Atacarejo",
+   "origem": "Liderança",
+   "ufs": "MG, BA",
+   "papeis": {
+    "origina": "Paulo",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
    "motivoPerda": "",
    "notas": "Valor indicativo. Depende de diligência, estrutura final e aprovação.",
    "tags": [],
    "exemplo": false,
-   "criadoEm": "2026-04-11",
-   "atualizadoEm": "2026-08-16",
+   "criadoEm": "2026-05-16",
+   "atualizadoEm": "2026-08-13",
    "fechadoEm": null,
    "historico": []
   },
   {
-   "id": "N-047",
-   "titulo": "Rede nacional de academias",
+   "id": "N-045",
+   "titulo": "Rede de atacarejo do Nordeste",
    "frente": "capital",
    "tipoVenda": "direta",
    "parceiroId": null,
-   "clienteId": "C-04",
+   "clienteId": "C-02",
    "responsavel": "Paulo",
-   "valor": 394000000,
+   "valor": 400000000,
    "etapa": 1,
-   "proximoPasso": "Levantar número de unidades próprias e alugadas",
+   "proximoPasso": "Confirmar interesse em liberar capital do balanço",
    "prazo": "",
    "chance": 10,
-   "pendencias": [],
+   "pendencias": [
+    {
+     "id": "PD-6MC1XE",
+     "texto": "Definir prazo da etapa atual",
+     "responsavel": "Paulo",
+     "prazo": "",
+     "bloqueante": true,
+     "resolvida": false
+    }
+   ],
    "tese": "Renda Imobiliária Corporativa",
    "estrutura": "",
    "frenteCapital": "",
@@ -4364,6 +6582,313 @@
      "nota": 0,
      "obs": ""
     }
+   },
+   "situacao": "",
+   "segmento": "Atacarejo",
+   "origem": "Liderança",
+   "ufs": "Nordeste",
+   "papeis": {
+    "origina": "Paulo",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
+   "motivoPerda": "",
+   "notas": "Valor indicativo. Depende de diligência, estrutura final e aprovação.",
+   "tags": [],
+   "exemplo": false,
+   "criadoEm": "2026-06-28",
+   "atualizadoEm": "2026-08-08",
+   "fechadoEm": null,
+   "historico": []
+  },
+  {
+   "id": "N-046",
+   "titulo": "Rede de atacado e varejo em Minas Gerais",
+   "frente": "capital",
+   "tipoVenda": "direta",
+   "parceiroId": null,
+   "clienteId": "C-03",
+   "responsavel": "Paulo",
+   "valor": 400000000,
+   "etapa": 1,
+   "proximoPasso": "Mapear quem decide investimento imobiliário no grupo",
+   "prazo": "",
+   "chance": 10,
+   "pendencias": [
+    {
+     "id": "PD-8WKD3N",
+     "texto": "Levantar organograma da diretoria financeira",
+     "responsavel": "Paulo",
+     "prazo": "2026-09-30",
+     "bloqueante": false,
+     "resolvida": false
+    },
+    {
+     "id": "PD-2HV8BQ",
+     "texto": "Definir prazo da etapa atual",
+     "responsavel": "Paulo",
+     "prazo": "",
+     "bloqueante": true,
+     "resolvida": false
+    }
+   ],
+   "tese": "Renda Imobiliária Corporativa",
+   "estrutura": "",
+   "frenteCapital": "",
+   "investidor": "",
+   "statusCaptacao": "",
+   "cincoPerguntas": {
+    "pagamento": "NaoAvaliada",
+    "contrato": "NaoAvaliada",
+    "garantias": "NaoAvaliada",
+    "valorImovel": "NaoAvaliada",
+    "usoAlternativo": "NaoAvaliada"
+   },
+   "seisCamadas": {
+    "qualidadeEmpresa": {
+     "nota": 0,
+     "obs": ""
+    },
+    "contratoLongoPrazo": {
+     "nota": 0,
+     "obs": ""
+    },
+    "garantias": {
+     "nota": 0,
+     "obs": ""
+    },
+    "valorImovel": {
+     "nota": 0,
+     "obs": ""
+    },
+    "trocaOcupante": {
+     "nota": 0,
+     "obs": ""
+    },
+    "usoAlternativo": {
+     "nota": 0,
+     "obs": ""
+    }
+   },
+   "situacao": "",
+   "segmento": "Atacarejo",
+   "origem": "",
+   "ufs": "MG",
+   "papeis": {
+    "origina": "Paulo",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
+   },
+   "motivoPerda": "",
+   "notas": "Valor indicativo. Depende de diligência, estrutura final e aprovação.",
+   "tags": [],
+   "exemplo": false,
+   "criadoEm": "2026-04-11",
+   "atualizadoEm": "2026-08-16",
+   "fechadoEm": null,
+   "historico": []
+  },
+  {
+   "id": "N-047",
+   "titulo": "Rede nacional de academias",
+   "frente": "capital",
+   "tipoVenda": "direta",
+   "parceiroId": null,
+   "clienteId": "C-04",
+   "responsavel": "Paulo",
+   "valor": 394000000,
+   "etapa": 1,
+   "proximoPasso": "Levantar número de unidades próprias e alugadas",
+   "prazo": "",
+   "chance": 10,
+   "pendencias": [
+    {
+     "id": "PD-9SD5KZ",
+     "texto": "Definir prazo da etapa atual",
+     "responsavel": "Paulo",
+     "prazo": "",
+     "bloqueante": true,
+     "resolvida": false
+    }
+   ],
+   "tese": "Renda Imobiliária Corporativa",
+   "estrutura": "",
+   "frenteCapital": "",
+   "investidor": "",
+   "statusCaptacao": "",
+   "cincoPerguntas": {
+    "pagamento": "NaoAvaliada",
+    "contrato": "NaoAvaliada",
+    "garantias": "NaoAvaliada",
+    "valorImovel": "NaoAvaliada",
+    "usoAlternativo": "NaoAvaliada"
+   },
+   "seisCamadas": {
+    "qualidadeEmpresa": {
+     "nota": 0,
+     "obs": ""
+    },
+    "contratoLongoPrazo": {
+     "nota": 0,
+     "obs": ""
+    },
+    "garantias": {
+     "nota": 0,
+     "obs": ""
+    },
+    "valorImovel": {
+     "nota": 0,
+     "obs": ""
+    },
+    "trocaOcupante": {
+     "nota": 0,
+     "obs": ""
+    },
+    "usoAlternativo": {
+     "nota": 0,
+     "obs": ""
+    }
+   },
+   "situacao": "",
+   "segmento": "Academias",
+   "origem": "",
+   "ufs": "Nacional",
+   "papeis": {
+    "origina": "Paulo",
+    "estrutura": "",
+    "analisaRisco": "",
+    "buscaCapital": "",
+    "executa": "",
+    "acompanha": ""
+   },
+   "territorio": {
+    "populacaoRenda": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "areaInfluencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "concorrencia": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "crescimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "usoSolo": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "liquidez": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "operadoresAlternativos": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    },
+    "potencialDesenvolvimento": {
+     "status": "NaoAvaliada",
+     "obs": ""
+    }
+   },
+   "comite": {
+    "decisao": "",
+    "condicoes": "",
+    "responsaveis": "",
+    "excecoes": "",
+    "validadeAte": ""
    },
    "motivoPerda": "",
    "notas": "Valor indicativo. Depende de diligência, estrutura final e aprovação.",
