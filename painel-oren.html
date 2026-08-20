@@ -653,16 +653,18 @@ async function entrar(email,senha){
  guardarSessao(await r.json());
  const ok=await carregarPerfil();
  if(!ok)throw new Error(TEXTOS.semPerfil);
+ if(state.usuario.senhaProvisoria)return exigirTroca();
  return carregarDoServidor();
 }
 async function carregarPerfil(){
  const s=sessaoGuardada();
  if(!s||!s.user)return false;
- const r=await sb("/rest/v1/perfil?select=nome,papel&id=eq."+encodeURIComponent(s.user.id),{method:"GET"});
+ const r=await sb("/rest/v1/perfil?select=nome,papel,senha_provisoria&id=eq."+encodeURIComponent(s.user.id),{method:"GET"});
  if(!r.ok)return false;
  const linhas=await r.json();
  if(!linhas.length)return false;
- state.usuario={nome:linhas[0].nome,papel:linhas[0].papel,email:s.user.email};
+ state.usuario={nome:linhas[0].nome,papel:linhas[0].papel,email:s.user.email,
+  senhaProvisoria:!!linhas[0].senha_provisoria};
  return true;
 }
 async function carregarDoServidor(){
@@ -708,6 +710,35 @@ async function trocarSenha(nova){
  const r=await sb("/auth/v1/user",{method:"PUT",body:JSON.stringify({password:nova})});
  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.msg||"Não consegui trocar a senha.");}
 }
+/* Desliga a marca de senha provisoria. E uma funcao no banco, nao um update:
+   politica de update aberta no perfil deixaria um leitor virar editor. */
+async function senhaTrocada(){
+ try{await sb("/rest/v1/rpc/senha_trocada",{method:"POST",body:"{}"});}catch(e){}
+ if(state.usuario)state.usuario.senhaProvisoria=false;
+}
+function exigirTroca(){
+ state.trocaObrigatoria=true;
+ abrirTrocaSenha();
+ return false;
+}
+/* O link do e-mail de recuperacao volta com o token depois do # . Sem ler isto,
+   a pessoa cai na tela de entrada e nada acontece. */
+function sessaoDaUrl(){
+ const h=location.hash||"";
+ if(h.indexOf("access_token=")<0)return null;
+ const p=new URLSearchParams(h.replace(/^#/,""));
+ const t=p.get("access_token");
+ if(!t)return null;
+ history.replaceState(null,"",location.pathname+location.search);
+ return {sessao:{access_token:t,refresh_token:p.get("refresh_token")||"",
+  token_type:p.get("token_type")||"bearer"},recuperacao:p.get("type")==="recovery"};
+}
+async function completarSessao(s){
+ const r=await fetch(SUPABASE_URL+"/auth/v1/user",
+  {headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+s.access_token}});
+ if(!r.ok)return false;
+ s.user=await r.json();guardarSessao(s);return true;
+}
 async function pedirRecuperacao(email){
  const r=await fetch(SUPABASE_URL+"/auth/v1/recover",
   {method:"POST",headers:cabecalhos(false),body:JSON.stringify({email:email})});
@@ -720,12 +751,15 @@ function mostrarLogin(){
 }
 function esconderLogin(){$("#login").className="";}
 function abrirTrocaSenha(){
- $("#squem").textContent=state.usuario?state.usuario.email:"";
+ $("#squem").textContent=(state.usuario?state.usuario.email:"")+
+  (state.trocaObrigatoria?" · defina uma senha sua para continuar":"");
+ $("#scancel").style.display=state.trocaObrigatoria?"none":"";
  $("#loginform").style.display="none";$("#senhaform").style.display="";
  $("#serro").className="erro";$("#snova").value="";
  $("#login").className="on";setTimeout(()=>$("#snova").focus(),50);
 }
 function fecharTrocaSenha(){
+ if(state.trocaObrigatoria)return;
  $("#senhaform").style.display="none";$("#loginform").style.display="";
  if(state.usuario)esconderLogin();
 }
@@ -1748,7 +1782,14 @@ $("#fileimp").addEventListener("change",e=>{
 (async function iniciar(){
  state.servidor=true;
  state.data={partners:[],customers:[],deals:[]};
+ const daUrl=sessaoDaUrl();
+ if(daUrl&&await completarSessao(daUrl.sessao)&&await carregarPerfil()){
+  render();
+  if(daUrl.recuperacao||state.usuario.senhaProvisoria){exigirTroca();return;}
+  if(await carregarDoServidor())return;
+ }
  if(sessaoGuardada()&&await carregarPerfil()){
+  if(state.usuario.senhaProvisoria){render();exigirTroca();return;}
   if(await carregarDoServidor())return;
  }
  render();mostrarLogin();
@@ -1759,7 +1800,13 @@ $("#senhaform").addEventListener("submit",async e=>{
  b.disabled=true;b.textContent="Salvando…";err.className="erro";
  try{
   await trocarSenha($("#snova").value);
-  fecharTrocaSenha();toast("Senha alterada.",true);
+  if(state.trocaObrigatoria){
+   await senhaTrocada();
+   state.trocaObrigatoria=false;
+   fecharTrocaSenha();
+   await carregarDoServidor();
+   toast("Senha definida. Bem-vindo.",true);
+  }else{fecharTrocaSenha();toast("Senha alterada.",true);}
  }catch(x){err.textContent=x.message;err.className="erro on";}
  finally{b.disabled=false;b.textContent="Salvar nova senha";}
 });

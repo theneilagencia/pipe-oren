@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Oren · Administração</title>
+<style>
+:root{
+--deep:#275317;--mid:#275317;--luz:#affa57;--creme:#e8f3e8;
+--bg:#f3f3f1;--surf:#fff;--alt:#fafaf8;--bd:#e3e6e3;--bdf:#d4d8d4;
+--tx:#1a1a1a;--tx2:#4a564f;--tx3:#6b7672;--neg:#b00020;--pos:#1a6e3a;
+--safe:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+ font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:var(--deep);color:#fff;padding:16px 20px;display:flex;align-items:baseline;
+ gap:12px;flex-wrap:wrap}
+header .t{font-size:18px}
+header .s{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--luz)}
+header .quem{margin-left:auto;font-size:12px;color:var(--creme)}
+header a{color:var(--luz)}
+main{max-width:920px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
+h2{font-size:15px;font-weight:500;margin:28px 0 10px}
+.card{background:var(--surf);border:1px solid var(--bd);border-radius:2px;padding:16px;margin-bottom:16px}
+label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:4px}
+input,select{width:100%;border:1px solid var(--bdf);background:var(--surf);color:var(--tx);
+ padding:9px 10px;border-radius:2px;font:inherit}
+input:focus,select:focus{outline:2px solid var(--mid);outline-offset:-1px}
+.linha{display:flex;gap:12px;flex-wrap:wrap}
+.linha>div{flex:1 1 180px;min-width:0}
+button{font:inherit;border:1px solid var(--bdf);background:var(--surf);color:var(--tx);
+ padding:8px 12px;border-radius:2px;cursor:pointer}
+button:hover{border-color:var(--mid)}
+button.pri{background:var(--mid);border-color:var(--mid);color:#fff;font-weight:500}
+button.per{border-color:var(--neg);color:var(--neg)}
+button[disabled]{opacity:.5;cursor:default}
+.acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.p{border-top:1px solid var(--bd);padding:14px 0}
+.p:first-of-type{border-top:0}
+.ph{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ph .n{font-size:16px}
+.ph .e{color:var(--tx3);font-size:13px;word-break:break-all}
+.tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;
+ border:1px solid var(--bdf);color:var(--tx2)}
+.tag.pv{border-color:#c9a227;color:#8a6d0b;background:#fdf6e3}
+.tag.eu{border-color:var(--mid);color:var(--mid)}
+.meta{color:var(--tx3);font-size:12px;margin-top:2px}
+.msg{padding:10px 12px;border-radius:2px;margin-bottom:12px;font-size:14px}
+.msg.erro{background:#fdecef;color:var(--neg);border:1px solid #f3c6cf}
+.msg.ok{background:#eaf5ee;color:var(--pos);border:1px solid #c3e2ce}
+.soft{color:var(--tx3)}
+.aviso{font-size:13px;color:var(--tx2);background:var(--alt);border:1px solid var(--bd);
+ padding:12px;border-radius:2px}
+@media(max-width:600px){.acoes button{flex:1 1 100%}}
+</style>
+</head>
+<body>
+<header>
+ <span class="t">Oren</span><span class="s">Administração</span>
+ <span class="quem" id="quem"></span>
+</header>
+<main>
+ <div id="msg"></div>
+ <div id="tela"></div>
+</main>
+<script>
+const SUPABASE_URL="https://ktnngkyyocvfhnqfajmz.supabase.co";
+const SUPABASE_KEY="sb_publishable_BZgO_66U6hFiY2ZwhqtnkQ_-vNXSvVq";
+const SESSAO="oren.sessao.v1";
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dt=v=>v?new Date(v).toLocaleDateString("pt-BR"):"nunca";
+const sessao=()=>{try{return JSON.parse(localStorage.getItem(SESSAO)||"null")}catch(e){return null}};
+const guardar=s=>{try{s?localStorage.setItem(SESSAO,JSON.stringify(s)):localStorage.removeItem(SESSAO)}catch(e){}};
+let pessoas=[],eu=null;
+
+function aviso(texto,tipo){
+ $("#msg").innerHTML=texto?'<div class="msg '+tipo+'">'+esc(texto)+"</div>":"";
+ if(texto)window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* Toda operação privilegiada passa pela função de servidor. O navegador manda
+   só o token de quem está logado; a chave secreta nunca chega aqui. */
+async function chamar(acao,dados){
+ const s=sessao();
+ if(!s||!s.access_token)throw new Error("Faça login de novo.");
+ const r=await fetch("/api/admin",{method:"POST",
+  headers:{"content-type":"application/json","Authorization":"Bearer "+s.access_token},
+  body:JSON.stringify(Object.assign({acao:acao},dados||{}))});
+ const c=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(c.erro||"Falhou.");
+ return c.dados;
+}
+
+async function entrar(email,senha){
+ const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",
+  {method:"POST",headers:{apikey:SUPABASE_KEY,"content-type":"application/json"},
+   body:JSON.stringify({email:email,password:senha})});
+ if(!r.ok)throw new Error("E-mail ou senha inválidos.");
+ guardar(await r.json());
+}
+
+function telaLogin(erro){
+ $("#quem").textContent="";
+ $("#tela").innerHTML='<div class="card"><h2 style="margin-top:0">Entrar</h2>'+
+  (erro?'<div class="msg erro">'+esc(erro)+"</div>":"")+
+  '<div class="linha"><div><label for="e">E-mail</label><input id="e" type="email" autocomplete="username"></div>'+
+  '<div><label for="s">Senha</label><input id="s" type="password" autocomplete="current-password"></div></div>'+
+  '<div class="acoes"><button class="pri" id="ok">Entrar</button>'+
+  '<button onclick="location.href=\'/\'">Ir para o painel</button></div>'+
+  '<p class="aviso" style="margin-top:14px">Esta área é restrita. Entre com a conta de administração.</p></div>';
+ const ir=async()=>{
+  const b=$("#ok");b.disabled=true;b.textContent="Entrando…";
+  try{await entrar($("#e").value.trim(),$("#s").value);await iniciar();}
+  catch(x){telaLogin(x.message);}
+ };
+ $("#ok").addEventListener("click",ir);
+ $("#s").addEventListener("keydown",e=>{if(e.key==="Enter")ir();});
+}
+
+function cartaoPessoa(p){
+ const souEu=eu&&p.id===eu.id;
+ return '<div class="p" data-id="'+esc(p.id)+'">'+
+  '<div class="ph"><span class="n">'+esc(p.nome||"sem nome")+"</span>"+
+  '<span class="e">'+esc(p.email)+"</span>"+
+  '<span class="tag">'+esc(p.papel||"sem papel")+"</span>"+
+  (p.senhaProvisoria?'<span class="tag pv">senha provisória</span>':"")+
+  (souEu?'<span class="tag eu">você</span>':"")+
+  (p.semPerfil?'<span class="tag pv">sem perfil</span>':"")+"</div>"+
+  '<div class="meta">último acesso: '+esc(dt(p.ultimoAcesso))+" · criado em "+esc(dt(p.criadoEm))+
+  (p.confirmado?"":" · e-mail não confirmado")+"</div>"+
+  '<div class="linha" style="margin-top:10px">'+
+   '<div><label>Nome</label><input data-nome value="'+esc(p.nome||"")+'"></div>'+
+   '<div><label>Papel</label><select data-papel>'+
+    ["editor","leitor"].map(v=>'<option value="'+v+'"'+(p.papel===v?" selected":"")+">"+v+"</option>").join("")+
+    "</select></div></div>"+
+  '<div class="acoes">'+
+   '<button class="pri" data-salvar>Salvar nome e papel</button>'+
+   '<button data-senha>Definir senha provisória</button>'+
+   '<button data-link>Enviar link de redefinição</button>'+
+   (souEu?"":'<button class="per" data-remover>Remover</button>')+
+  "</div></div>";
+}
+
+function telaLista(){
+ $("#quem").innerHTML=esc(eu.email)+' · <a href="/">painel</a> · <a href="#" id="sair">sair</a>';
+ $("#tela").innerHTML=
+  '<div class="card"><h2 style="margin-top:0">Nova pessoa</h2>'+
+   '<div class="linha"><div><label for="ne">E-mail</label><input id="ne" type="email"></div>'+
+   '<div><label for="nn">Nome</label><input id="nn"></div></div>'+
+   '<div class="linha" style="margin-top:12px"><div><label for="np">Papel</label>'+
+    '<select id="np"><option value="editor">editor</option><option value="leitor">leitor</option></select></div>'+
+   '<div><label for="ns">Senha inicial</label><input id="ns" value="Asd@1234"></div></div>'+
+   '<div class="acoes"><button class="pri" id="criar">Criar pessoa</button></div>'+
+   '<p class="aviso" style="margin-top:14px">A conta nasce confirmada e marcada como senha provisória: '+
+   'o painel vai exigir a troca no primeiro acesso.</p></div>'+
+  '<div class="card"><h2 style="margin-top:0">Pessoas ativas '+
+   '<span class="soft" style="font-weight:400">('+pessoas.length+")</span></h2>"+
+   (pessoas.length?pessoas.map(cartaoPessoa).join(""):'<div class="soft">Ninguém cadastrado.</div>')+"</div>";
+
+ $("#sair").addEventListener("click",e=>{e.preventDefault();guardar(null);location.reload();});
+ $("#criar").addEventListener("click",async()=>{
+  const b=$("#criar");b.disabled=true;b.textContent="Criando…";
+  try{
+   const d=await chamar("criar",{email:$("#ne").value.trim(),nome:$("#nn").value.trim(),
+    papel:$("#np").value,senha:$("#ns").value});
+   aviso("Pessoa criada: "+d.email,"ok");await carregar();
+  }catch(x){aviso(x.message,"erro");b.disabled=false;b.textContent="Criar pessoa";}
+ });
+ $("#tela").querySelectorAll(".p").forEach(el=>{
+  const id=el.dataset.id,p=pessoas.find(x=>x.id===id);
+  const roda=async(b,texto,fn)=>{
+   const antigo=b.textContent;b.disabled=true;b.textContent=texto;
+   try{await fn();}catch(x){aviso(x.message,"erro");}
+   finally{b.disabled=false;b.textContent=antigo;}
+  };
+  el.querySelector("[data-salvar]").addEventListener("click",e=>roda(e.target,"Salvando…",async()=>{
+   await chamar("perfil",{id:id,nome:el.querySelector("[data-nome]").value,
+    papel:el.querySelector("[data-papel]").value});
+   aviso("Nome e papel salvos.","ok");await carregar();
+  }));
+  el.querySelector("[data-senha]").addEventListener("click",e=>{
+   const nova=prompt("Nova senha provisória para "+p.email+"\nMínimo 8 caracteres.","Asd@1234");
+   if(nova==null)return;
+   roda(e.target,"Definindo…",async()=>{
+    await chamar("senha",{id:id,senha:nova});
+    aviso("Senha definida. A pessoa vai ter de trocar no próximo acesso.","ok");await carregar();
+   });
+  });
+  el.querySelector("[data-link]").addEventListener("click",e=>roda(e.target,"Enviando…",async()=>{
+   await chamar("recuperar",{email:p.email});
+   aviso("Link de redefinição enviado para "+p.email+".","ok");
+  }));
+  const rm=el.querySelector("[data-remover]");
+  if(rm)rm.addEventListener("click",e=>{
+   if(!confirm("Remover "+p.email+"? A conta e o perfil somem, e não há como desfazer."))return;
+   roda(e.target,"Removendo…",async()=>{
+    await chamar("remover",{id:id});aviso("Conta removida.","ok");await carregar();
+   });
+  });
+ });
+}
+
+async function carregar(){
+ pessoas=await chamar("listar");
+ telaLista();
+}
+
+async function iniciar(){
+ const s=sessao();
+ if(!s||!s.access_token){telaLogin();return;}
+ $("#tela").innerHTML='<div class="card soft">Carregando…</div>';
+ try{
+  const r=await fetch(SUPABASE_URL+"/auth/v1/user",
+   {headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+s.access_token}});
+  if(!r.ok){guardar(null);telaLogin("Sua sessão venceu. Entre de novo.");return;}
+  eu=await r.json();
+  await carregar();
+  aviso("","ok");
+ }catch(x){
+  /* 403 do servidor quer dizer conta sem permissão, não senha errada. */
+  $("#tela").innerHTML='<div class="card"><h2 style="margin-top:0">Sem permissão</h2>'+
+   '<p>Você entrou como <b>'+esc(eu&&eu.email||"")+'</b>, e esta conta não administra o painel.</p>'+
+   '<div class="acoes"><button onclick="location.href=\'/\'">Ir para o painel</button>'+
+   '<button id="trocar">Entrar com outra conta</button></div></div>';
+  const t=$("#trocar");if(t)t.addEventListener("click",()=>{guardar(null);location.reload();});
+  aviso(x.message,"erro");
+ }
+}
+iniciar();
+</script>
+</body>
+</html>
