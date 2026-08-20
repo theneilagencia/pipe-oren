@@ -19,7 +19,8 @@ cp "$REPO/api/admin.js"     "$PASTA/api/admin.js"
 printf '.env*\n.gitignore\n' > "$PASTA/.vercelignore"
 
 echo "Vai subir isto:"
-find "$PASTA" -type f -not -path "*/.vercel/*" -not -name ".env*" | sed "s|$PASTA|.|"
+find "$PASTA" -type f -not -path "*/.vercel/*" -not -name ".env*" \
+  -not -name ".gitignore" -not -name ".vercelignore" | sed "s|$PASTA|.|"
 echo
 
 cd "$PASTA"
