@@ -107,3 +107,46 @@ entre duas abas, troca de senha e acesso somente leitura.
 O que **não** foi possível testar aqui: o Supabase real, porque o ambiente onde
 este código foi escrito não tem acesso à rede do Supabase. O primeiro login no
 projeto de verdade é a hora de conferir.
+
+## Passo a passo, do zero ao ar
+
+Tudo pelo painel do Supabase. Não precisa de terminal.
+
+**1. Criar as tabelas.** SQL Editor → New query → cole o `supabase/schema.sql`
+inteiro → Run. Roda uma vez só.
+
+**2. Carregar os dados.** SQL Editor → New query → cole o
+`supabase/carga-inicial.sql` → Run. São os 43 parceiros, 4 clientes e 47
+negócios. No fim ele mostra uma tabelinha com esses três números: se bater, deu
+certo. (Alternativa: pular este passo e usar **Importar** dentro do painel, com o
+`carga-inicial.json`.)
+
+**3. Criar as pessoas.** Authentication → Users → **Add user** → *Create new
+user*. Para cada uma:
+
+- E-mail e senha
+- Marque **Auto Confirm User** (senão a pessoa fica esperando um e-mail de
+  confirmação que ninguém mandou)
+- No campo **User Metadata**, escreva quem é a pessoa:
+
+```json
+{"nome": "Adriano"}
+```
+
+Para alguém que só pode olhar, sem mexer em nada:
+
+```json
+{"nome": "Ana", "papel": "leitor"}
+```
+
+Deixando o metadata em branco, o nome sai do e-mail e o papel é editor. Papel
+escrito errado vira editor — nunca impede o cadastro.
+
+**4. Entrar.** Abra o `painel-oren.html` e entre com uma das contas.
+
+Para mudar o papel de alguém depois, sem recriar a conta, no SQL Editor:
+
+```sql
+update public.perfil set papel = 'leitor' where nome = 'Ana';
+```
+

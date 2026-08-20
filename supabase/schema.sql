@@ -65,17 +65,38 @@ create trigger pipeline_carimbo
 insert into public.pipeline (id) values (1) on conflict (id) do nothing;
 
 -- Quando você criar uma pessoa em Authentication → Users, o perfil nasce junto.
--- O nome sai do e-mail e você ajusta depois se quiser:
---   update public.perfil set nome = 'Paulo' where nome = 'paulo';
+--
+-- No formulário do Supabase existe o campo "User Metadata". Se você preencher
+--   {"nome": "Adriano", "papel": "leitor"}
+-- o perfil nasce com esse nome e esse papel. Deixando em branco, o nome sai do
+-- e-mail e o papel é editor.
+--
+-- Papel inválido não derruba o cadastro: qualquer coisa diferente de "leitor"
+-- vira editor. Um erro aqui impediria a pessoa de ser criada, e o dono do
+-- projeto não teria como adivinhar o motivo.
 create or replace function public.cria_perfil()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  meta   jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  v_nome text;
+  v_papel text;
 begin
+  v_nome := nullif(trim(coalesce(meta->>'nome', meta->>'name', '')), '');
+  if v_nome is null then
+    v_nome := initcap(split_part(coalesce(new.email, 'pessoa'), '@', 1));
+  end if;
+
+  v_papel := case lower(trim(coalesce(meta->>'papel', meta->>'role', '')))
+               when 'leitor' then 'leitor'
+               else 'editor'
+             end;
+
   insert into public.perfil (id, nome, papel)
-  values (new.id, initcap(split_part(new.email, '@', 1)), 'editor')
+  values (new.id, v_nome, v_papel)
   on conflict (id) do nothing;
   return new;
 end;
