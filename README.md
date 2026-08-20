@@ -56,6 +56,63 @@ navegador, e sozinha ela não abre nada — sem login, as regras do banco recusa
 `carga-inicial.json`. Isso grava os 47 negócios no banco, e todo mundo passa a
 ver. Faça uma vez só.
 
+## Área administrativa
+
+Em `/admin`, só para `vinicius.debian@btsglobalcorp.com`. De lá se cria pessoa,
+define senha provisória, envia link de redefinição, troca nome e papel, e remove
+conta.
+
+Criar usuário e definir a senha de outra pessoa são operações da API de
+administração do Supabase, e exigem a chave `service_role`. Essa chave ignora
+todas as políticas de acesso: quem a tem lê e escreve tudo, sem login. Por isso
+ela **não pode** ficar na página, que roda inteira no navegador de quem abre.
+Quem fala com ela é `api/admin.js`, uma função no Vercel, fora do navegador. A
+restrição por e-mail também mora lá, não no JavaScript da página, onde seria
+decorativa.
+
+**1. O banco.** SQL Editor, cole `supabase/admin.sql`, Run. Acrescenta `email` e
+`senha_provisoria` no perfil, ensina o gatilho a preencher os dois, e cria a
+função que desliga a marca de senha provisória depois que a pessoa troca a
+própria senha.
+
+**2. As variáveis no Vercel.** Project Settings, Environment Variables, quatro
+entradas, em Production e Preview:
+
+| Nome | Valor |
+|---|---|
+| `SUPABASE_URL` | `https://<ref>.supabase.co` |
+| `SUPABASE_ANON_KEY` | a chave publicável, a mesma que está no painel |
+| `SUPABASE_SERVICE_ROLE` | a chave secreta, em Project Settings, API, no Supabase |
+| `ADMIN_EMAIL` | quem administra |
+
+A `service_role` só existe aqui. Não vai para o repositório, nem para o painel,
+nem para o navegador. Trocando as variáveis, republique para valer.
+
+**3. A publicação.** A pasta que sobe passa a ter três coisas:
+
+```
+mkdir -p ~/painel-oren/admin ~/painel-oren/api
+cp painel-oren.html  ~/painel-oren/index.html
+cp admin-oren.html   ~/painel-oren/admin/index.html
+cp api/admin.js      ~/painel-oren/api/admin.js
+cd ~/painel-oren && npx vercel --prod
+```
+
+O `api/` é o que o Vercel transforma em função. Sem ele no ar, a página de
+administração abre e nenhuma ação funciona.
+
+## Primeiro acesso e senha esquecida
+
+Pessoa criada pela área administrativa nasce com senha provisória. No primeiro
+login o painel exige a troca antes de mostrar qualquer dado, e o botão de
+cancelar não aparece. Depois de trocar, a marca é desligada por uma função do
+banco, não por um update no perfil: política de update aberta ali deixaria um
+leitor se promover a editor.
+
+**Esqueci minha senha** manda um e-mail cujo link volta para o painel com o
+token depois do `#`. Para isso funcionar, o **Site URL** em Authentication, URL
+Configuration precisa ser o endereço publicado.
+
 ## No dia a dia
 
 Salva sozinho. Cada alteração vai para o banco em menos de um segundo e o canto do
