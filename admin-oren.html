@@ -2,95 +2,184 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
 <title>Oren · Administração</title>
 <style>
+*{box-sizing:border-box;margin:0;padding:0}
 :root{
---deep:#275317;--mid:#275317;--luz:#affa57;--creme:#e8f3e8;
+--deep:#092d29;--mid:#0e5351;--luz:#affa57;--creme:#e8f3e8;
 --bg:#f3f3f1;--surf:#fff;--alt:#fafaf8;--bd:#e3e6e3;--bdf:#d4d8d4;
 --tx:#1a1a1a;--tx2:#4a564f;--tx3:#6b7672;--neg:#b00020;--pos:#1a6e3a;
---safe:env(safe-area-inset-bottom,0px);
+--av:#0e5351;--safe:env(safe-area-inset-bottom,0px);
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);
- font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-header{background:var(--deep);color:#fff;padding:16px 20px;display:flex;align-items:baseline;
- gap:12px;flex-wrap:wrap}
-header .t{font-size:18px}
-header .s{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--luz)}
-header .quem{margin-left:auto;font-size:12px;color:var(--creme)}
-header a{color:var(--luz)}
-main{max-width:920px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
-h2{font-size:15px;font-weight:500;margin:28px 0 10px}
-.card{background:var(--surf);border:1px solid var(--bd);border-radius:2px;padding:16px;margin-bottom:16px}
-label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:4px}
-input,select{width:100%;border:1px solid var(--bdf);background:var(--surf);color:var(--tx);
- padding:9px 10px;border-radius:2px;font:inherit}
-input:focus,select:focus{outline:2px solid var(--mid);outline-offset:-1px}
-.linha{display:flex;gap:12px;flex-wrap:wrap}
-.linha>div{flex:1 1 180px;min-width:0}
-button{font:inherit;border:1px solid var(--bdf);background:var(--surf);color:var(--tx);
- padding:8px 12px;border-radius:2px;cursor:pointer}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+ font-size:13px;line-height:1.5;color:var(--tx);background:var(--bg);
+ -webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;font-size:13px;color:inherit;border-radius:0;max-width:100%}
+button{cursor:pointer;background:none;border:1px solid var(--bdf);padding:8px 12px;min-height:44px}
 button:hover{border-color:var(--mid)}
-button.pri{background:var(--mid);border-color:var(--mid);color:#fff;font-weight:500}
-button.per{border-color:var(--neg);color:var(--neg)}
-button[disabled]{opacity:.5;cursor:default}
-.acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.p{border-top:1px solid var(--bd);padding:14px 0}
-.p:first-of-type{border-top:0}
-.ph{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-.ph .n{font-size:16px}
-.ph .e{color:var(--tx3);font-size:13px;word-break:break-all}
-.tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;
- border:1px solid var(--bdf);color:var(--tx2)}
-.tag.pv{border-color:#c9a227;color:#8a6d0b;background:#fdf6e3}
-.tag.eu{border-color:var(--mid);color:var(--mid)}
-.meta{color:var(--tx3);font-size:12px;margin-top:2px}
-.msg{padding:10px 12px;border-radius:2px;margin-bottom:12px;font-size:14px}
-.msg.erro{background:#fdecef;color:var(--neg);border:1px solid #f3c6cf}
-.msg.ok{background:#eaf5ee;color:var(--pos);border:1px solid #c3e2ce}
-.soft{color:var(--tx3)}
-.aviso{font-size:13px;color:var(--tx2);background:var(--alt);border:1px solid var(--bd);
- padding:12px;border-radius:2px}
-@media(max-width:600px){.acoes button{flex:1 1 100%}}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:disabled:hover{border-color:var(--bdf)}
+input,select{border:1px solid var(--bd);background:var(--surf);padding:10px 12px;width:100%;min-height:44px}
+input:focus,select:focus,button:focus-visible,.row:focus-visible{outline:2px solid var(--mid);outline-offset:1px}
+a{color:var(--mid)}
+.pri{background:var(--deep);color:#fff;border-color:var(--deep);font-weight:500}
+.pri:hover{background:var(--mid);border-color:var(--mid)}
+.per{color:var(--neg);border-color:#e6c4cb}
+.per:hover{border-color:var(--neg)}
+
+/* cabeçalho */
+header{background:var(--deep);color:var(--creme);padding:14px 20px;display:flex;
+ gap:12px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+header .marca{font-size:15px;font-weight:600;letter-spacing:.01em}
+header .marca span{font-size:10px;letter-spacing:.16em;font-weight:400;
+ opacity:.72;margin-left:8px;text-transform:uppercase}
+header .eu{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:12px;opacity:.9;min-width:0}
+header .eu .mail{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42vw}
+header a{color:var(--luz)}
+
+main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
+
+/* barra de ações */
+.barra{display:flex;gap:10px;align-items:center;margin-bottom:16px}
+.barra .busca{position:relative;flex:1 1 auto;min-width:0}
+.barra .busca input{padding-left:34px}
+.barra .busca svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);
+ width:15px;height:15px;stroke:var(--tx3);fill:none;stroke-width:1.6;pointer-events:none}
+
+/* lista */
+.cont{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);
+ margin:0 0 8px 2px}
+.lista{background:var(--surf);border:1px solid var(--bd)}
+.row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:0;
+ border-bottom:1px solid var(--bd);padding:14px 14px;min-height:68px;background:none}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--alt);border-color:var(--bd)}
+.av{flex:0 0 auto;width:36px;height:36px;border-radius:999px;background:var(--av);color:#fff;
+ display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;
+ letter-spacing:.02em;text-transform:uppercase}
+.av.vazio{background:var(--bdf);color:var(--tx3)}
+.quem{flex:1 1 auto;min-width:0}
+.quem .n{font-weight:500;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.quem .n .semnome{font-weight:400;color:var(--tx3);font-style:italic}
+.quem .e{color:var(--tx3);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dir{flex:0 0 auto;display:flex;gap:10px;align-items:center;color:var(--tx3);font-size:12px}
+.dir .chev{width:16px;height:16px;stroke:var(--bdf);fill:none;stroke-width:1.8}
+.row:hover .chev{stroke:var(--mid)}
+.badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:10px;
+ letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--bd);color:var(--tx2);
+ white-space:nowrap}
+.badge.voce{border-color:var(--mid);color:var(--mid)}
+.badge.alerta{border-color:#e4d9a8;background:#fbf7e6;color:#6b5a12}
+.badge.leitor{border-color:var(--bdf);color:var(--tx3)}
+
+.vazio-msg{background:var(--surf);border:1px solid var(--bd);padding:28px 16px;text-align:center;color:var(--tx3)}
+
+/* aviso */
+.aviso{border:1px solid var(--bd);background:var(--surf);padding:12px 14px;margin-bottom:14px;
+ display:flex;gap:10px;align-items:flex-start}
+.aviso.ok{border-color:#bcd9c4;background:#f1f8f3;color:var(--pos)}
+.aviso.ruim{border-color:#e6c4cb;background:#fdf4f5;color:var(--neg)}
+.aviso button{border:0;min-height:auto;padding:0 2px;color:inherit;margin-left:auto;opacity:.7}
+
+/* gaveta */
+#fundo{position:fixed;inset:0;background:rgba(9,45,41,.42);z-index:30;opacity:0;
+ pointer-events:none;transition:opacity .16s}
+#fundo.on{opacity:1;pointer-events:auto}
+#gav{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--bg);
+ z-index:31;transform:translateX(101%);transition:transform .2s ease-out;
+ display:flex;flex-direction:column;box-shadow:-2px 0 16px rgba(9,45,41,.14)}
+#gav.on{transform:none}
+#gav .gh{background:var(--surf);border-bottom:1px solid var(--bd);padding:16px;
+ display:flex;gap:12px;align-items:flex-start;position:sticky;top:0}
+#gav .gh .quem{min-width:0}
+#gav .gh h2{font-size:15px;font-weight:600;line-height:1.3;word-break:break-word}
+#gav .gh .e{color:var(--tx3);font-size:12px;word-break:break-all}
+#gav .fechar{flex:0 0 auto;border:0;min-height:44px;min-width:44px;padding:6px 8px;font-size:18px;
+ line-height:1;color:var(--tx3)}
+#gav .fechar:hover{color:var(--tx)}
+#gav .corpo{overflow-y:auto;flex:1 1 auto;padding:16px 16px calc(24px + var(--safe));
+ display:flex;flex-direction:column;gap:14px}
+.bloco{background:var(--surf);border:1px solid var(--bd);padding:14px}
+.bloco h3{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);
+ font-weight:500;margin-bottom:12px}
+.campo{margin-bottom:12px}
+.campo:last-of-type{margin-bottom:0}
+.campo label{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+ color:var(--tx3);margin-bottom:5px}
+.linha{display:flex;gap:8px;align-items:stretch}
+.linha input{flex:1 1 auto;min-width:0}
+.linha button{flex:0 0 auto;white-space:nowrap}
+.acoes{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.dica{color:var(--tx3);font-size:12px;margin-top:10px}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12px}
+.meta dt{color:var(--tx3)}
+.meta dd{text-align:right;word-break:break-all}
+.risco{border-color:#e6c4cb}
+.risco h3{color:var(--neg)}
+
+/* login */
+.entrada{max-width:340px;margin:12vh auto;padding:0 16px}
+.entrada .cx{background:var(--surf);border:1px solid var(--bd);padding:22px}
+.entrada h1{font-size:16px;font-weight:600;margin-bottom:4px}
+.entrada p.sub{color:var(--tx3);margin-bottom:18px}
+.entrada .campo{margin-bottom:12px}
+.entrada button{width:100%;margin-top:4px}
+.erro{color:var(--neg);margin-top:10px}
+
+.carregando{color:var(--tx3);padding:24px 2px}
+@media (max-width:560px){
+ .dir .quando{display:none}
+ #gav{width:100%}
+ main{padding:16px 12px calc(40px + var(--safe))}
+}
 </style>
 </head>
 <body>
-<header>
- <span class="t">Oren</span><span class="s">Administração</span>
- <span class="quem" id="quem"></span>
-</header>
-<main>
- <div id="msg"></div>
- <div id="tela"></div>
-</main>
+<div id="app"></div>
+<div id="fundo"></div>
+<div id="gav" role="dialog" aria-modal="true" aria-label="Detalhes da pessoa"></div>
+
 <script>
+/* Oren · administração
+   A página não guarda segredo nenhum. Tudo que é privilegiado passa por
+   /api/admin, que roda no servidor com a chave secreta. Aqui só existe a chave
+   publicável, a mesma do painel, usada para entrar e para saber quem você é.
+   A restrição de quem administra é decidida no servidor, não neste arquivo. */
 const SUPABASE_URL="https://ktnngkyyocvfhnqfajmz.supabase.co";
 const SUPABASE_KEY="sb_publishable_BZgO_66U6hFiY2ZwhqtnkQ_-vNXSvVq";
-const SESSAO="oren.sessao.v1";
+const SESSAO="oren.sessao.v1";      /* a mesma do painel: entrar num, entra no outro */
+const SENHA_PADRAO="Asd@1234";
+const PAPEIS=["editor","leitor"];
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const dt=v=>v?new Date(v).toLocaleDateString("pt-BR"):"nunca";
 const sessao=()=>{try{return JSON.parse(localStorage.getItem(SESSAO)||"null")}catch(e){return null}};
 const guardar=s=>{try{s?localStorage.setItem(SESSAO,JSON.stringify(s)):localStorage.removeItem(SESSAO)}catch(e){}};
-let pessoas=[],eu=null;
 
-function aviso(texto,tipo){
- $("#msg").innerHTML=texto?'<div class="msg '+tipo+'">'+esc(texto)+"</div>":"";
- if(texto)window.scrollTo({top:0,behavior:"smooth"});
-}
+const state={eu:null,pessoas:[],busca:"",aberta:null,carregando:true,aviso:null,ocupado:false};
 
-/* Toda operação privilegiada passa pela função de servidor. O navegador manda
-   só o token de quem está logado; a chave secreta nunca chega aqui. */
+const dt=v=>{if(!v)return"—";const d=new Date(v);return isNaN(d)?"—":
+ d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
+const dia=v=>{if(!v)return"nunca";const d=new Date(v);return isNaN(d)?"—":d.toLocaleDateString("pt-BR")};
+const iniciais=p=>{
+ const base=(p.nome||"").trim()||(p.email||"").split("@")[0].replace(/[._-]+/g," ");
+ const ps=base.split(/\s+/).filter(Boolean);
+ return ps.length?((ps[0][0]||"")+(ps.length>1?ps[ps.length-1][0]:"")):"?"};
+
+function aviso(texto,tipo){state.aviso=texto?{texto:texto,tipo:tipo||"ok"}:null;render()}
+
+/* ---------- conversa com o servidor ---------- */
 async function chamar(acao,dados){
  const s=sessao();
- if(!s||!s.access_token)throw new Error("Faça login de novo.");
+ if(!s)throw new Error("Sua sessão expirou. Entre de novo.");
  const r=await fetch("/api/admin",{method:"POST",
-  headers:{"content-type":"application/json","Authorization":"Bearer "+s.access_token},
+  headers:{"content-type":"application/json",Authorization:"Bearer "+s.access_token},
   body:JSON.stringify(Object.assign({acao:acao},dados||{}))});
  const c=await r.json().catch(()=>({}));
- if(!r.ok)throw new Error(c.erro||"Falhou.");
+ if(r.status===401){guardar(null);state.eu=null;throw new Error("Sua sessão expirou. Entre de novo.")}
+ if(!r.ok)throw new Error(c.erro||"Não consegui concluir.");
  return c.dados;
 }
 
@@ -98,136 +187,305 @@ async function entrar(email,senha){
  const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",
   {method:"POST",headers:{apikey:SUPABASE_KEY,"content-type":"application/json"},
    body:JSON.stringify({email:email,password:senha})});
- if(!r.ok)throw new Error("E-mail ou senha inválidos.");
- guardar(await r.json());
+ const c=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(c.error_description||c.msg||"E-mail ou senha não conferem.");
+ guardar(c);
+ return c;
 }
 
+/* ---------- login ---------- */
 function telaLogin(erro){
- $("#quem").textContent="";
- $("#tela").innerHTML='<div class="card"><h2 style="margin-top:0">Entrar</h2>'+
-  (erro?'<div class="msg erro">'+esc(erro)+"</div>":"")+
-  '<div class="linha"><div><label for="e">E-mail</label><input id="e" type="email" autocomplete="username"></div>'+
-  '<div><label for="s">Senha</label><input id="s" type="password" autocomplete="current-password"></div></div>'+
-  '<div class="acoes"><button class="pri" id="ok">Entrar</button>'+
-  '<button onclick="location.href=\'/\'">Ir para o painel</button></div>'+
-  '<p class="aviso" style="margin-top:14px">Esta área é restrita. Entre com a conta de administração.</p></div>';
- const ir=async()=>{
-  const b=$("#ok");b.disabled=true;b.textContent="Entrando…";
-  try{await entrar($("#e").value.trim(),$("#s").value);await iniciar();}
-  catch(x){telaLogin(x.message);}
- };
- $("#ok").addEventListener("click",ir);
- $("#s").addEventListener("keydown",e=>{if(e.key==="Enter")ir();});
+ return '<div class="entrada"><div class="cx">'+
+  "<h1>Administração</h1>"+
+  '<p class="sub">Entre com a sua conta do painel.</p>'+
+  '<form id="flogin">'+
+  '<div class="campo"><label for="lemail">E-mail</label>'+
+  '<input id="lemail" type="email" autocomplete="username" required></div>'+
+  '<div class="campo"><label for="lsenha">Senha</label>'+
+  '<input id="lsenha" type="password" autocomplete="current-password" required></div>'+
+  '<button class="pri" type="submit">Entrar</button>'+
+  (erro?'<p class="erro">'+esc(erro)+"</p>":"")+
+  "</form></div></div>";
 }
 
-function cartaoPessoa(p){
- const souEu=eu&&p.id===eu.id;
- return '<div class="p" data-id="'+esc(p.id)+'">'+
-  '<div class="ph"><span class="n">'+esc(p.nome||"sem nome")+"</span>"+
-  '<span class="e">'+esc(p.email)+"</span>"+
-  '<span class="tag">'+esc(p.papel||"sem papel")+"</span>"+
-  (p.senhaProvisoria?'<span class="tag pv">senha provisória</span>':"")+
-  (souEu?'<span class="tag eu">você</span>':"")+
-  (p.semPerfil?'<span class="tag pv">sem perfil</span>':"")+"</div>"+
-  '<div class="meta">último acesso: '+esc(dt(p.ultimoAcesso))+" · criado em "+esc(dt(p.criadoEm))+
-  (p.confirmado?"":" · e-mail não confirmado")+"</div>"+
-  '<div class="linha" style="margin-top:10px">'+
-   '<div><label>Nome</label><input data-nome value="'+esc(p.nome||"")+'"></div>'+
-   '<div><label>Papel</label><select data-papel>'+
-    ["editor","leitor"].map(v=>'<option value="'+v+'"'+(p.papel===v?" selected":"")+">"+v+"</option>").join("")+
-    "</select></div></div>"+
-  '<div class="acoes">'+
-   '<button class="pri" data-salvar>Salvar nome e papel</button>'+
-   '<button data-senha>Definir senha provisória</button>'+
-   '<button data-link>Enviar link de redefinição</button>'+
-   (souEu?"":'<button class="per" data-remover>Remover</button>')+
-  "</div></div>";
+/* ---------- lista ---------- */
+function badges(p){
+ let h="";
+ if(p.ehVoce)h+=' <span class="badge voce">você</span>';
+ if(p.papel==="leitor")h+=' <span class="badge leitor">leitor</span>';
+ else if(p.papel==="editor")h+=' <span class="badge">editor</span>';
+ if(p.semPerfil)h+=' <span class="badge alerta">sem perfil</span>';
+ if(p.senhaProvisoria)h+=' <span class="badge alerta">senha provisória</span>';
+ if(!p.confirmado)h+=' <span class="badge alerta">não confirmado</span>';
+ return h;
+}
+
+function linhaPessoa(p){
+ const nome=p.nome?esc(p.nome):'<span class="semnome">sem nome</span>';
+ return '<button class="row" data-abre="'+esc(p.id)+'">'+
+  '<span class="av'+(p.nome?"":" vazio")+'">'+esc(iniciais(p))+"</span>"+
+  '<span class="quem"><span class="n">'+nome+badges(p)+"</span>"+
+   '<span class="e">'+esc(p.email)+"</span></span>"+
+  '<span class="dir"><span class="quando">'+esc(dia(p.ultimoAcesso))+"</span>"+
+   '<svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>'+
+  "</button>";
 }
 
 function telaLista(){
- $("#quem").innerHTML=esc(eu.email)+' · <a href="/">painel</a> · <a href="#" id="sair">sair</a>';
- $("#tela").innerHTML=
-  '<div class="card"><h2 style="margin-top:0">Nova pessoa</h2>'+
-   '<div class="linha"><div><label for="ne">E-mail</label><input id="ne" type="email"></div>'+
-   '<div><label for="nn">Nome</label><input id="nn"></div></div>'+
-   '<div class="linha" style="margin-top:12px"><div><label for="np">Papel</label>'+
-    '<select id="np"><option value="editor">editor</option><option value="leitor">leitor</option></select></div>'+
-   '<div><label for="ns">Senha inicial</label><input id="ns" value="Asd@1234"></div></div>'+
-   '<div class="acoes"><button class="pri" id="criar">Criar pessoa</button></div>'+
-   '<p class="aviso" style="margin-top:14px">A conta nasce confirmada e marcada como senha provisória: '+
-   'o painel vai exigir a troca no primeiro acesso.</p></div>'+
-  '<div class="card"><h2 style="margin-top:0">Pessoas ativas '+
-   '<span class="soft" style="font-weight:400">('+pessoas.length+")</span></h2>"+
-   (pessoas.length?pessoas.map(cartaoPessoa).join(""):'<div class="soft">Ninguém cadastrado.</div>')+"</div>";
+ const q=state.busca.trim().toLowerCase();
+ const vis=state.pessoas.filter(p=>!q||
+  (p.nome||"").toLowerCase().includes(q)||(p.email||"").toLowerCase().includes(q));
+ let h="<header>"+
+  '<span class="marca">Oren<span>Administração</span></span>'+
+  '<span class="eu"><span class="mail">'+esc(state.eu?state.eu.email:"")+"</span>"+
+  '<a href="/">painel</a><a href="#" data-sair>sair</a></span></header><main>';
 
- $("#sair").addEventListener("click",e=>{e.preventDefault();guardar(null);location.reload();});
- $("#criar").addEventListener("click",async()=>{
-  const b=$("#criar");b.disabled=true;b.textContent="Criando…";
-  try{
-   const d=await chamar("criar",{email:$("#ne").value.trim(),nome:$("#nn").value.trim(),
-    papel:$("#np").value,senha:$("#ns").value});
-   aviso("Pessoa criada: "+d.email,"ok");await carregar();
-  }catch(x){aviso(x.message,"erro");b.disabled=false;b.textContent="Criar pessoa";}
- });
- $("#tela").querySelectorAll(".p").forEach(el=>{
-  const id=el.dataset.id,p=pessoas.find(x=>x.id===id);
-  const roda=async(b,texto,fn)=>{
-   const antigo=b.textContent;b.disabled=true;b.textContent=texto;
-   try{await fn();}catch(x){aviso(x.message,"erro");}
-   finally{b.disabled=false;b.textContent=antigo;}
-  };
-  el.querySelector("[data-salvar]").addEventListener("click",e=>roda(e.target,"Salvando…",async()=>{
-   await chamar("perfil",{id:id,nome:el.querySelector("[data-nome]").value,
-    papel:el.querySelector("[data-papel]").value});
-   aviso("Nome e papel salvos.","ok");await carregar();
-  }));
-  el.querySelector("[data-senha]").addEventListener("click",e=>{
-   const nova=prompt("Nova senha provisória para "+p.email+"\nMínimo 8 caracteres.","Asd@1234");
-   if(nova==null)return;
-   roda(e.target,"Definindo…",async()=>{
-    await chamar("senha",{id:id,senha:nova});
-    aviso("Senha definida. A pessoa vai ter de trocar no próximo acesso.","ok");await carregar();
-   });
-  });
-  el.querySelector("[data-link]").addEventListener("click",e=>roda(e.target,"Enviando…",async()=>{
-   await chamar("recuperar",{email:p.email});
-   aviso("Link de redefinição enviado para "+p.email+".","ok");
-  }));
-  const rm=el.querySelector("[data-remover]");
-  if(rm)rm.addEventListener("click",e=>{
-   if(!confirm("Remover "+p.email+"? A conta e o perfil somem, e não há como desfazer."))return;
-   roda(e.target,"Removendo…",async()=>{
-    await chamar("remover",{id:id});aviso("Conta removida.","ok");await carregar();
-   });
-  });
- });
+ if(state.aviso)h+='<div class="aviso '+state.aviso.tipo+'"><span>'+esc(state.aviso.texto)+
+  '</span><button data-fecha-aviso aria-label="Fechar aviso">×</button></div>';
+
+ h+='<div class="barra">'+
+  '<span class="busca"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/>'+
+   '<path d="M20 20l-4-4"/></svg>'+
+   '<input id="busca" type="search" placeholder="Buscar por nome ou e-mail" value="'+esc(state.busca)+'"></span>'+
+  '<button class="pri" data-nova>Nova pessoa</button></div>';
+
+ if(state.carregando)h+='<p class="carregando">Carregando…</p>';
+ else if(!state.pessoas.length)h+='<div class="vazio-msg">Nenhuma pessoa cadastrada ainda.</div>';
+ else if(!vis.length)h+='<div class="vazio-msg">Nada encontrado para essa busca.</div>';
+ else h+='<p class="cont">'+vis.length+(vis.length===1?" pessoa":" pessoas")+
+  (q?" de "+state.pessoas.length:"")+'</p><div class="lista">'+vis.map(linhaPessoa).join("")+"</div>";
+
+ return h+"</main>";
+}
+
+/* ---------- gaveta ---------- */
+function gavetaNova(){
+ return '<div class="gh"><div class="quem"><h2>Nova pessoa</h2>'+
+  '<p class="e">A conta nasce confirmada e com senha provisória.</p></div>'+
+  '<button class="fechar" data-fechar aria-label="Fechar">×</button></div>'+
+  '<div class="corpo"><form id="fnova"><div class="bloco">'+
+  '<div class="campo"><label for="nemail">E-mail</label>'+
+  '<input id="nemail" type="email" autocomplete="off" required></div>'+
+  '<div class="campo"><label for="nnome">Nome</label>'+
+  '<input id="nnome" type="text" autocomplete="off" placeholder="Como aparece no painel"></div>'+
+  '<div class="campo"><label for="npapel">Papel</label><select id="npapel">'+
+   '<option value="editor">editor · vê e grava</option>'+
+   '<option value="leitor">leitor · só vê</option></select></div>'+
+  '<div class="campo"><label for="nsenha">Senha inicial</label>'+
+  '<div class="linha"><input id="nsenha" type="text" value="'+SENHA_PADRAO+'" required>'+
+  '<button type="button" data-gerar>Gerar</button></div></div>'+
+  '<div class="acoes"><button class="pri" type="submit">Criar pessoa</button>'+
+  '<button type="button" data-fechar>Cancelar</button></div>'+
+  '<p class="dica">A pessoa é obrigada a trocar a senha no primeiro acesso ao painel. '+
+  "Combine a senha inicial por um canal direto, não por grupo.</p>"+
+  "</div></form></div>";
+}
+
+function gavetaPessoa(p){
+ return '<div class="gh"><div class="quem"><h2>'+(p.nome?esc(p.nome):"Sem nome")+"</h2>"+
+  '<p class="e">'+esc(p.email)+"</p></div>"+
+  '<button class="fechar" data-fechar aria-label="Fechar">×</button></div><div class="corpo">'+
+
+  '<div class="bloco"><h3>Identificação</h3>'+
+  '<div class="campo"><label for="enome">Nome</label>'+
+  '<input id="enome" type="text" value="'+esc(p.nome||"")+'" placeholder="Como aparece no painel"></div>'+
+  '<div class="campo"><label for="epapel">Papel</label><select id="epapel">'+
+   PAPEIS.map(v=>'<option value="'+v+'"'+(p.papel===v?" selected":"")+">"+
+    (v==="editor"?"editor · vê e grava":"leitor · só vê")+"</option>").join("")+
+   "</select></div>"+
+  '<div class="acoes"><button class="pri" data-salvar="'+esc(p.id)+'">Salvar</button></div>'+
+  (p.semPerfil?'<p class="dica">Esta conta existe no login mas não tem perfil no banco. '+
+   "Salvar aqui cria o perfil.</p>":"")+
+  "</div>"+
+
+  '<div class="bloco"><h3>Senha</h3>'+
+  '<div class="campo"><label for="esenha">Definir senha provisória</label>'+
+  '<div class="linha"><input id="esenha" type="text" placeholder="mínimo 8 caracteres">'+
+  '<button data-senha="'+esc(p.id)+'">Definir</button></div></div>'+
+  '<div class="acoes"><button data-link="'+esc(p.email)+'">Enviar link por e-mail</button></div>'+
+  '<p class="dica">Definir aqui exige a troca no próximo acesso. O link por e-mail deixa a '+
+  "pessoa escolher a senha sozinha.</p></div>"+
+
+  '<div class="bloco"><h3>Conta</h3><dl class="meta">'+
+  "<dt>Papel</dt><dd>"+esc(p.papel||"sem papel")+"</dd>"+
+  "<dt>Senha provisória</dt><dd>"+(p.senhaProvisoria?"sim":"não")+"</dd>"+
+  "<dt>E-mail confirmado</dt><dd>"+(p.confirmado?"sim":"não")+"</dd>"+
+  "<dt>Último acesso</dt><dd>"+esc(dt(p.ultimoAcesso))+"</dd>"+
+  "<dt>Criado em</dt><dd>"+esc(dt(p.criadoEm))+"</dd>"+
+  "</dl></div>"+
+
+  (p.ehVoce?'<p class="dica">Esta é a sua conta. Você não pode remover a si mesmo.</p>':
+   '<div class="bloco risco"><h3>Zona de risco</h3>'+
+   '<p class="dica" style="margin:0 0 12px">Remover apaga a conta e o acesso. '+
+   "O que a pessoa já gravou no pipeline continua lá.</p>"+
+   '<button class="per" data-remover="'+esc(p.id)+'">Remover pessoa</button></div>')+
+
+  "</div>";
+}
+
+function renderGaveta(){
+ const g=$("#gav"),f=$("#fundo");
+ if(!state.aberta){g.className="";f.className="";g.innerHTML="";return}
+ if(state.aberta==="nova")g.innerHTML=gavetaNova();
+ else{
+  const p=state.pessoas.find(x=>x.id===state.aberta);
+  if(!p){state.aberta=null;return renderGaveta()}
+  g.innerHTML=gavetaPessoa(p);
+ }
+ g.className="on";f.className="on";
+ const primeiro=g.querySelector("input,select,button");
+ if(primeiro)setTimeout(()=>primeiro.focus(),60);
+}
+
+function render(){
+ const app=$("#app");
+ if(!state.eu){app.innerHTML=telaLogin(state.erroLogin);state.aberta=null;renderGaveta();
+  const c=$("#lemail");if(c)setTimeout(()=>c.focus(),50);return}
+ const foco=document.activeElement,eraBusca=foco&&foco.id==="busca";
+ const pos=eraBusca?foco.selectionStart:0;
+ app.innerHTML=telaLista();
+ if(eraBusca){const b=$("#busca");if(b){b.focus();try{b.setSelectionRange(pos,pos)}catch(e){}}}
+ renderGaveta();
+}
+
+/* ---------- ações ---------- */
+async function comOcupado(botao,fn){
+ if(state.ocupado)return;
+ state.ocupado=true;
+ const rotulo=botao?botao.textContent:null;
+ if(botao){botao.disabled=true;botao.textContent="Aguarde…"}
+ try{await fn()}
+ catch(e){aviso(e.message||"Não consegui concluir.","ruim")}
+ finally{
+  state.ocupado=false;
+  if(botao&&document.body.contains(botao)){botao.disabled=false;botao.textContent=rotulo}
+ }
 }
 
 async function carregar(){
- pessoas=await chamar("listar");
- telaLista();
+ state.carregando=true;render();
+ try{
+  const lista=await chamar("listar");
+  state.pessoas=(lista||[]).map(p=>Object.assign({},p,
+   {ehVoce:state.eu&&p.email&&p.email.toLowerCase()===state.eu.email.toLowerCase()}));
+ }catch(e){state.aviso={texto:e.message,tipo:"ruim"}}
+ state.carregando=false;render();
 }
 
+const senhaGerada=()=>{
+ const abc="abcdefghijkmnopqrstuvwxyz",ABC="ABCDEFGHJKLMNPQRSTUVWXYZ",num="23456789",sim="!@#$%&*";
+ const todos=abc+ABC+num+sim,n=14,a=new Uint32Array(n);crypto.getRandomValues(a);
+ let s=ABC[a[0]%ABC.length]+abc[a[1]%abc.length]+num[a[2]%num.length]+sim[a[3]%sim.length];
+ for(let i=4;i<n;i++)s+=todos[a[i]%todos.length];
+ return s;
+};
+
+/* ---------- eventos ---------- */
+document.addEventListener("submit",async e=>{
+ if(e.target.id==="flogin"){
+  e.preventDefault();
+  const b=e.target.querySelector('button[type="submit"]');
+  const email=$("#lemail").value.trim(),senha=$("#lsenha").value;
+  await comOcupado(b,async()=>{
+   try{
+    await entrar(email,senha);
+    state.erroLogin=null;
+    await iniciar();
+   }catch(err){state.erroLogin=err.message;render();}
+  });
+  return;
+ }
+ if(e.target.id==="fnova"){
+  e.preventDefault();
+  const b=e.target.querySelector('button[type="submit"]');
+  const d={email:$("#nemail").value.trim(),nome:$("#nnome").value.trim(),
+   papel:$("#npapel").value,senha:$("#nsenha").value};
+  await comOcupado(b,async()=>{
+   await chamar("criar",d);
+   state.aberta=null;
+   await carregar();
+   aviso("Pessoa criada. Combine a senha inicial por um canal direto.","ok");
+  });
+ }
+});
+
+document.addEventListener("click",async e=>{
+ const t=e.target,g=s=>t.closest(s);
+ let el;
+
+ if(el=g("[data-fecha-aviso]")){aviso(null);return}
+ if(el=g("[data-sair]")){e.preventDefault();guardar(null);state.eu=null;state.pessoas=[];render();return}
+ if(el=g("[data-nova]")){state.aberta="nova";renderGaveta();return}
+ if(el=g("[data-fechar]")||t.id==="fundo"){state.aberta=null;renderGaveta();return}
+ if(el=g("[data-gerar]")){const c=$("#nsenha");if(c)c.value=senhaGerada();return}
+ if(el=g("[data-abre]")){state.aberta=el.dataset.abre;renderGaveta();return}
+
+ if(el=g("[data-salvar]")){
+  const id=el.dataset.salvar,nome=$("#enome").value.trim(),papel=$("#epapel").value;
+  if(!nome){aviso("O nome não pode ficar vazio.","ruim");return}
+  await comOcupado(el,async()=>{
+   await chamar("perfil",{id:id,nome:nome,papel:papel});
+   state.aberta=null;
+   await carregar();
+   aviso("Nome e papel salvos.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-senha]")){
+  const id=el.dataset.senha,c=$("#esenha"),senha=c?c.value:"";
+  if(!senha||senha.length<8){aviso("A senha precisa de pelo menos 8 caracteres.","ruim");return}
+  await comOcupado(el,async()=>{
+   await chamar("senha",{id:id,senha:senha});
+   state.aberta=null;
+   await carregar();
+   aviso("Senha definida. A pessoa vai trocá-la no próximo acesso.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-link]")){
+  const email=el.dataset.link;
+  await comOcupado(el,async()=>{
+   await chamar("recuperar",{email:email});
+   aviso("Link de redefinição enviado para "+email+".","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-remover]")){
+  const id=el.dataset.remover,p=state.pessoas.find(x=>x.id===id);
+  if(!confirm("Remover "+((p&&(p.nome||p.email))||"esta pessoa")+"? A conta e o acesso são apagados."))return;
+  await comOcupado(el,async()=>{
+   await chamar("remover",{id:id});
+   state.aberta=null;
+   await carregar();
+   aviso("Pessoa removida.","ok");
+  });
+ }
+});
+
+document.addEventListener("input",e=>{
+ if(e.target.id==="busca"){state.busca=e.target.value;render()}
+});
+
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape"&&state.aberta){state.aberta=null;renderGaveta()}
+});
+
+/* ---------- partida ---------- */
 async function iniciar(){
  const s=sessao();
- if(!s||!s.access_token){telaLogin();return;}
- $("#tela").innerHTML='<div class="card soft">Carregando…</div>';
+ if(!s||!s.access_token){state.eu=null;render();return}
  try{
   const r=await fetch(SUPABASE_URL+"/auth/v1/user",
    {headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+s.access_token}});
-  if(!r.ok){guardar(null);telaLogin("Sua sessão venceu. Entre de novo.");return;}
-  eu=await r.json();
-  await carregar();
-  aviso("","ok");
- }catch(x){
-  /* 403 do servidor quer dizer conta sem permissão, não senha errada. */
-  $("#tela").innerHTML='<div class="card"><h2 style="margin-top:0">Sem permissão</h2>'+
-   '<p>Você entrou como <b>'+esc(eu&&eu.email||"")+'</b>, e esta conta não administra o painel.</p>'+
-   '<div class="acoes"><button onclick="location.href=\'/\'">Ir para o painel</button>'+
-   '<button id="trocar">Entrar com outra conta</button></div></div>';
-  const t=$("#trocar");if(t)t.addEventListener("click",()=>{guardar(null);location.reload();});
-  aviso(x.message,"erro");
- }
+  if(!r.ok)throw new Error("sessao");
+  const u=await r.json();
+  state.eu={id:u.id,email:u.email};
+ }catch(e){guardar(null);state.eu=null;render();return}
+ render();
+ await carregar();
 }
 iniciar();
 </script>
