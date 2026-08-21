@@ -478,7 +478,8 @@ const TEXTOS={
   titulo:"Escreva um nome para o negócio.",
   valor:"Informe um valor maior que zero.",
   semUsuario:"Entre na sua conta para mover etapas.",
-  importar:"Arquivo inválido: precisa ter parceiros, clientes e negócios."
+  importar:"Arquivo inválido: precisa ter parceiros, clientes e negócios.",
+  bloqueiaPayments:"Pendência bloqueante em aberto: em Payments, o negócio não passa de Análise de compliance."
  }
 };
 /* Um funil por frente. O mesmo número quer dizer etapas diferentes em funis
@@ -628,6 +629,11 @@ function validarEtapa(d,etapa){
  if(etapa==="perdido")return d.motivoPerda?null:TEXTOS.erros.perda;
  const n=Number(etapa);
  if(d.frente==="capital"&&!d.tese)return TEXTOS.erros.tese;
+ /* Payments: pendência bloqueante em aberto trava o avanço além de Análise de
+    compliance (etapa 4). Ata de 21/08/2026, seção 7.1 — conversa exploratória
+    pode seguir, assinatura e onboarding não, antes da OB-03 e da OB-04. */
+ if(d.frente==="payments"&&n>=5&&(d.pendencias||[]).some(p=>p.bloqueante&&!p.resolvida))
+  return TEXTOS.erros.bloqueiaPayments;
  /* As exigências abaixo são de Capital. Antes valiam para todas as frentes, e
     com os funis novos isso travaria Governance na etapa 6 pedindo campos que
     a frente não tem. */
@@ -1697,7 +1703,7 @@ function centralizarTrilha(el){
 function ed(kind,id,campo,valor,tipo,ops){
  const raw=valor==null?"":valor;
  let vis=raw===""?"—":raw;
- if(tipo==="money")vis=brl(raw);
+ if(tipo==="money")vis=brlD(raw);
  else if(tipo==="date")vis=dt(raw);
  else if(tipo==="pct")vis=raw===""?"—":raw+"%";
  else if(ops&&ops[raw]!==undefined)vis=ops[raw];
