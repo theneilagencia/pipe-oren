@@ -121,21 +121,23 @@ Configuration precisa ser o endereço publicado.
 ## Publicar
 
 **Sozinho, a cada push no `main`.** `.github/workflows/publicar.yml` monta a pasta
-e publica. São dois endereços, e eles não competem:
+com o painel em `index.html` e a administração em `admin/index.html`, e joga o
+resultado na branch **`gh-pages`** — isso acontece sempre, sem segredo nenhum.
 
-| Endereço | O que tem | Precisa de segredo |
+Daí para o ar falta uma chave, uma vez só:
+
+| Destino | O que fazer, uma vez | O que fica no ar |
 |---|---|---|
-| `https://theneilagencia.github.io/pipe-oren/` | painel e `/admin` | nada |
-| Vercel | o mesmo, mais `api/admin.js` | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` |
+| GitHub Pages | **Settings → Pages → Source**: *GitHub Actions* (ou *Deploy from a branch* → `gh-pages`) | painel e `/admin` em `https://theneilagencia.github.io/pipe-oren/` |
+| Vercel | três segredos em **Settings → Secrets and variables → Actions**: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | o mesmo, mais `api/admin.js` |
+
+O token do Actions não tem permissão para ligar o Pages sozinho, e o workflow não
+falha por isso: ele avisa no log e segue. Sem os segredos do Vercel, mesma coisa.
 
 No Pages não existe função de servidor. O painel inteiro funciona, e no `/admin`
 a tela de **responsáveis** também, porque ela fala direto com o Supabase. **Criar
 pessoa e definir senha** passam pela função com a chave `service_role` e só
 funcionam no endereço do Vercel — a tela avisa quando você tenta no lugar errado.
-
-Para o Vercel voltar a publicar sozinho, acrescente os três segredos em
-**Settings → Secrets and variables → Actions**. Sem eles, o job termina explicando
-isso e não falha.
 
 Em **Authentication → URL Configuration**, o **Site URL** precisa ser o endereço
 que o time usa, senão o link de "esqueci minha senha" volta para o lugar errado.

@@ -334,7 +334,9 @@ function moldura(){
  let h="<header>"+
   '<span class="marca">Oren<span>Administração</span></span>'+
   '<span class="eu"><span class="mail">'+esc(state.eu?state.eu.email:"")+"</span>"+
-  '<a href="/">painel</a><a href="#" data-sair>sair</a></span></header><main>';
+  /* Relativo, não "/": no GitHub Pages a administração fica em /pipe-oren/admin/
+     e a barra sozinha levaria para fora do site. */
+  '<a href="../">painel</a><a href="#" data-sair>sair</a></span></header><main>';
  h+='<nav class="menu" aria-label="Seções da administração">'+SECOES.map(([k,l])=>
   '<button data-secao="'+k+'" class="'+(state.secao===k?"on":"")+'"'+
   (state.secao===k?' aria-current="page"':"")+">"+esc(l)+"</button>").join("")+"</nav>";
