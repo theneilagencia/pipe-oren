@@ -50,7 +50,8 @@ jobs:
           set -e
           grep -q 'id="oren-dataset"' site/index.html
           grep -q 'CARGA_ATA' site/index.html
-          grep -q 'data-secao="responsaveis"' site/admin/index.html
+          grep -q 'carregarResponsaveis' site/admin/index.html
+          grep -q 'gravarResponsaveis' site/admin/index.html
           echo "painel e administração conferidos"
 
       - uses: actions/configure-pages@v5

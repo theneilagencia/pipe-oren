@@ -56,6 +56,11 @@ navegador, e sozinha ela não abre nada — sem login, as regras do banco recusa
 `carga-inicial.json`. Isso grava os 47 negócios no banco, e todo mundo passa a
 ver. Faça uma vez só.
 
+O negócio da ata de 21/08/2026 (cliente `C-05` e negócio `N-048`) não precisa de
+passo nenhum: o painel grava na primeira entrada de um editor, não duplica na
+segunda, e um perfil leitor não grava nada. `supabase/ata-2026-08-21.sql` continua
+no repositório para quem preferir o SQL Editor — rodar os dois é seguro.
+
 ## Área administrativa
 
 Em `/admin`, só para `vinicius.debian@btsglobalcorp.com`. De lá se cria pessoa,
@@ -115,7 +120,27 @@ Configuration precisa ser o endereço publicado.
 
 ## Publicar
 
-Tudo o que vai para o ar sai deste repositório, com um comando:
+**Sozinho, a cada push no `main`.** `.github/workflows/publicar.yml` monta a pasta
+e publica. São dois endereços, e eles não competem:
+
+| Endereço | O que tem | Precisa de segredo |
+|---|---|---|
+| `https://theneilagencia.github.io/pipe-oren/` | painel e `/admin` | nada |
+| Vercel | o mesmo, mais `api/admin.js` | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` |
+
+No Pages não existe função de servidor. O painel inteiro funciona, e no `/admin`
+a tela de **responsáveis** também, porque ela fala direto com o Supabase. **Criar
+pessoa e definir senha** passam pela função com a chave `service_role` e só
+funcionam no endereço do Vercel — a tela avisa quando você tenta no lugar errado.
+
+Para o Vercel voltar a publicar sozinho, acrescente os três segredos em
+**Settings → Secrets and variables → Actions**. Sem eles, o job termina explicando
+isso e não falha.
+
+Em **Authentication → URL Configuration**, o **Site URL** precisa ser o endereço
+que o time usa, senão o link de "esqueci minha senha" volta para o lugar errado.
+
+À mão, quando quiser:
 
 ```
 ./publicar.sh
