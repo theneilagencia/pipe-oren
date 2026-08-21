@@ -120,16 +120,25 @@ Configuration precisa ser o endereço publicado.
 
 ## Publicar
 
+**Os endereços oficiais são o Vercel:**
+
+| | |
+|---|---|
+| aplicação | https://crm-oren.vercel.app/ |
+| administração | https://crm-oren.vercel.app/admin |
+
 **Sozinho, a cada push no `main`.** `.github/workflows/publicar.yml` monta a pasta
 com o painel em `index.html` e a administração em `admin/index.html`, e joga o
 resultado na branch **`gh-pages`** — isso acontece sempre, sem segredo nenhum.
 
-Daí para o ar falta uma chave, uma vez só:
-
-| Destino | O que fazer, uma vez | O que fica no ar |
+| Destino | Como recebe o que está no repositório | O que fica no ar |
 |---|---|---|
-| GitHub Pages | já ligado em *Settings → Pages → Source: GitHub Actions* | painel e `/admin` em `https://theneilagencia.github.io/pipe-oren/` |
-| Vercel | três segredos em **Settings → Secrets and variables → Actions**: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | o mesmo, mais `api/admin.js` |
+| Vercel (oficial) | ligando o projeto ao repositório em *vercel.com → crm-oren → Settings → Git*, **ou** com `VERCEL_TOKEN`, `VERCEL_ORG_ID` e `VERCEL_PROJECT_ID` nos segredos do repositório, **ou** `./publicar.sh` na mão | painel, `/admin` e `api/admin.js` |
+| GitHub Pages | já ligado em *Settings → Pages → Source: GitHub Actions* | painel e `/admin`, sem a função de servidor |
+
+Enquanto o Vercel não estiver ligado ao repositório, ele fica na versão do último
+`./publicar.sh` que alguém rodou — e foi assim que ele ficou semanas atrás do
+repositório. O Pages serve de conferência: ele sempre tem o `main`.
 
 O token do Actions não tem permissão para ligar o Pages sozinho, e o workflow não
 falha por isso: ele avisa no log e segue. Sem os segredos do Vercel, mesma coisa.
@@ -139,8 +148,9 @@ a tela de **responsáveis** também, porque ela fala direto com o Supabase. **Cr
 pessoa e definir senha** passam pela função com a chave `service_role` e só
 funcionam no endereço do Vercel — a tela avisa quando você tenta no lugar errado.
 
-Em **Authentication → URL Configuration**, o **Site URL** precisa ser o endereço
-que o time usa, senão o link de "esqueci minha senha" volta para o lugar errado.
+Em **Authentication → URL Configuration**, o **Site URL** precisa ser
+`https://crm-oren.vercel.app/`, senão o link de "esqueci minha senha" volta para o
+lugar errado.
 
 À mão, quando quiser:
 
