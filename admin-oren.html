@@ -169,6 +169,8 @@ const sessao=()=>{try{return JSON.parse(localStorage.getItem(SESSAO)||"null")}ca
 const guardar=s=>{try{s?localStorage.setItem(SESSAO,JSON.stringify(s)):localStorage.removeItem(SESSAO)}catch(e){}};
 
 const SECOES=[["pessoas","Pessoas e acessos"],["responsaveis","Responsáveis"]];
+/* Os mesmos quatro que o painel usa quando o documento não traz lista. */
+const RESPS_PADRAO=["Paulo","Theo","Adriano","Adolfo"];
 const state={eu:null,pessoas:[],busca:"",aberta:null,carregando:true,aviso:null,ocupado:false,
  secao:"pessoas",
  /* Responsaveis nao sao contas de acesso: sao os nomes que aparecem nos
@@ -240,9 +242,12 @@ async function carregarResponsaveis(){
   const d=linha.dados||{};
   state.resp.uso=usoDeNomes(d);
   const daBase=Array.isArray(d.responsaveis)?d.responsaveis.filter(x=>typeof x==="string"&&x.trim()):null;
-  /* Sem lista gravada, mostro os nomes que os negocios ja usam: a tela nasce
-     igual ao que o painel exibe hoje, sem inventar ninguem. */
-  state.resp.lista=daBase&&daBase.length?daBase.slice():Object.keys(state.resp.uso).sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  /* Sem lista gravada, a lista é a mesma que o painel usa por padrão. Antes eu
+     semeava com todos os nomes em uso, e quem só aparecia numa pendência —
+     Vinícius, nas OB-03 e OB-04 da ata — entrava como responsável na primeira
+     gravação. Quem está em uso e fora da lista aparece à parte, para você
+     decidir, em vez de virar responsável por tabela. */
+  state.resp.lista=daBase&&daBase.length?daBase.slice():RESPS_PADRAO.slice();
   state.resp.gravada=!!(daBase&&daBase.length);
   state.resp.versao=linha.versao;
  }catch(e){state.aviso={texto:e.message,tipo:"ruim"}}
@@ -376,15 +381,25 @@ function detalheUso(u){
  if(!ps.length&&u.historico)return "só no histórico";
  return ps.length?ps.join(" · "):"sem nada no nome ainda";
 }
-function linhaResp(nome){
- const u=state.resp.uso[nome],n=totalUso(u);
- return '<div class="row"><span class="av">'+esc(iniciais({nome:nome}))+"</span>"+
+/* Só negócio e conta travam a saída da lista: são registros que passariam a
+   apontar para um responsável que não existe. Pendência e histórico não travam,
+   porque o nome continua escrito neles e o painel mostra "fora da lista". */
+function trava(nome){
+ const u=state.resp.uso[nome];
+ return u?u.negocios+u.contas:0;
+}
+function linhaResp(nome,foraDaLista){
+ const u=state.resp.uso[nome],n=totalUso(u),t=trava(nome);
+ return '<div class="row"><span class="av'+(n?"":" vazio")+'">'+esc(iniciais({nome:nome}))+"</span>"+
   '<span class="quem"><span class="n">'+esc(nome)+
-  (n?"":'<span class="badge">sem uso</span>')+"</span>"+
+  (foraDaLista?'<span class="badge alerta">fora da lista</span>':n?"":'<span class="badge">sem uso</span>')+"</span>"+
   '<span class="e">'+esc(detalheUso(u))+"</span></span>"+
-  '<span class="dir"><button data-renomear="'+esc(nome)+'">Renomear</button>'+
-  '<button class="per" data-tirar="'+esc(nome)+'"'+(n?" disabled":"")+
-  ' title="'+(n?"Tem registro no nome dele":"Tirar da lista")+'">Tirar</button></span></div>';
+  '<span class="dir">'+(foraDaLista
+   ?'<button data-add-nome="'+esc(nome)+'">Acrescentar à lista</button>'
+   :'<button data-renomear="'+esc(nome)+'">Renomear</button>'+
+    '<button class="per" data-tirar="'+esc(nome)+'"'+(t?" disabled":"")+
+    ' title="'+(t?"Responde por negócio ou conta":"Tirar da lista")+'">Tirar</button>')+
+  "</span></div>";
 }
 function telaResponsaveis(){
  let h=moldura();
@@ -398,10 +413,20 @@ function telaResponsaveis(){
  if(state.resp.carregando)h+='<p class="carregando">Carregando…</p>';
  else if(!state.resp.lista)h+='<div class="vazio-msg">Não consegui ler a lista.</div>';
  else if(!state.resp.lista.length)h+='<div class="vazio-msg">Nenhum responsável na lista. Acrescente o primeiro acima.</div>';
- else h+='<p class="cont">'+state.resp.lista.length+
-  (state.resp.lista.length===1?" responsável":" responsáveis")+
-  (state.resp.gravada?"":" · lista ainda não gravada, veio dos negócios")+
-  '</p><div class="lista">'+state.resp.lista.map(linhaResp).join("")+"</div>";
+ else{
+  h+='<p class="cont">'+state.resp.lista.length+
+   (state.resp.lista.length===1?" responsável":" responsáveis")+
+   (state.resp.gravada?"":" · lista padrão, ainda não gravada")+
+   '</p><div class="lista">'+state.resp.lista.map(n=>linhaResp(n,false)).join("")+"</div>";
+  const fora=Object.keys(state.resp.uso).filter(n=>state.resp.lista.indexOf(n)<0)
+   .sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  if(fora.length)h+='<p class="cont" style="margin-top:20px">Em uso, fora da lista</p>'+
+   '<div class="lista">'+fora.map(n=>linhaResp(n,true)).join("")+"</div>"+
+   '<p class="dica">Nomes que aparecem em algum registro sem estar na lista de '+
+   'responsáveis. O painel mostra cada um marcado como “fora da lista”, para o '+
+   'registro não trocar de dono sozinho. Acrescente quem deve poder ser escolhido; '+
+   'deixe fora quem só carrega pendência.</p>';
+ }
  return h+"</main>";
 }
 
@@ -584,6 +609,15 @@ document.addEventListener("click",async e=>{
   return;
  }
 
+ if(el=g("[data-add-nome]")){
+  const nome=el.dataset.addNome;
+  await comOcupado(el,async()=>{
+   await gravarResponsaveis((state.resp.lista||[]).concat([nome]));
+   aviso("“"+nome+"” entrou na lista de responsáveis.","ok");
+  });
+  return;
+ }
+
  if(el=g("[data-renomear]")){
   const de=el.dataset.renomear;
   const para=(prompt("Novo nome para “"+de+"”:",de)||"").trim();
@@ -601,8 +635,10 @@ document.addEventListener("click",async e=>{
 
  if(el=g("[data-tirar]")){
   const nome=el.dataset.tirar,u=state.resp.uso[nome];
-  if(totalUso(u)){aviso("“"+nome+"” tem "+detalheUso(u)+". Passe para outra pessoa antes de tirar.","ruim");return}
-  if(!confirm("Tirar “"+nome+"” da lista? Ele deixa de aparecer nos campos de responsável."))return;
+  if(trava(nome)){aviso("“"+nome+"” responde por "+detalheUso(u)+". Passe para outra pessoa antes de tirar.","ruim");return}
+  const resto=u&&(u.pendencias||u.historico);
+  if(!confirm("Tirar “"+nome+"” da lista? Ele deixa de aparecer nos campos de responsável."+
+   (resto?" O nome dele continua escrito nas pendências e no histórico, marcado como fora da lista.":"")))return;
   await comOcupado(el,async()=>{
    await gravarResponsaveis((state.resp.lista||[]).filter(x=>x!==nome));
    aviso("“"+nome+"” saiu da lista.","ok");
