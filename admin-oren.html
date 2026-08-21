@@ -194,6 +194,12 @@ async function chamar(acao,dados){
   body:JSON.stringify(Object.assign({acao:acao},dados||{}))});
  const c=await r.json().catch(()=>({}));
  if(r.status===401){guardar(null);state.eu=null;throw new Error("Sua sessão expirou. Entre de novo.")}
+ /* No GitHub Pages não existe função de servidor: /api/admin devolve 404 e a
+    mensagem tem de dizer isso, em vez de um "não consegui" sem pista.
+    Responsáveis não passa por aqui e funciona nos dois endereços. */
+ if(r.status===404||r.status===405)throw new Error(
+  "Esta parte precisa da função de servidor (api/admin.js), que só existe no endereço do Vercel. "+
+  "Aqui dá para gerenciar responsáveis; criar pessoa e definir senha, não.");
  if(!r.ok)throw new Error(c.erro||"Não consegui concluir.");
  return c.dados;
 }

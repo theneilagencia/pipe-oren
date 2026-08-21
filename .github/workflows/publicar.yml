@@ -1,0 +1,83 @@
+# Publica o painel Oren a partir do repositório, a cada push no main.
+#
+# Existe porque publicar à mão dependia de alguém rodar ./publicar.sh no próprio
+# computador, e o que estava no ar deixava de ser o que está no repositório.
+#
+# São dois destinos, e eles não competem:
+#   - GitHub Pages: o painel e a página de administração. Não precisa de segredo
+#     nenhum. É o endereço do time.
+#   - Vercel: o mesmo conteúdo mais api/admin.js, a função que guarda a chave
+#     service_role e é a única que cria pessoa e define senha. Só roda quando os
+#     três segredos do Vercel existirem no repositório.
+name: publicar
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: true
+
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Montar a pasta que vai para o ar
+        run: |
+          set -e
+          mkdir -p site/admin
+          cp painel-oren.html site/index.html
+          cp admin-oren.html  site/admin/index.html
+          # Sem isto o Pages passa o conteúdo pelo Jekyll e ignora o que começa com _
+          touch site/.nojekyll
+          test -s site/index.html
+          test -s site/admin/index.html
+
+      - name: Conferir que o painel está inteiro
+        run: |
+          set -e
+          grep -q 'id="oren-dataset"' site/index.html
+          grep -q 'CARGA_ATA' site/index.html
+          grep -q 'data-secao="responsaveis"' site/admin/index.html
+          echo "painel e administração conferidos"
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publicar no Vercel, se houver credencial
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -e
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "Sem VERCEL_TOKEN, VERCEL_ORG_ID e VERCEL_PROJECT_ID nos segredos do repositório."
+            echo "O Pages já publicou o painel. A função api/admin.js, que cria pessoa e"
+            echo "define senha, continua só no Vercel: acrescente os três segredos em"
+            echo "Settings, Secrets and variables, Actions, e o próximo push publica lá também."
+            exit 0
+          fi
+          ./publicar.sh "$RUNNER_TEMP/painel-oren"

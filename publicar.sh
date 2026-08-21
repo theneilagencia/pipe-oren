@@ -24,4 +24,10 @@ find "$PASTA" -type f -not -path "*/.vercel/*" -not -name ".env*" \
 echo
 
 cd "$PASTA"
-npx vercel --prod
+# Com VERCEL_TOKEN no ambiente roda sem perguntar nada: e o caminho do CI.
+# Sem ele, e o npx de sempre, que pergunta o que precisa.
+if [ -n "$VERCEL_TOKEN" ]; then
+  npx --yes vercel --prod --yes --token "$VERCEL_TOKEN"
+else
+  npx vercel --prod
+fi

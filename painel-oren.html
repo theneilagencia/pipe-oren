@@ -867,9 +867,235 @@ async function migrarSeNecessario(){
  }
  console.warn("Não consegui gravar a migração depois de três tentativas. Os dados na tela estão convertidos.");
 }
+/* ================== CARGA DA ATA DE 21/08/2026 ==================
+   O mesmo conteúdo de supabase/ata-2026-08-21.sql, aplicado pelo próprio
+   painel na primeira entrada de um editor. Existe porque o SQL Editor
+   depende de alguém colar o script à mão, e o registro precisava estar no
+   ar. Roda uma vez: se N-048 já existe, só confere os campos definidos por
+   Vinícius em 21/08/2026 e não duplica nada.
+   Fonte: ata-2026-08-21-gtm-comercial-oren.docx, registro unilateral do
+   Paulo, pendente de validação na OB-20. Campo sem base na ata fica vazio;
+   valor não foi calculado (divergência de três ordens de grandeza no P1). */
+const CARGA_ATA={
+ "cliente": {
+  "id": "C-05",
+  "nome": "Gestora",
+  "tipo": "PJ",
+  "parceiroId": null,
+  "responsavel": "Paulo",
+  "frente": "payments",
+  "setor": "Fundos de investimento",
+  "uf": "",
+  "tier": "",
+  "status": "",
+  "porte": "",
+  "receitaRecorrente": 0,
+  "notas": "Contato: Fred, gestor de fundo externo. Razão social e CNPJ não informados na ata de 21/08/2026. Registro pendente de validação na OB-20.",
+  "exemplo": false,
+  "criadoEm": "2026-08-21",
+  "atualizadoEm": "2026-08-21",
+  "publico": "B2B"
+ },
+ "negocio": {
+  "id": "N-048",
+  "titulo": "Contas escrow para fundos de investimento",
+  "frente": "payments",
+  "tipoVenda": "direta",
+  "parceiroId": null,
+  "clienteId": "C-05",
+  "responsavel": "Paulo",
+  "valor": "",
+  "etapa": 2,
+  "proximoPasso": "Levantar volume médio mensal e ticket por transação nas contas escrow dos fundos alvo",
+  "prazo": "2026-08-26",
+  "chance": "",
+  "pendencias": [
+   {
+    "id": "PD-K4XQ7M",
+    "texto": "Volume e ticket das contas escrow desconhecidos. Sem esse dado não existe modelo de precificação. Ref. OB-01",
+    "responsavel": "Paulo",
+    "prazo": "2026-08-26",
+    "bloqueante": true,
+    "resolvida": false
+   },
+   {
+    "id": "PD-R9WBT2",
+    "texto": "Contraparte de stablecoin BRL não definida. A ata usa BRID e Bridge de forma intercambiável e são contrapartes distintas. Ref. OB-02 e P4",
+    "responsavel": "Theo",
+    "prazo": "2026-08-27",
+    "bloqueante": true,
+    "resolvida": false
+   },
+   {
+    "id": "PD-H3ZLD8",
+    "texto": "Parecer jurídico sobre o posicionamento comercial da frente pendente. Não abrir conta antes da conclusão. Ref. OB-03 e D1",
+    "responsavel": "Vinícius",
+    "prazo": "2026-08-29",
+    "bloqueante": true,
+    "resolvida": false
+   },
+   {
+    "id": "PD-M7VKC5",
+    "texto": "Enquadramento nas Res. BCB 519, 520, 521, 561 e 584 não mapeado. Marco externo em 30/10/2026. Ref. OB-04",
+    "responsavel": "Vinícius",
+    "prazo": "2026-09-03",
+    "bloqueante": true,
+    "resolvida": false
+   },
+   {
+    "id": "PD-Q2NFJ6",
+    "texto": "Razão social e CNPJ da gestora não identificados.",
+    "responsavel": "Paulo",
+    "prazo": "",
+    "bloqueante": false,
+    "resolvida": false
+   }
+  ],
+  "tese": "",
+  "estrutura": "",
+  "frenteCapital": "",
+  "investidor": "",
+  "statusCaptacao": "",
+  "cincoPerguntas": {
+   "pagamento": "NaoAvaliada",
+   "contrato": "NaoAvaliada",
+   "garantias": "NaoAvaliada",
+   "valorImovel": "NaoAvaliada",
+   "usoAlternativo": "NaoAvaliada"
+  },
+  "seisCamadas": {
+   "qualidadeEmpresa": {
+    "nota": 0,
+    "obs": ""
+   },
+   "contratoLongoPrazo": {
+    "nota": 0,
+    "obs": ""
+   },
+   "garantias": {
+    "nota": 0,
+    "obs": ""
+   },
+   "valorImovel": {
+    "nota": 0,
+    "obs": ""
+   },
+   "trocaOcupante": {
+    "nota": 0,
+    "obs": ""
+   },
+   "usoAlternativo": {
+    "nota": 0,
+    "obs": ""
+   }
+  },
+  "situacao": "",
+  "segmento": "",
+  "origem": "",
+  "ufs": "",
+  "papeis": {
+   "origina": "",
+   "estrutura": "",
+   "analisaRisco": "",
+   "buscaCapital": "",
+   "executa": "",
+   "acompanha": ""
+  },
+  "territorio": {
+   "populacaoRenda": {
+    "status": "NaoAvaliada",
+    "obs": ""
+   },
+   "areaInfluencia": {
+    "status": "NaoAvaliada",
+    "obs": ""
+   },
+   "concorrencia": {
+    "status": "NaoAvaliada",
+    "obs": ""
+   },
+   "crescimento": {
+    "status": "NaoAvaliada",
+    "obs": ""
+   },
+   "usoSolo": {
+    "status": "NaoAvaliada",
+    "obs": ""
+   },
+   "liquidez": {
+    "status": "NaoAvaliada",
+    "obs": ""
+   },
+   "operadoresAlternativos": {
+    "status": "NaoAvaliada",
+    "obs": ""
+   },
+   "potencialDesenvolvimento": {
+    "status": "NaoAvaliada",
+    "obs": ""
+   }
+  },
+  "comite": {
+   "decisao": "",
+   "condicoes": "",
+   "responsaveis": "",
+   "excecoes": "",
+   "validadeAte": ""
+  },
+  "motivoPerda": "",
+  "notas": "Origem: ata de 21/08/2026, áudio unilateral do Paulo, pendente de validação na OB-20.\nFred sinalizou intenção de abrir 500 contas escrow.\nPrecificação sugerida por ele: 0,5% de cash-in e 0,5% de cash-out. Não validada contra volume (P1).\nRequisito técnico declarado: operação real contra real, via stablecoin de real, sem exposição cambial.\nIncumbentes citados: Banco Fidúcia e Banco BMP, a R$ 250,00 por mês por conta com movimentação alta, mais tarifa por Pix, TED e boleto.\nDor declarada: bloqueios judiciais recorrentes nas contas escrow atuais.\nContexto de canal: mais de 80 fundos citados, sem contraparte identificada além do Fred.\nDefinido por Vinícius em 21/08/2026: a relação com o Fred é responsabilidade do Paulo, e as atividades atribuídas a Afrânio e Dani também respondem pelo Paulo.",
+  "tags": [],
+  "exemplo": false,
+  "criadoEm": "2026-08-21",
+  "atualizadoEm": "2026-08-21",
+  "fechadoEm": null,
+  "historico": [
+   {
+    "de": "—",
+    "para": "Qualificação",
+    "quando": "2026-08-21T00:00:00.000Z",
+    "quem": "Carga da ata de 21/08/2026"
+   }
+  ],
+  "publico": "B2B"
+ }
+};
+function aplicarCargaAta(d){
+ if(!d||!Array.isArray(d.deals)||!Array.isArray(d.customers))return null;
+ const cli=CARGA_ATA.cliente,neg=CARGA_ATA.negocio;
+ const jaCliente=d.customers.some(c=>c.id===cli.id);
+ const jaNegocio=d.deals.some(x=>x.id===neg.id);
+ if(!jaCliente)d.customers.push(JSON.parse(JSON.stringify(cli)));
+ if(!jaNegocio)d.deals.push(JSON.parse(JSON.stringify(neg)));
+ if(jaCliente&&jaNegocio){
+  /* Normalização: o cliente fica só como "Gestora" (Fred é contato, não
+     razão social) e a relação responde pelo Paulo. */
+  const c=d.customers.find(x=>x.id===cli.id),e=d.deals.find(x=>x.id===neg.id);
+  const antes=JSON.stringify([c.nome,c.notas,e.responsavel,e.notas]);
+  c.nome=cli.nome;c.notas=cli.notas;e.responsavel=neg.responsavel;e.notas=neg.notas;
+  if(JSON.stringify([c.nome,c.notas,e.responsavel,e.notas])===antes)return null;
+  return "normalizou";
+ }
+ return "inseriu";
+}
+async function cargaAtaSeNecessario(){
+ if(!state.data)return;
+ if(state.usuario&&state.usuario.papel==="leitor")return;
+ for(let tentativa=1;tentativa<=3;tentativa++){
+  const antes=state.data.deals.length+state.data.customers.length;
+  const oque=aplicarCargaAta(state.data);
+  if(!oque)return;
+  const depois=state.data.deals.length+state.data.customers.length;
+  console.log("Carga da ata de 21/08/2026: "+oque+" · registros antes "+antes+" · depois "+depois);
+  if(await gravarAgora()){console.log("Carga da ata gravada.");return;}
+  console.log("Conflito ao gravar a carga da ata. Recarreguei do servidor (tentativa "+tentativa+" de 3).");
+ }
+ console.warn("Não consegui gravar a carga da ata depois de três tentativas.");
+}
 async function carregarEMigrar(){
  if(!await carregarDoServidor(true))return false;
  await migrarSeNecessario();
+ await cargaAtaSeNecessario();
  render();
  return true;
 }
