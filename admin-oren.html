@@ -11,30 +11,36 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
 --deep:#092d29;--mid:#0e5351;--luz:#affa57;--creme:#e8f3e8;
---bg:#f3f3f1;--surf:#fff;--alt:#fafaf8;--bd:#e3e6e3;--bdf:#d4d8d4;
---tx:#1a1a1a;--tx2:#4a564f;--tx3:#6b7672;--neg:#b00020;--pos:#1a6e3a;
---av:#0e5351;--safe:env(safe-area-inset-bottom,0px);
+--bg:#f7f8f7;--surf:#fff;--alt:#f2f4f2;--bd:#ecefec;--bdf:#dde2dd;
+--tx:#16211d;--tx2:#5b6660;--tx3:#8a938e;--neg:#b00020;--pos:#1a6e3a;
+--av:#0e5351;--r:6px;--r2:10px;--fast:120ms;
+--sh1:0 1px 2px rgba(9,45,41,.05);--sh2:0 4px 16px rgba(9,45,41,.10);
+--sh3:0 16px 48px rgba(9,45,41,.18);--safe:env(safe-area-inset-bottom,0px);
 }
 body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
  font-size:13px;line-height:1.5;color:var(--tx);background:var(--bg);
  -webkit-font-smoothing:antialiased}
-button,input,select{font-family:inherit;font-size:13px;color:inherit;border-radius:0;max-width:100%}
-button{cursor:pointer;background:none;border:1px solid var(--bdf);padding:8px 12px;min-height:44px}
-button:hover{border-color:var(--mid)}
+button,input,select{font-family:inherit;font-size:13px;color:inherit;border-radius:var(--r);max-width:100%}
+button{cursor:pointer;background:var(--alt);border:1px solid transparent;padding:8px 12px;
+min-height:44px;color:var(--tx2);font-weight:500;
+transition:background var(--fast) ease-out,color var(--fast) ease-out,border-color var(--fast) ease-out}
+button:hover{background:#e6eae6;color:var(--tx)}
 button:disabled{opacity:.45;cursor:not-allowed}
 button:disabled:hover{border-color:var(--bdf)}
-input,select{border:1px solid var(--bd);background:var(--surf);padding:10px 12px;width:100%;min-height:44px}
+input,select{border:1px solid var(--bdf);background:var(--surf);padding:9px 11px;width:100%;
+min-height:44px;transition:border-color var(--fast) ease-out}
+input:hover,select:hover{border-color:#c9d0c9}
 input:focus,select:focus,button:focus-visible,.row:focus-visible{outline:2px solid var(--mid);outline-offset:1px}
 a{color:var(--mid)}
-.pri{background:var(--deep);color:#fff;border-color:var(--deep);font-weight:500}
-.pri:hover{background:var(--mid);border-color:var(--mid)}
-.per{color:var(--neg);border-color:#e6c4cb}
-.per:hover{border-color:var(--neg)}
+.pri{background:var(--mid);color:#fff;border-color:var(--mid);font-weight:600}
+.pri:hover{background:#0a4240;border-color:#0a4240;color:#fff}
+.per{color:var(--neg);background:#fdf0f2}
+.per:hover{background:#fbe3e7;color:var(--neg)}
 
 /* cabeçalho */
-header{background:var(--deep);color:var(--creme);padding:14px 20px;display:flex;
+header{background:var(--deep);color:var(--creme);padding:12px 20px;display:flex;
  gap:12px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:20}
-header .marca{font-size:15px;font-weight:600;letter-spacing:.01em}
+header .marca{font-size:14px;font-weight:600;letter-spacing:-.01em}
 header .marca span{font-size:10px;letter-spacing:.16em;font-weight:400;
  opacity:.72;margin-left:8px;text-transform:uppercase}
 header .eu{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:12px;opacity:.9;min-width:0}
@@ -42,12 +48,13 @@ header .eu .mail{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-w
 header a{color:var(--luz)}
 
 /* menu de secoes */
-.menu{display:flex;gap:0;border:1px solid var(--bd);background:var(--surf);margin-bottom:20px}
-.menu button{flex:1 1 0;border:0;border-right:1px solid var(--bd);min-height:44px;
- color:var(--tx2);font-weight:500}
-.menu button:last-child{border-right:0}
-.menu button:hover{background:var(--alt)}
-.menu button.on{background:var(--deep);color:#fff}
+/* Controle segmentado, a mesma pastilha do painel. */
+.menu{display:flex;gap:2px;border:1px solid var(--bd);background:var(--alt);padding:2px;
+ border-radius:var(--r2);margin-bottom:20px}
+.menu button{flex:1 1 0;border:0;background:none;min-height:36px;color:var(--tx2);font-weight:500;
+ border-radius:calc(var(--r2) - 3px)}
+.menu button:hover{background:rgba(255,255,255,.7);color:var(--tx)}
+.menu button.on{background:var(--surf);color:var(--deep);box-shadow:var(--sh1)}
 
 main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
 
@@ -61,10 +68,11 @@ main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
 /* lista */
 .cont{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);
  margin:0 0 8px 2px}
-.lista{background:var(--surf);border:1px solid var(--bd)}
+.lista{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden}
 .row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:0;
  border-bottom:1px solid var(--bd);padding:14px 14px;min-height:68px;background:none}
 .row:last-child{border-bottom:0}
+.row{transition:background var(--fast) ease-out}
 .row:hover{background:var(--alt);border-color:var(--bd)}
 .av{flex:0 0 auto;width:36px;height:36px;border-radius:999px;background:var(--av);color:#fff;
  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;
@@ -84,11 +92,12 @@ main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
 .badge.alerta{border-color:#e4d9a8;background:#fbf7e6;color:#6b5a12}
 .badge.leitor{border-color:var(--bdf);color:var(--tx3)}
 
-.vazio-msg{background:var(--surf);border:1px solid var(--bd);padding:28px 16px;text-align:center;color:var(--tx3)}
+.vazio-msg{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);
+padding:28px 16px;text-align:center;color:var(--tx3)}
 
 /* aviso */
-.aviso{border:1px solid var(--bd);background:var(--surf);padding:12px 14px;margin-bottom:14px;
- display:flex;gap:10px;align-items:flex-start}
+.aviso{border:1px solid var(--bd);background:var(--surf);border-radius:var(--r2);
+padding:11px 13px;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
 .aviso.ok{border-color:#bcd9c4;background:#f1f8f3;color:var(--pos)}
 .aviso.ruim{border-color:#e6c4cb;background:#fdf4f5;color:var(--neg)}
 .aviso button{border:0;min-height:auto;padding:0 2px;color:inherit;margin-left:auto;opacity:.7}
@@ -97,9 +106,9 @@ main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
 #fundo{position:fixed;inset:0;background:rgba(9,45,41,.42);z-index:30;opacity:0;
  pointer-events:none;transition:opacity .16s}
 #fundo.on{opacity:1;pointer-events:auto}
-#gav{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--bg);
- z-index:31;transform:translateX(101%);transition:transform .2s ease-out;
- display:flex;flex-direction:column;box-shadow:-2px 0 16px rgba(9,45,41,.14)}
+#gav{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--bg);
+ z-index:31;transform:translateX(101%);transition:transform 160ms cubic-bezier(.32,.72,0,1);
+ display:flex;flex-direction:column;box-shadow:var(--sh3)}
 #gav.on{transform:none}
 #gav .gh{background:var(--surf);border-bottom:1px solid var(--bd);padding:16px;
  display:flex;gap:12px;align-items:flex-start;position:sticky;top:0}
@@ -111,13 +120,12 @@ main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
 #gav .fechar:hover{color:var(--tx)}
 #gav .corpo{overflow-y:auto;flex:1 1 auto;padding:16px 16px calc(24px + var(--safe));
  display:flex;flex-direction:column;gap:14px}
-.bloco{background:var(--surf);border:1px solid var(--bd);padding:14px}
+.bloco{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);padding:14px}
 .bloco h3{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);
  font-weight:500;margin-bottom:12px}
 .campo{margin-bottom:12px}
 .campo:last-of-type{margin-bottom:0}
-.campo label{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
- color:var(--tx3);margin-bottom:5px}
+.campo label{display:block;font-size:12px;color:var(--tx2);margin-bottom:5px;font-weight:500}
 .linha{display:flex;gap:8px;align-items:stretch}
 .linha input{flex:1 1 auto;min-width:0}
 .linha button{flex:0 0 auto;white-space:nowrap}
@@ -131,7 +139,8 @@ main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
 
 /* login */
 .entrada{max-width:340px;margin:12vh auto;padding:0 16px}
-.entrada .cx{background:var(--surf);border:1px solid var(--bd);padding:22px}
+.entrada .cx{background:var(--surf);border:1px solid var(--bdf);border-radius:var(--r2);
+box-shadow:var(--sh3);padding:22px}
 .entrada h1{font-size:16px;font-weight:600;margin-bottom:4px}
 .entrada p.sub{color:var(--tx3);margin-bottom:18px}
 .entrada .campo{margin-bottom:12px}
@@ -409,7 +418,8 @@ function telaResponsaveis(){
   '<button class="pri" data-add-resp>Acrescentar</button></div>'+
   '<p class="dica">Esta lista é a que o painel oferece nos campos de responsável. '+
   'Renomear troca o nome em todos os negócios, pendências, contas e no histórico. '+
-  'Tirar só é possível quando ninguém está no nome da pessoa.</p></div>';
+  'Tirar fica travado para quem responde por negócio ou conta; quem só carrega '+
+  'pendência sai da lista e continua com o nome escrito nela.</p></div>';
  if(state.resp.carregando)h+='<p class="carregando">Carregando…</p>';
  else if(!state.resp.lista)h+='<div class="vazio-msg">Não consegui ler a lista.</div>';
  else if(!state.resp.lista.length)h+='<div class="vazio-msg">Nenhum responsável na lista. Acrescente o primeiro acima.</div>';

@@ -8,151 +8,207 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script id="oren-dataset" type="application/json">{"partners":[],"customers":[],"deals":[]}</script>
 <style>
-/* ================= BASE (mobile first — 360px) ================= */
+/* ================= BASE (mobile first — 360px) =================
+   Sistema visual revisto com a gramática das ferramentas de trabalho
+   modernas — Linear como referência: densidade alta, fio de cabelo em vez de
+   moldura, cinza com hierarquia em vez de caixa dentro de caixa, movimento
+   curto, e o verde da marca reservado para o que é ação ou estado. */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
 --deep:#092d29;--mid:#0e5351;--luz:#affa57;--creme:#e8f3e8;
 --capital:#62cc6d;--governance:#1da688;--payments:#affa57;
---bg:#f3f3f1;--surf:#fff;--alt:#fafaf8;--bd:#e3e6e3;--bdf:#d4d8d4;
---tx:#1a1a1a;--tx2:#4a564f;--tx3:#6b7672;--neg:#b00020;--pos:#1a6e3a;
---nav:56px;--safe:env(safe-area-inset-bottom,0px);
+--bg:#f7f8f7;--surf:#fff;--alt:#f2f4f2;--bd:#ecefec;--bdf:#dde2dd;
+--tx:#16211d;--tx2:#5b6660;--tx3:#8a938e;--neg:#b00020;--pos:#1a6e3a;
+--r:6px;--r2:10px;--sh1:0 1px 2px rgba(9,45,41,.05);
+--sh2:0 4px 16px rgba(9,45,41,.10);--sh3:0 16px 48px rgba(9,45,41,.18);
+--fast:120ms;--nav:56px;--safe:env(safe-area-inset-bottom,0px);
 }
 html{-webkit-text-size-adjust:100%}
 html,body{min-height:100%}
 body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
 font-size:13px;font-weight:400;line-height:1.45;color:var(--tx);background:var(--bg);
-font-variant-numeric:tabular-nums;display:flex;min-width:0}
+font-variant-numeric:tabular-nums;display:flex;min-width:0;
+-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 svg{max-width:100%}
-button,input,select,textarea{font-family:inherit;font-size:13px;color:inherit;border-radius:0;max-width:100%}
-button{cursor:pointer;background:none;border:1px solid var(--bdf);padding:8px 12px;min-height:44px}
-button:hover{border-color:var(--mid)}
-select,textarea,input:not([type=checkbox]){min-height:44px;padding:8px;min-width:0}
+button,input,select,textarea{font-family:inherit;font-size:13px;color:inherit;border-radius:var(--r);max-width:100%}
+/* Botão neutro: fundo suave em vez de moldura. Moldura em tudo era o que dava
+   o aspecto de formulário antigo. */
+button{cursor:pointer;background:var(--alt);border:1px solid transparent;padding:8px 12px;
+min-height:44px;color:var(--tx2);font-weight:500;transition:background var(--fast) ease-out,
+color var(--fast) ease-out,border-color var(--fast) ease-out}
+button:hover{background:#e6eae6;color:var(--tx)}
+select,textarea,input:not([type=checkbox]){min-height:44px;padding:8px 10px;min-width:0;
+background:var(--surf);border:1px solid var(--bdf);transition:border-color var(--fast) ease-out}
+select:hover,input:not([type=checkbox]):hover{border-color:#c9d0c9}
 :focus-visible{outline:2px solid var(--mid);outline-offset:1px}
 a{color:var(--mid);text-decoration:none}
 a:hover{color:var(--deep);text-decoration:underline}
-.lbl{font-size:11px;letter-spacing:.12em;color:var(--tx3);text-transform:uppercase}
-.num{font-size:32px;font-weight:400;letter-spacing:-.02em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.lbl{font-size:11px;letter-spacing:.1em;color:var(--tx3);text-transform:uppercase;font-weight:500}
+.num{font-size:24px;font-weight:600;letter-spacing:-.025em;line-height:1.25;
+font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .d15{font-size:15px}
 .mut{color:var(--tx2)}
 .soft{color:var(--tx3)}
 .mt16{margin-top:16px}
 .sep{margin:0 4px}
+/* tecla, no estilo das ferramentas com atalho em tudo */
+kbd{font-family:inherit;font-size:10px;line-height:1;padding:3px 5px;border-radius:4px;
+background:var(--alt);color:var(--tx3);border:1px solid var(--bd);white-space:nowrap;
+font-variant-numeric:tabular-nums}
 /* ================= LATERAL (só a partir de 1024px) ================= */
-#side{display:none;width:200px;flex:0 0 200px;background:var(--deep);color:var(--creme);
+#side{display:none;width:224px;flex:0 0 224px;background:var(--deep);color:var(--creme);
 flex-direction:column;height:100vh;position:sticky;top:0}
-#side .brand{padding:16px;border-bottom:1px solid rgba(232,243,232,.15)}
-#side .brand b{font-weight:500;font-size:15px;letter-spacing:-.01em}
-#side .brand div{font-size:11px;letter-spacing:.14em;color:var(--luz);margin-top:4px}
-#nav{display:flex;flex-direction:column;padding:8px 0}
-#nav button{border:0;text-align:left;padding:8px 16px;color:var(--creme);font-size:13px;
-border-left:2px solid transparent;min-height:44px}
-#nav button:hover{background:rgba(232,243,232,.07)}
-#nav button.on{background:rgba(175,250,87,.12);border-left-color:var(--luz);font-weight:500}
-#menu{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(232,243,232,.15);
-display:flex;flex-direction:column;gap:4px}
-#menu .menur,#menu2 .menur{display:flex;align-items:center;gap:4px}
+#side .brand{padding:14px 16px 12px}
+#side .brand b{font-weight:600;font-size:14px;letter-spacing:-.01em}
+#side .brand div{font-size:10px;letter-spacing:.14em;color:rgba(175,250,87,.75);margin-top:3px}
+#nav{display:flex;flex-direction:column;padding:4px 8px;gap:2px}
+#nav button{border:0;background:none;text-align:left;padding:6px 8px;color:rgba(232,243,232,.78);
+font-size:13px;font-weight:500;min-height:34px;border-radius:var(--r);
+display:flex;align-items:center;gap:10px}
+#nav button svg{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.6}
+#nav button .atk{margin-left:auto;font-size:10px;letter-spacing:.08em;opacity:0;
+color:rgba(232,243,232,.5)}
+#nav button:hover{background:rgba(232,243,232,.08);color:var(--creme)}
+#nav button:hover .atk{opacity:1}
+#nav button.on{background:rgba(175,250,87,.14);color:var(--luz)}
+#menu{margin-top:auto;padding:8px;border-top:1px solid rgba(232,243,232,.1);
+display:flex;flex-direction:column;gap:2px}
+#menu .menur,#menu2 .menur{display:flex;align-items:center;gap:2px}
 #menu .menur button[data-menu],#menu2 .menur button[data-menu]{flex:1 1 auto;min-width:0;text-align:left}
-#menu button{border:0;text-align:left;color:rgba(232,243,232,.72);font-size:11px;padding:8px;min-height:44px}
-#menu button:hover{color:var(--luz)}
+#menu button{border:0;background:none;text-align:left;color:rgba(232,243,232,.6);font-size:12px;
+padding:6px 8px;min-height:32px;border-radius:var(--r);font-weight:400}
+#menu button:hover{color:var(--creme);background:rgba(232,243,232,.06)}
 /* ================= PRINCIPAL ================= */
 #main{flex:1;min-width:0;display:flex;flex-direction:column;
 padding-bottom:calc(var(--nav) + var(--safe) + 24px)}
-#top{background:var(--deep);color:var(--creme);display:flex;align-items:center;flex-wrap:wrap;
-gap:8px;padding:8px 16px;position:sticky;top:0;z-index:5}
-#brandm{font-size:15px;font-weight:500;letter-spacing:-.01em;color:var(--luz);flex:0 0 auto}
-#top h1{font-size:15px;font-weight:400;letter-spacing:-.02em;min-width:0;
+/* A barra de cima deixou de ser um bloco escuro: agora é superfície clara com
+   um fio embaixo, e o escuro fica só na lateral. Menos peso, mais foco no dado. */
+#top{background:var(--surf);color:var(--tx);display:flex;align-items:center;flex-wrap:wrap;
+gap:8px;padding:8px 16px;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--bd)}
+#brandm{font-size:14px;font-weight:600;letter-spacing:-.01em;color:var(--deep);flex:0 0 auto}
+#top h1{font-size:14px;font-weight:600;letter-spacing:-.01em;min-width:0;
 white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#busca{order:5;flex:1 1 100%;background:rgba(232,243,232,.1);border:1px solid rgba(232,243,232,.25);
-color:var(--creme);padding:8px}
-#busca::placeholder{color:rgba(232,243,232,.55)}
-#savedot{font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-left:auto;flex:0 0 auto}
-#savedot.ok{color:var(--luz)}
-#savedot.no{color:#ffd7d7}
+#busca{order:5;flex:1 1 100%;background:var(--alt);border:1px solid transparent;
+color:var(--tx);padding:8px 10px;border-radius:var(--r)}
+#busca::placeholder{color:var(--tx3)}
+#busca:hover{border-color:var(--bdf)}
+#busca:focus{background:var(--surf);border-color:var(--mid)}
+#savedot{order:2;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-left:auto;
+flex:0 0 auto;color:var(--tx3);font-weight:500}
+#savedot.ok{color:var(--pos)}
+#savedot.no{color:var(--neg)}
 #btnnovo{display:none}
 #hbusca{order:4}
-/* menu de ações no celular */
-#menum{position:relative;flex:0 0 auto}
+/* Atalho para a paleta, escrito no próprio botão: é assim que se aprende. */
+#btncmd{order:3;flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:var(--alt);
+border:1px solid transparent;color:var(--tx3);padding:6px 8px;min-height:36px;font-weight:500}
+#btncmd:hover{background:#e6eae6;color:var(--tx)}
+#btncmd .rot{display:none}
+@media (max-width:1023px){#btncmd kbd{display:none}}
+/* botão do menu de ações no celular */
+#menum{order:4;position:relative;flex:0 0 auto}
 #menum summary{list-style:none;cursor:pointer;min-height:44px;min-width:44px;display:flex;
-align-items:center;justify-content:center;padding:8px 12px;font-size:11px;letter-spacing:.12em;
-text-transform:uppercase;border:1px solid rgba(232,243,232,.25)}
+align-items:center;justify-content:center;padding:8px 12px;font-size:11px;letter-spacing:.1em;
+text-transform:uppercase;border:1px solid var(--bdf);border-radius:var(--r);color:var(--tx2)}
 #menum summary::-webkit-details-marker{display:none}
-#menum[open] summary{border-color:var(--luz)}
-#menu2{position:absolute;right:0;top:calc(100% + 8px);z-index:6;min-width:200px;
-background:var(--surf);border:1px solid var(--bdf);display:flex;flex-direction:column;padding:4px}
-#menu2 button{border:0;text-align:left;color:var(--tx);padding:8px 12px;min-height:44px}
+#menum[open] summary{border-color:var(--mid);color:var(--mid)}
+#menu2{position:absolute;right:0;top:calc(100% + 6px);z-index:6;min-width:220px;
+background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);box-shadow:var(--sh2);
+display:flex;flex-direction:column;padding:4px}
+#menu2 button{border:0;background:none;text-align:left;color:var(--tx);padding:8px 10px;
+min-height:40px;border-radius:var(--r);font-weight:400}
 #menu2 button:hover{background:var(--alt)}
-#chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:16px 16px 0;min-width:0}
+#chips{display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center;padding:12px 16px 0;min-width:0}
 #content{padding:16px;flex:1;min-width:0}
 /* ================= NAVEGAÇÃO INFERIOR + FLUTUANTE (celular/tablet) ================= */
 #bnav{position:fixed;left:0;right:0;bottom:0;z-index:18;display:flex;background:var(--deep);
-border-top:1px solid rgba(232,243,232,.15);padding-bottom:var(--safe)}
-#bnav button{flex:1 1 0;min-width:0;border:0;height:var(--nav);min-height:var(--nav);
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;
-color:rgba(232,243,232,.72);font-size:11px;letter-spacing:.04em;transition:color 150ms ease-out}
-#bnav button:hover{border:0}
-#bnav button svg{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.5}
+padding-bottom:var(--safe)}
+#bnav button{flex:1 1 0;min-width:0;border:0;background:none;height:var(--nav);min-height:var(--nav);
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;
+color:rgba(232,243,232,.68);font-size:10px;letter-spacing:.04em;font-weight:500;
+transition:color var(--fast) ease-out}
+#bnav button:hover{border:0;background:none}
+#bnav button svg{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.6}
 #bnav button.on{color:var(--luz)}
 #fab{position:fixed;right:16px;bottom:calc(var(--nav) + var(--safe) + 16px);z-index:19;
-width:56px;height:56px;min-height:56px;padding:0;border:0;border-radius:999px;
-background:var(--mid);color:#fff;font-size:24px;line-height:1;
+width:52px;height:52px;min-height:52px;padding:0;border:0;border-radius:999px;
+background:var(--mid);color:#fff;font-size:24px;line-height:1;box-shadow:var(--sh2);
 display:flex;align-items:center;justify-content:center}
 #fab:hover{background:var(--deep);border:0}
 /* ================= CHIPS + FILTROS ================= */
-.chip{display:flex;align-items:center;gap:8px;border:1px solid var(--bdf);background:var(--surf);
-padding:4px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);
-min-width:0;max-width:100%;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:6px;border:1px solid var(--bd);background:var(--surf);
+padding:3px 6px 3px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+color:var(--tx3);min-width:0;max-width:100%;flex-wrap:wrap;border-radius:var(--r2);font-weight:500}
 .chip b{font-weight:500;color:var(--tx);text-transform:none;letter-spacing:0;font-size:13px;
 min-width:0;overflow-wrap:anywhere}
-.chip select{border:1px solid var(--bd);background:var(--alt);padding:8px;min-width:0}
-.chip button{border:0;padding:0 8px;color:var(--tx3);font-size:13px;line-height:1;min-height:44px;min-width:44px}
-.chip button:hover{color:var(--neg)}
-.seg{display:flex;border:1px solid var(--bdf);background:var(--surf);min-width:0;max-width:100%}
-.seg button{border:0;border-right:1px solid var(--bd);padding:8px 12px;color:var(--tx2);min-width:0}
-.seg button:last-child{border-right:0}
-.seg button.on{background:var(--mid);color:#fff;font-weight:500}
+.chip>.cl{display:none}
+/* Filtro em uso ganha a cor da ação: dá para ver de longe que a tela está filtrada. */
+.chip.ativo{border-color:#bcd6c6;background:#f4faf6}
+.chip.ativo select{color:var(--mid)}
+.chip select{border:1px solid transparent;background:none;padding:6px 4px;min-width:0;min-height:32px;
+font-weight:500;color:var(--tx)}
+.chip select:hover{border-color:var(--bdf);background:var(--alt)}
+.chip button{border:0;background:none;padding:0 6px;color:var(--tx3);font-size:14px;line-height:1;
+min-height:44px;min-width:44px;border-radius:999px}
+.chip button:hover{color:var(--neg);background:var(--alt)}
+/* controle segmentado: pastilha que desliza sobre fundo neutro */
+.seg{display:flex;background:var(--alt);border:1px solid var(--bd);min-width:0;max-width:100%;
+border-radius:var(--r2);padding:2px;gap:2px}
+.seg button{border:0;background:none;padding:6px 12px;color:var(--tx2);min-width:0;min-height:34px;
+border-radius:calc(var(--r2) - 3px);font-weight:500;white-space:nowrap}
+.seg button:hover{background:rgba(255,255,255,.7);color:var(--tx)}
+.seg button.on{background:var(--surf);color:var(--deep);box-shadow:var(--sh1)}
 .tbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.lnk{margin-left:auto;border:0;color:var(--mid);text-decoration:underline;padding:8px 0}
-.lnk:hover{border:0;color:var(--deep)}
+.lnk{margin-left:auto;border:0;background:none;color:var(--mid);padding:8px 0;font-weight:500}
+.lnk:hover{border:0;background:none;color:var(--deep);text-decoration:underline}
 /* ================= CARTÕES ================= */
-.grid{display:grid;gap:16px}
+.grid{display:grid;gap:12px}
 .kpis{grid-template-columns:1fr}
 .g2{grid-template-columns:1fr}
-.card{background:var(--surf);border:1px solid var(--bd);padding:12px;min-width:0}
-.card h2{font-size:15px;font-weight:500;margin-bottom:12px}
-.kpi .num{margin:8px 0 4px}
+.card{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);padding:14px;min-width:0}
+.card h2{font-size:13px;font-weight:600;margin-bottom:12px;letter-spacing:-.01em;
+display:flex;align-items:center}
+.kpi .num{margin:6px 0 4px}
 .delta{font-size:11px;letter-spacing:.04em}
 .up{color:var(--pos)}.down{color:var(--neg)}
 .tbl{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);text-align:left;
-font-weight:500;padding:8px 12px;border-bottom:1px solid var(--bdf);white-space:nowrap}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);text-align:left;
+font-weight:500;padding:8px 12px;border-bottom:1px solid var(--bd);white-space:nowrap}
 th.s{cursor:pointer}th.s:hover{color:var(--mid)}
-td{padding:8px 12px;border-bottom:1px solid var(--bd);vertical-align:top;font-variant-numeric:tabular-nums}
-tbody tr:nth-child(even){background:var(--alt)}
+td{padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top;font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
 tbody tr.clk{cursor:pointer}
-tbody tr.clk:hover{background:#eef4ee}
-.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;letter-spacing:.06em;
-background:var(--bg);border:1px solid var(--bdf);white-space:nowrap}
-.dot{display:inline-block;width:8px;height:8px;border-radius:999px;margin-right:4px;
+tbody tr.clk:hover{background:var(--alt)}
+.badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:11px;letter-spacing:.04em;
+background:var(--alt);border:1px solid var(--bd);white-space:nowrap;color:var(--tx2);font-weight:500}
+.dot{display:inline-block;width:6px;height:6px;border-radius:999px;margin-right:6px;
 vertical-align:middle;flex:0 0 auto}
-.ini{display:inline-flex;width:24px;height:24px;border:1px solid var(--bdf);align-items:center;
-justify-content:center;font-size:11px;color:var(--tx2);background:var(--alt);flex:0 0 auto}
+.ini{display:inline-flex;width:22px;height:22px;border:1px solid var(--bd);align-items:center;
+justify-content:center;font-size:10px;font-weight:600;color:var(--tx2);background:var(--alt);
+flex:0 0 auto;border-radius:999px;letter-spacing:.02em}
 .late{color:var(--neg)}
 .empty{color:var(--tx3);font-size:13px;padding:16px 0;border-top:1px solid var(--bd)}
 /* ================= LISTAS DE DUAS LINHAS ================= */
 .rowlist{display:flex;flex-direction:column;min-width:0}
 .rowlist>div{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
-gap:4px;padding:12px 0;border-bottom:1px solid var(--bd);min-height:44px;min-width:0}
+gap:3px;padding:10px 0;border-bottom:1px solid var(--bd);min-height:44px;min-width:0;
+transition:background var(--fast) ease-out}
 .rowlist>div:last-child{border-bottom:0}
-.rl-main{display:block;max-width:100%;min-width:0;font-size:14px;font-weight:500;
+.rowlist>div[data-abre]{cursor:pointer;padding-left:6px;padding-right:6px;margin:0 -6px;
+border-radius:var(--r)}
+.rowlist>div[data-abre]:hover{background:var(--alt)}
+.rl-main{display:block;max-width:100%;min-width:0;font-size:13px;font-weight:500;
 white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rl-sub{display:block;max-width:100%;min-width:0;font-size:12px;color:var(--tx3);
 white-space:normal;overflow-wrap:anywhere}
 /* lista de cartões (celular) */
-.clist{display:flex;flex-direction:column;gap:8px;min-width:0}
-.ci{display:flex;flex-direction:column;gap:4px;background:var(--surf);border:1px solid var(--bd);
-padding:12px;min-height:44px;min-width:0;cursor:pointer}
-.ci .t{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.clist{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ci{display:flex;flex-direction:column;gap:3px;background:var(--surf);border:1px solid var(--bd);
+border-radius:var(--r2);padding:12px;min-height:44px;min-width:0;cursor:pointer;
+transition:border-color var(--fast) ease-out,background var(--fast) ease-out}
+.ci:hover{border-color:var(--bdf);background:#fdfdfc}
+.ci .t{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .ci .s{font-size:12px;color:var(--tx3);overflow-wrap:anywhere}
 /* ================= GRÁFICOS ================= */
 .gsvg{display:block;width:100%;height:auto}
@@ -160,129 +216,178 @@ padding:12px;min-height:44px;min-width:0;cursor:pointer}
 .rosca>svg{width:100%;max-width:180px;height:auto;align-self:center;flex:0 0 auto}
 .rosca>.rowlist{flex:1 1 auto;min-width:0}
 /* ================= QUADRO ================= */
-.board{display:flex;gap:12px;align-items:flex-start;overflow-x:auto;overflow-y:visible;
+.board{display:flex;gap:10px;align-items:flex-start;overflow-x:auto;overflow-y:visible;
 scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px 12px}
 .bwrap+.bwrap{margin-top:24px}
-.bh{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.bh{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;font-size:11px;
+letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:500}
 .fun+.fun{margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)}
-#pubseg{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:16px 16px 0;min-width:0}
-.badge.b2c{border-color:#9ec7a8;background:#eef7f0;color:#1a6e3a}
-.col{flex:0 0 86vw;scroll-snap-align:start;min-width:0;background:var(--surf);
-border:1px solid var(--bd);min-height:200px;display:flex;flex-direction:column}
-.col.over{border-color:var(--mid);background:#f2f8f4}
-.colh{padding:12px;border-bottom:1px solid var(--bdf)}
-.colh .n{font-size:13px;font-weight:500}
-.colh .m{font-size:11px;color:var(--tx3);margin-top:4px;letter-spacing:.04em}
-.cards{padding:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
-.dc{border:1px solid var(--bd);background:var(--surf);padding:12px;cursor:pointer;min-width:0}
-.dc:hover{border-color:var(--bdf)}
+#pubseg{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px 0;min-width:0}
+.badge.b2c{border-color:#cbe3d1;background:#f0f7f2;color:var(--pos)}
+/* Coluna sem moldura: fundo levemente rebaixado, como as raias das ferramentas
+   modernas. A moldura em cada coluna competia com a moldura de cada cartão. */
+.col{flex:0 0 86vw;scroll-snap-align:start;min-width:0;background:var(--alt);
+border:1px solid transparent;border-radius:var(--r2);min-height:180px;display:flex;flex-direction:column;
+transition:background var(--fast) ease-out,border-color var(--fast) ease-out}
+.col.over{border-color:var(--mid);background:#eaf3ee}
+.colh{padding:10px 12px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.colh .n{font-size:12px;font-weight:600;color:var(--tx2);letter-spacing:-.01em}
+.colh .m{font-size:11px;color:var(--tx3);letter-spacing:.02em;margin-left:auto}
+.cards{padding:0 8px 8px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.dc{border:1px solid var(--bd);background:var(--surf);border-radius:var(--r);padding:10px;
+cursor:pointer;min-width:0;box-shadow:var(--sh1);
+transition:border-color var(--fast) ease-out,box-shadow var(--fast) ease-out}
+.dc:hover{border-color:var(--bdf);box-shadow:var(--sh2)}
 .dc.drag{opacity:.4}
-.dc .cl{font-size:14px;font-weight:500;letter-spacing:-.01em;margin-bottom:4px;overflow-wrap:anywhere}
-.dc .vl{font-weight:500;font-variant-numeric:tabular-nums}
-.dc .rw{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;min-width:0}
-.dc .np{font-size:13px;color:var(--tx2);margin-top:8px;white-space:nowrap;overflow:hidden;
+.dc .cl{font-size:13px;font-weight:600;letter-spacing:-.01em;margin-bottom:3px;overflow-wrap:anywhere}
+.dc .vl{font-weight:600;font-variant-numeric:tabular-nums}
+.dc .rw{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap;min-width:0}
+.dc .np{font-size:12px;color:var(--tx2);margin-top:6px;white-space:nowrap;overflow:hidden;
 text-overflow:ellipsis;min-width:0}
-.dc select{width:100%;margin-top:8px;border:1px solid var(--bd);padding:8px;background:var(--alt);font-size:12px}
+.dc select{width:100%;margin-top:8px;border:1px solid var(--bd);padding:6px 8px;
+background:var(--alt);font-size:12px}
 .dc .err{margin-top:8px;border-left:2px solid var(--neg);padding:8px;background:#fff5f5;
-color:var(--neg);font-size:11px;line-height:1.4}
+color:var(--neg);font-size:11px;line-height:1.4;border-radius:0 var(--r) var(--r) 0}
 /* ================= FOLHA / PAINEL DE DETALHE ================= */
 #panel{position:fixed;left:0;right:0;bottom:0;top:0;width:100%;background:var(--surf);
 z-index:20;display:flex;flex-direction:column;overflow:auto;overscroll-behavior:contain;
-transform:translateY(100%);transition:transform 150ms ease-out;
-box-shadow:0 -8px 32px rgba(9,45,41,.18);padding-bottom:calc(var(--safe) + 24px)}
+transform:translateY(100%);transition:transform 160ms cubic-bezier(.32,.72,0,1);
+box-shadow:var(--sh3);padding-bottom:calc(var(--safe) + 24px)}
 #panel.open{transform:translateY(0)}
-#shade{position:fixed;inset:0;background:rgba(9,45,41,.25);z-index:15;display:none}
+#shade{position:fixed;inset:0;background:rgba(9,45,41,.28);z-index:15;display:none;
+backdrop-filter:blur(1px)}
 #shade.open{display:block}
-.ph{background:var(--deep);color:var(--creme);padding:16px;position:sticky;top:0;z-index:2}
-.ph .x{float:right;border:0;color:var(--creme);font-size:13px;padding:8px;min-height:44px}
-.ph .x:hover{color:var(--luz);border:0}
-.pb{padding:16px}
-.trk{display:flex;gap:8px;margin:16px 0;overflow-x:auto;scroll-snap-type:x mandatory;
+/* Cabeçalho da gaveta em superfície clara: o bloco verde escuro roubava a
+   atenção do que importa, que é o nome do negócio. */
+.ph{background:var(--surf);color:var(--tx);padding:14px 16px;position:sticky;top:0;z-index:2;
+border-bottom:1px solid var(--bd)}
+.ph .x{float:right;border:0;background:none;color:var(--tx3);font-size:12px;padding:6px 8px;
+min-height:36px;font-weight:500}
+.ph .x:hover{color:var(--tx);background:var(--alt)}
+.ph .lbl{color:var(--tx3)!important}
+.pb{padding:12px 16px}
+/* trilha de etapas: barra fina contínua, etapa atual em destaque */
+.trk{display:flex;gap:6px;margin:12px 0 16px;overflow-x:auto;scroll-snap-type:x mandatory;
 -webkit-overflow-scrolling:touch;scrollbar-width:none}
 .trk::-webkit-scrollbar{display:none}
-.trk button{position:relative;flex:0 0 132px;scroll-snap-align:start;min-width:0;
-display:flex;flex-direction:column;gap:4px;padding:8px;min-height:64px;
-border:0;background:none;text-align:left}
+.trk button{position:relative;flex:0 0 128px;scroll-snap-align:start;min-width:0;
+display:flex;flex-direction:column;gap:4px;padding:10px 8px 8px;min-height:62px;
+border:0;background:none;text-align:left;border-radius:var(--r)}
 .trk button:hover{border:0;background:var(--alt)}
-.trk .bar{position:absolute;top:0;left:0;right:0;height:3px;background:var(--bd)}
-.trk button.done .bar,.trk button.now .bar{background:var(--mid)}
-.trk .n{font-size:11px;line-height:1;color:var(--tx3)}
+.trk .bar{position:absolute;top:0;left:0;right:0;height:2px;background:var(--bdf);border-radius:2px}
+.trk button.done .bar{background:var(--governance)}
+.trk button.now .bar{background:var(--mid)}
+.trk .n{font-size:10px;line-height:1;color:var(--tx3);font-weight:600;letter-spacing:.04em}
 .trk .t{font-size:12px;line-height:1.3;color:var(--tx3);
 display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.trk button.now .t{color:var(--tx);font-weight:500}
-.fld{display:grid;grid-template-columns:1fr;gap:4px;padding:8px 0;
+.trk button.now .t{color:var(--tx);font-weight:600}
+.fld{display:grid;grid-template-columns:1fr;gap:3px;padding:8px 0;
 border-bottom:1px solid var(--bd);align-items:start;min-width:0}
-.fld>.lbl{padding-top:4px}
+.fld>.lbl{padding-top:3px;text-transform:none;letter-spacing:0;font-size:12px;font-weight:400}
 .fld>span{min-width:0;overflow-wrap:anywhere}
-.sec{border-top:1px solid var(--bdf);margin-top:12px}
+.sec{border-top:1px solid var(--bd);margin-top:8px}
 .sec>.sech{display:flex;align-items:center;gap:8px}
-.sec>.sech>button[data-sec]{flex:1 1 auto;min-width:0;border:0;text-align:left;padding:12px 0;
-font-size:13px;font-weight:500;display:flex;gap:8px}
-.sec>.sech>button[data-sec]:hover{border:0}
+.sec>.sech>button[data-sec]{flex:1 1 auto;min-width:0;border:0;background:none;text-align:left;
+padding:12px 0;font-size:13px;font-weight:600;display:flex;gap:8px;color:var(--tx)}
+.sec>.sech>button[data-sec]:hover{border:0;background:none;color:var(--mid)}
 .sec>.sech>button[data-sec] .cnt{color:var(--tx3);font-weight:400;margin-left:auto}
 .sec .body{padding:0 0 12px}
-[data-edit]{cursor:text;border-bottom:1px dashed transparent;padding:4px 0;display:inline-block;
-max-width:100%;min-width:0}
-[data-edit]:hover{border-bottom-color:var(--mid);background:#f6faf6}
+[data-edit]{cursor:text;border-radius:4px;padding:4px 6px;margin:-4px -6px;display:inline-block;
+max-width:100%;min-width:0;transition:background var(--fast) ease-out}
+[data-edit]:hover{background:var(--alt)}
 [data-edit]::after{content:"editar";font-size:11px;color:var(--mid);margin-left:8px;opacity:0}
 [data-edit]:hover::after{opacity:1}
 [data-edit] input,[data-edit] select,[data-edit] textarea{width:100%;border:1px solid var(--mid);
-padding:8px;background:#fff}
-.pend{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--bd);
+padding:6px 8px;background:#fff}
+.pend{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd);
 flex-wrap:wrap;min-width:0}
-.pend input[type=checkbox]{width:24px;height:24px;margin:8px 0;flex:0 0 auto}
+.pend input[type=checkbox]{width:18px;height:18px;margin:4px 0;flex:0 0 auto;accent-color:var(--mid)}
 .pend>span{min-width:0;overflow-wrap:anywhere}
-.pend .blk{color:var(--neg);font-size:11px;letter-spacing:.06em}
+.pend .blk{color:var(--neg);font-size:10px;letter-spacing:.06em;font-weight:600}
 .pend .corpo{flex:1 1 12em;min-width:0;overflow-wrap:anywhere}
-.pend .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--tx3);margin-top:2px}
-.pend .meta [data-edit]{font-size:11px;padding:2px 0}
-.pend .acs{display:flex;gap:4px;align-items:center;flex:0 0 auto;margin-left:auto}
-.pend .acs button{font-size:11px;padding:6px 8px;min-height:32px;letter-spacing:.04em}
-.pend .acs button.on{border-color:var(--neg);color:var(--neg)}
-.pend.done{color:var(--tx3);text-decoration:line-through}
+.pend .meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11px;
+color:var(--tx3);margin-top:2px}
+.pend .meta [data-edit]{font-size:11px;padding:2px 4px;margin:-2px -4px}
+.pend .acs{display:flex;gap:4px;align-items:center;flex:0 0 auto;margin-left:auto;
+opacity:1;transition:opacity var(--fast) ease-out}
+.pend .acs button{font-size:11px;padding:5px 8px;min-height:30px;letter-spacing:.02em}
+.pend .acs button.on{background:#fdf0f2;color:var(--neg)}
+.pend.done{color:var(--tx3)}
+.pend.done .corpo{text-decoration:line-through}
 .err{color:var(--neg);font-size:11px;margin-top:4px;display:block}
+/* ================= PALETA DE COMANDOS ================= */
+#cmdshade{position:fixed;inset:0;background:rgba(9,45,41,.32);z-index:48;display:none}
+#cmdshade.on{display:block}
+#cmd{position:fixed;left:8px;right:8px;top:8px;z-index:49;background:var(--surf);
+border:1px solid var(--bdf);border-radius:var(--r2);box-shadow:var(--sh3);display:none;
+flex-direction:column;overflow:hidden;max-height:calc(100vh - 16px)}
+#cmd.on{display:flex}
+#cmd .cbusca{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--bd)}
+#cmd .cbusca svg{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:var(--tx3);stroke-width:1.8}
+#cmd input{flex:1 1 auto;border:0;background:none;padding:0;min-height:28px;font-size:15px}
+#cmd input:focus{outline:0}
+#cmd .clista{overflow-y:auto;padding:6px;min-height:0}
+#cmd .cgrupo{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);
+font-weight:600;padding:10px 8px 4px}
+#cmd .cit{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:var(--r);
+cursor:pointer;min-height:38px}
+#cmd .cit .cico{width:20px;flex:0 0 auto;text-align:center;color:var(--tx3);font-size:11px;font-weight:600}
+#cmd .cit .ctit{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+font-weight:500}
+#cmd .cit .cmeta{flex:0 0 auto;font-size:11px;color:var(--tx3);white-space:nowrap}
+#cmd .cit.sel{background:var(--alt)}
+#cmd .cit.sel .cico{color:var(--mid)}
+#cmd .cvazio{padding:24px 12px;text-align:center;color:var(--tx3)}
+#cmd .cpe{display:flex;gap:12px;align-items:center;padding:8px 14px;border-top:1px solid var(--bd);
+font-size:11px;color:var(--tx3);flex-wrap:wrap}
+#cmd .cpe span{display:flex;gap:4px;align-items:center}
 /* ================= AVISO ================= */
 #toast{position:fixed;left:16px;right:16px;bottom:calc(var(--nav) + var(--safe) + 56px + 24px);
-background:var(--deep);color:var(--creme);padding:12px 16px;display:none;gap:16px;
-align-items:center;flex-wrap:wrap;z-index:30}
+background:var(--deep);color:var(--creme);padding:10px 14px;display:none;gap:16px;
+align-items:center;flex-wrap:wrap;z-index:30;border-radius:var(--r2);box-shadow:var(--sh2);
+font-size:13px}
 #toast.on{display:flex}
-#toast button{border:1px solid var(--luz);color:var(--luz);padding:8px 12px}
-#toast button:hover{border-color:var(--luz);background:rgba(175,250,87,.12)}
+#toast button{border:1px solid rgba(175,250,87,.4);background:none;color:var(--luz);
+padding:6px 10px;min-height:32px}
+#toast button:hover{border-color:var(--luz);background:rgba(175,250,87,.14);color:var(--luz)}
 /* ================= ENTRAR ================= */
 #login{position:fixed;inset:0;z-index:60;background:var(--deep);display:none;
 align-items:center;justify-content:center;padding:16px}
 #login.on{display:flex}
-#login form{background:var(--surf);border:1px solid var(--bdf);padding:24px;width:100%;max-width:360px}
-#login .marca{font-size:20px;font-weight:500;letter-spacing:-.02em;color:var(--deep)}
-#login .sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);margin:4px 0 24px}
-#login label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
-color:var(--tx3);margin-bottom:4px}
-#login input{width:100%;border:1px solid var(--bdf);padding:8px;margin-bottom:16px;background:var(--alt)}
+#login form{background:var(--surf);border:1px solid var(--bdf);border-radius:var(--r2);
+box-shadow:var(--sh3);padding:24px;width:100%;max-width:360px}
+#login .marca{font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--deep)}
+#login .sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);margin:4px 0 20px}
+#login label{display:block;font-size:12px;color:var(--tx2);margin-bottom:5px;font-weight:500}
+#login input{width:100%;border:1px solid var(--bdf);padding:8px 10px;margin-bottom:14px;background:var(--surf)}
 #login button{width:100%;background:var(--mid);border:1px solid var(--mid);color:#fff;
-font-weight:500;padding:12px;min-height:44px}
-#login button:hover{background:#0a4240;border-color:#0a4240}
-#login .erro{color:var(--neg);font-size:11px;margin-bottom:16px;display:none}
+font-weight:600;padding:10px;min-height:44px}
+#login button:hover{background:#0a4240;border-color:#0a4240;color:#fff}
+#login .erro{color:var(--neg);font-size:12px;margin-bottom:14px;display:none}
 #login .erro.on{display:block}
-#quem{font-size:11px;letter-spacing:.06em;color:rgba(232,243,232,.72);padding:8px 16px;
-border-top:1px solid rgba(232,243,232,.15);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-#quem b{font-weight:500;color:var(--creme)}
-#quem button{border:0;color:rgba(232,243,232,.72);font-size:11px;padding:8px 0;min-height:44px}
-#quem button:hover{color:var(--luz)}
+#quem{font-size:11px;letter-spacing:.02em;color:rgba(232,243,232,.6);padding:8px 16px;
+border-top:1px solid rgba(232,243,232,.1);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#quem b{font-weight:600;color:var(--creme)}
+#quem button{border:0;background:none;color:rgba(232,243,232,.6);font-size:11px;padding:6px 0;
+min-height:32px}
+#quem button:hover{color:var(--luz);background:none}
 /* ================= HINTS ================= */
 .hint{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
-width:16px;height:16px;min-height:16px;padding:0;margin-left:8px;vertical-align:middle;
-border:1px solid var(--bdf);background:var(--surf);color:var(--tx3);font-size:11px;line-height:1}
-.hint:hover,.hint:focus-visible{color:var(--mid);border-color:var(--mid)}
-.hint.esc{border-color:rgba(232,243,232,.35);background:none;color:rgba(232,243,232,.72)}
-.hint.esc:hover,.hint.esc:focus-visible{color:var(--luz);border-color:var(--luz)}
+width:15px;height:15px;min-height:15px;padding:0;margin-left:6px;vertical-align:middle;
+border:1px solid var(--bd);border-radius:999px;background:var(--surf);color:var(--tx3);
+font-size:10px;line-height:1;font-weight:600}
+.hint:hover,.hint:focus-visible{color:var(--mid);border-color:var(--mid);background:var(--surf)}
+.hint.esc{border-color:var(--bd);background:var(--alt);color:var(--tx3)}
+.hint.esc:hover,.hint.esc:focus-visible{color:var(--mid);border-color:var(--mid)}
 #hint{position:fixed;left:0;right:0;bottom:calc(var(--nav) + var(--safe));top:auto;z-index:40;
-display:none;background:#fff;border:0;border-top:1px solid var(--bdf);padding:16px;
-font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45,41,.18)}
+display:none;background:var(--surf);border:0;border-top:1px solid var(--bdf);padding:16px;
+font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
 #hint.on{display:block}
 #hint .lbl{margin-bottom:8px}
 #hint p{margin-bottom:8px}
 #hint p:last-of-type{margin-bottom:0}
-#hint .hintx{margin-top:16px;border:1px solid var(--mid);color:var(--mid);padding:8px 12px}
+#hint .hintx{margin-top:16px;border:1px solid var(--bdf);background:var(--surf);color:var(--tx2);padding:8px 12px}
+#hint .hintx:hover{background:var(--alt);color:var(--tx)}
 #print{display:none}
 /* ================= 768px — TABLET ================= */
 @media (min-width:768px){
@@ -295,55 +400,63 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
  .col{flex:0 0 60vw}
  .fld{grid-template-columns:150px 1fr;gap:12px}
  .card{padding:16px}
- #content{padding:24px}
- #chips{padding:24px 24px 0}
+ #content{padding:20px 24px}
+ #chips{padding:16px 24px 0}
  .board{margin:0 -24px;padding:0 24px 12px}
- #pubseg{padding:24px 24px 0}
- #hint{left:auto;right:auto;bottom:auto;top:0;width:280px;max-width:280px;padding:12px;
-  border:1px solid var(--bdf);box-shadow:none}
+ #pubseg{padding:16px 24px 0}
+ #cmd{left:50%;right:auto;transform:translateX(-50%);top:12vh;width:min(600px,calc(100vw - 32px));
+  max-height:min(560px,70vh)}
+ #hint{left:auto;right:auto;bottom:auto;top:0;width:300px;max-width:300px;padding:14px;
+  border:1px solid var(--bdf);border-radius:var(--r2);box-shadow:var(--sh2)}
  #hint .hintx{margin-top:12px}
 }
 /* ================= 1024px — MESA ================= */
 @media (min-width:1024px){
- button{min-height:32px;padding:8px 12px}
- select,textarea,input:not([type=checkbox]){min-height:32px;padding:4px 8px}
+ button{min-height:30px;padding:6px 10px}
+ select,textarea,input:not([type=checkbox]){min-height:30px;padding:5px 8px}
  #side{display:flex}
  #bnav,#fab{display:none}
  #main{padding-bottom:0}
- #top{height:56px;flex:0 0 56px;flex-wrap:nowrap;gap:16px;padding:0 24px}
+ #top{height:52px;flex:0 0 52px;flex-wrap:nowrap;gap:12px;padding:0 20px}
  #brandm,#menum{display:none}
- #top h1{font-size:20px;flex:0 0 auto;min-width:180px}
- #busca{order:2;flex:1 1 auto;max-width:420px}
+ #top h1{font-size:15px;flex:0 0 auto;min-width:140px}
+ #busca{order:2;flex:1 1 auto;max-width:440px}
+ #btncmd{min-height:30px}
+ #btncmd .rot{display:inline}
  #hbusca{order:3;margin-left:0}
  #savedot{order:3}
- #btnnovo{order:4;display:inline-flex;align-items:center;justify-content:center;
-  background:var(--mid);border:1px solid var(--mid);color:#fff;font-weight:500;padding:8px 16px}
- #btnnovo:hover{background:#0a4240;border-color:#0a4240}
- #nav button,#menu button{min-height:32px}
+ #btnnovo{order:4;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--mid);border:1px solid var(--mid);color:#fff;font-weight:600;padding:6px 12px}
+ #btnnovo:hover{background:#0a4240;border-color:#0a4240;color:#fff}
+ #nav button{min-height:32px}
+ #menu button{min-height:30px}
  .kpis{grid-template-columns:repeat(4,1fr)}
  .g2{grid-template-columns:1fr 1fr}
  .g2.w14{grid-template-columns:1.4fr 1fr}
  .chip button{min-height:24px;min-width:24px}
- .chip select{padding:4px 8px}
- /* Antes eram cinco colunas fixas, uma por fase. Agora as colunas são as
-    etapas do funil, que variam de sete a dez, então a faixa continua rolando
-    na horizontal e cada coluna tem largura própria: nome de etapa por
+ .chip select{padding:4px 6px;min-height:26px}
+ .seg button{min-height:28px;padding:5px 12px}
+ .chip{border-radius:999px;flex-wrap:nowrap}
+ .chip>.cl{display:inline}
+ /* As colunas são as etapas do funil, que variam de sete a dez: a faixa rola
+    na horizontal e cada coluna tem largura própria, porque nome de etapa por
     extenso não caberia em dez colunas espremidas. */
  .board{margin:0;padding:0 0 12px}
- .col{flex:0 0 248px;scroll-snap-align:start}
- .dc select{padding:4px;font-size:11px}
- #panel{top:0;left:auto;right:0;width:520px;height:100vh;padding-bottom:0;
-  border-left:1px solid var(--bdf);transform:translateX(100%);
-  box-shadow:-8px 0 32px rgba(9,45,41,.12)}
+ .col{flex:0 0 252px;scroll-snap-align:start}
+ .dc select{padding:4px 6px;font-size:11px}
+ .pend .acs{opacity:0}
+ .pend:hover .acs,.pend:focus-within .acs{opacity:1}
+ #panel{top:0;left:auto;right:0;width:540px;height:100vh;padding-bottom:0;
+  border-left:1px solid var(--bdf);transform:translateX(100%);box-shadow:var(--sh3)}
  #panel.open{transform:translateX(0)}
- .ph{padding:16px 24px}
- .pb{padding:16px 24px}
- #toast{left:216px;right:auto;bottom:16px}
+ .ph{padding:16px 20px}
+ .pb{padding:12px 20px}
+ #toast{left:240px;right:auto;bottom:16px;max-width:420px}
 }
 /* ===== abaixo de 1024px: sem arraste, sem estado de mouse ===== */
 @media (max-width:1023px){
- .dc:hover{border-color:var(--bd)}
- .ci:hover{border-color:var(--bd)}
+ .dc:hover{border-color:var(--bd);box-shadow:var(--sh1)}
+ .ci:hover{border-color:var(--bd);background:var(--surf)}
  .dc{-webkit-user-drag:none;-webkit-user-select:none;user-select:none}
  .board,.trk{touch-action:pan-x pan-y}
  [data-edit]::after{content:none}
@@ -355,16 +468,18 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
  .rl-sub{line-height:1.5}
  .ci .s{line-height:1.5}
  .empty{padding:16px 0 8px}
+ #cmd .cpe{display:none}
 }
 /* ===== quem pediu menos movimento ===== */
 @media (prefers-reduced-motion:reduce){
+ *{transition:none!important}
  #panel{transition:none}
- #bnav button{transition:none}
  .board,.trk{scroll-behavior:auto}
 }
 /* ================= IMPRESSÃO ================= */
 @media print{
- #side,#top,#chips,#pubseg,#panel,#shade,#toast,#bnav,#fab,#hint,.hint,.seg,.noprint{display:none!important}
+ #side,#top,#chips,#pubseg,#panel,#shade,#toast,#bnav,#fab,#hint,.hint,.seg,.noprint,
+ #cmd,#cmdshade{display:none!important}
  body{min-width:0;display:block;background:#fff}
  #main{padding-bottom:0}
  #content{display:none}
@@ -372,7 +487,7 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
  @page{size:A4 portrait;margin:14mm}
  thead{display:table-header-group}
  tr{page-break-inside:avoid}
- .card{border:0;padding:0}
+ .card{border:0;padding:0;border-radius:0}
  .tbl{overflow:visible}
 }
 </style>
@@ -388,6 +503,9 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
   <header id="top">
     <span id="brandm">Oren</span>
     <h1 id="title"></h1>
+    <button type="button" id="btncmd" title="Ir para ou executar">
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <span class="rot">Ir para</span><kbd id="cmdk">⌘K</kbd></button>
     <span id="savedot"></span>
     <details id="menum"><summary>Mais</summary><div id="menu2"></div></details>
     <button id="btnnovo"></button>
@@ -425,6 +543,19 @@ font-size:13px;line-height:1.45;color:var(--tx);box-shadow:0 -8px 32px rgba(9,45
     <button type="submit" id="sbtn">Salvar nova senha</button>
     <button type="button" id="scancel" style="background:none;border:1px solid var(--bdf);color:var(--tx2);margin-top:8px">Cancelar</button>
   </form>
+</div>
+<div id="cmdshade"></div>
+<div id="cmd" role="dialog" aria-modal="true" aria-label="Ir para ou executar">
+  <div class="cbusca">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="cmdinput" type="text" autocomplete="off" spellcheck="false"
+      placeholder="Ir para um negócio, uma conta, ou executar uma ação" aria-controls="cmdlista">
+  </div>
+  <div class="clista" id="cmdlista" role="listbox"></div>
+  <div class="cpe">
+    <span><kbd>↑</kbd><kbd>↓</kbd> navegar</span><span><kbd>↵</kbd> abrir</span>
+    <span><kbd>esc</kbd> fechar</span><span style="margin-left:auto"><kbd>?</kbd> atalhos</span>
+  </div>
 </div>
 <div id="hint" role="dialog" aria-modal="true" aria-label="Explicação" hidden></div>
 <div id="print"></div>
@@ -652,6 +783,7 @@ function itemLinha(principal,partes,attrs){
  const sub=(partes||[]).filter(x=>x!=null&&x!=="").join(SEP);
  return '<div class="rl"'+(attrs||"")+'><span class="rl-main">'+principal+'</span><span class="rl-sub">'+sub+"</span></div>";
 }
+const ATALHO_TELA={painel:"G P",negocios:"G N",contas:"G C"};
 const ICONES={
  painel:"<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'/></svg>",
  negocios:"<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v11h-4z'/></svg>",
@@ -1678,6 +1810,8 @@ function renderTopo(){
  $("#fab").title=rotuloNovo;
  $("#fab").setAttribute("aria-label",rotuloNovo);
  $("#busca").placeholder=TEXTOS.buscaPh;
+ /* Mac mostra ⌘K, o resto mostra Ctrl K. Escrever a tecla errada ensina errado. */
+ $("#cmdk").textContent=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent)?"⌘K":"Ctrl K";
  if($("#busca").value!==state.filtros.busca)$("#busca").value=state.filtros.busca;
  const s=$("#savedot");
  if(state.semRede){s.textContent=TEXTOS.semRede;s.className="no";}
@@ -1692,8 +1826,12 @@ function renderTopo(){
 }
 function renderNav(){
  const telas=["painel","negocios","contas"];
+ /* Ícone, nome e o atalho aparecendo no hover: quem usa todo dia aprende o
+    atalho sem ler manual. */
  $("#nav").innerHTML=telas.map(k=>
-  '<button data-tela="'+k+'" class="'+(state.tela===k?"on":"")+'">'+TEXTOS.nav[k]+"</button>").join("");
+  '<button data-tela="'+k+'" class="'+(state.tela===k?"on":"")+'"'+
+  (state.tela===k?' aria-current="page"':"")+">"+ICONES[k]+"<span>"+TEXTOS.nav[k]+"</span>"+
+  '<span class="atk">'+ATALHO_TELA[k]+"</span></button>").join("");
  $("#bnav").innerHTML=telas.map(k=>
   '<button data-tela="'+k+'" class="'+(state.tela===k?"on":"")+'"'+(state.tela===k?' aria-current="page"':"")+">"+
   ICONES[k]+"<span>"+TEXTOS.nav[k]+"</span></button>").join("");
@@ -1734,9 +1872,10 @@ function renderChips(){
  $("#chips").innerHTML=ch.join("");
  function sel(k,lbl,ops){
   const v=f[k];
-  return '<span class="chip">'+esc(lbl)+iconeHint("f_"+k)+' <select data-filtro="'+k+'">'+Object.keys(ops).map(o=>
+  return '<span class="chip'+(v?" ativo":"")+'"><span class="cl">'+esc(lbl)+"</span>"+
+   '<select data-filtro="'+k+'">'+Object.keys(ops).map(o=>
    '<option value="'+o+'"'+(v===o?" selected":"")+">"+esc(ops[o])+"</option>").join("")+"</select>"+
-   (v?'<button data-limpa="'+k+'">×</button>':"")+"</span>";
+   (v?'<button data-limpa="'+k+'">×</button>':"")+iconeHint("f_"+k)+"</span>";
  }
 }
 function telaPainel(){
@@ -1827,7 +1966,7 @@ function telaNegocios(){
   '<div class="seg"><button data-vista="quadro" class="'+(state.vista==="quadro"?"on":"")+'">'+TEXTOS.quadro+"</button>"+
   '<button data-vista="lista" class="'+(state.vista==="lista"?"on":"")+'">'+TEXTOS.lista+"</button></div>"+
   iconeHint("vista")+iconeHint("fases")+(state.vista==="quadro"?iconeHint("arrastar"):"")+
-  '<span class="soft">'+lista.filter(d=>d.etapa!=="perdido").length+" negócios"+
+  '<span class="soft">'+(nv=>nv+(nv===1?" negócio":" negócios"))(lista.filter(d=>d.etapa!=="perdido").length)+
   (state.publico?" · "+PUBLICOS[state.publico]:"")+" · "+
   brlV(lista.filter(d=>d.etapa!=="perdido").reduce((s,d)=>s+(+d.valor||0),0))+"</span>"+
   '<button data-perdidos="1" class="lnk">'+
@@ -2026,10 +2165,11 @@ function painelDeal(id){
  const papelOps=opcoesResp("","—");
  const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
  let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
-  '<div class="lbl" style="color:#affa57">'+esc(TEXTOS.frentesLbl[d.frente])+" · "+esc(TEXTOS.tipoVenda[d.tipoVenda])+"</div>"+
+  '<div class="lbl"><span class="dot" style="background:'+CORF[d.frente]+'"></span>'+
+   esc(TEXTOS.frentesLbl[d.frente])+" · "+esc(TEXTOS.tipoVenda[d.tipoVenda])+"</div>"+
   '<div style="font-size:20px;margin-top:6px">'+esc(nomeNegocio(d))+"</div>"+
   (contaDetalhe(d)?'<div style="font-size:13px;margin-top:2px;opacity:.85">'+esc(contaDetalhe(d))+"</div>":"")+
-  '<div style="font-size:15px;margin-top:4px;color:#affa57">'+esc(brlD(d.valor))+"</div></div>";
+  '<div style="font-size:15px;font-weight:600;margin-top:6px;color:var(--tx2)">'+esc(brlD(d.valor))+"</div></div>";
  h+='<div class="pb">';
  h+='<div class="lbl" style="margin-top:16px">'+esc(HINTS.trilha.t)+iconeHint("trilha")+"</div>";
  h+='<div class="trk">'+funilDe(d).map((nome,i)=>{const et=i+1;
@@ -2120,7 +2260,7 @@ function painelConta(kind,id){
  if(!o)return "";
  const ds=state.data.deals.filter(d=>isC?d.clienteId===id:d.parceiroId===id);
  const respOps=opcoesResp(o.responsavel);
- let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button><div class="lbl" style="color:#affa57">'+
+ let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button><div class="lbl">'+
   (isC?"Cliente":"Parceiro")+'</div><div style="font-size:20px;margin-top:6px">'+esc(o.nome)+"</div></div><div class=\"pb\">";
  h+=fld("Nome",ed(kind,o.id,"nome",o.nome,"text"));
  h+=fld(TEXTOS.col.resp,ed(kind,o.id,"responsavel",o.responsavel,"select",respOps),"resp");
@@ -2346,6 +2486,9 @@ document.addEventListener("click",e=>{
  if(el=g("[data-abre]")){abrirPainel({tipo:"deal",id:el.dataset.abre});return;}
  if(el=g(".dc")&&!t.closest("select")){abrirPainel({tipo:"deal",id:g(".dc").dataset.id});return;}
  if(t.id==="shade"){fecharPainel();return;}
+ if(t.id==="cmdshade"){fecharCmd();return;}
+ if(el=g("[data-cmd]")){rodarCmd(Number(el.dataset.cmd));return;}
+ if(t.closest("#btncmd")){abrirCmd();return;}
  /* Na tela Contas o botao grande cria conta. Antes criava negocio em qualquer
     tela, e nao havia caminho obvio para cadastrar cliente ou parceiro. */
  if(t.closest("#btnnovo,#fab")){
@@ -2389,11 +2532,135 @@ document.addEventListener("change",e=>{
 });
 document.addEventListener("input",e=>{
  const t=e.target;
+ if(t.id==="cmdinput"){CMD.q=t.value;CMD.sel=0;CMD.modo="tudo";renderCmd();return;}
  if(t.id==="busca"){state.filtros.busca=t.value;clearTimeout(state.bt);state.bt=setTimeout(render,200);}
  else if(t.matches("[data-novo]"))state.novo[t.dataset.novo]=t.value;
 });
+/* ===================== PALETA DE COMANDOS =====================
+   Um lugar só para chegar em qualquer registro e disparar qualquer ação, sem
+   passar por tela nenhuma: Cmd+K (ou Ctrl+K), digita, Enter. É o que faz a
+   navegação parar de ser "clicar até achar". */
+const CMD={aberta:false,q:"",sel:0,itens:[],modo:"tudo"};
+const ATALHOS=[
+ ["⌘ K / Ctrl K","Abrir esta paleta"],
+ ["/","Ir para a busca da tela"],
+ ["G depois P","Painel"],
+ ["G depois N","Negócios"],
+ ["G depois C","Contas"],
+ ["C","Cadastrar negócio"],
+ ["E","Alternar quadro e lista"],
+ ["Esc","Fechar gaveta, paleta ou explicação"],
+ ["?","Ver esta lista"]
+];
+function acoesCmd(){
+ const a=[
+  {g:"Ir para",ico:"→",t:TEXTOS.nav.painel,m:"G P",f:()=>irPara("painel")},
+  {g:"Ir para",ico:"→",t:TEXTOS.nav.negocios,m:"G N",f:()=>irPara("negocios")},
+  {g:"Ir para",ico:"→",t:TEXTOS.nav.contas,m:"G C",f:()=>irPara("contas")},
+  {g:"Ação",ico:"+",t:"Cadastrar negócio",m:"C",f:()=>novoNegocio()},
+  {g:"Ação",ico:"+",t:"Cadastrar cliente",m:"",f:()=>{state.tela="contas";state.aba="clientes";criarConta("cliente");}},
+  {g:"Ação",ico:"+",t:"Cadastrar parceiro",m:"",f:()=>{state.tela="contas";state.aba="parceiros";criarConta("parceiro");}},
+  {g:"Ação",ico:"↔",t:"Alternar quadro e lista",m:"E",f:()=>{state.vista=state.vista==="lista"?"quadro":"lista";render();}},
+  {g:"Ação",ico:"?",t:"Ver atalhos de teclado",m:"?",f:()=>{CMD.modo="atalhos";CMD.q="";CMD.sel=0;renderCmd();return true;}}
+ ];
+ (state.servidor?["exportar","imprimir"]:Object.keys(TEXTOS.menu)).forEach(k=>{
+  if(k==="importar"&&!(state.usuario&&state.usuario.papel==="editor"))return;
+  a.push({g:"Ação",ico:"·",t:TEXTOS.menu[k],m:"",f:()=>menuAcao(k)});
+ });
+ return a;
+}
+function itensCmd(){
+ const q=CMD.q.trim().toLowerCase();
+ const bate=txt=>!q||String(txt).toLowerCase().indexOf(q)>=0;
+ const out=[];
+ acoesCmd().forEach(x=>{if(bate(x.t))out.push(x);});
+ if(q){
+  state.data.deals.filter(d=>textoBusca(d).indexOf(q)>=0).slice(0,8).forEach(d=>out.push(
+   {g:"Negócios",ico:d.id.split("-")[0],t:nomeNegocio(d),
+    m:TEXTOS.frentesLbl[d.frente]+" · "+etapaNome(d),f:()=>abrirPainel({tipo:"deal",id:d.id})}));
+  state.data.customers.filter(c=>(c.nome+" "+c.id).toLowerCase().indexOf(q)>=0).slice(0,5).forEach(c=>out.push(
+   {g:"Clientes",ico:"C",t:c.nome,m:c.id,f:()=>{state.tela="contas";state.aba="clientes";abrirPainel({tipo:"conta",kind:"cliente",id:c.id});}}));
+  state.data.partners.filter(x=>(x.nome+" "+x.id).toLowerCase().indexOf(q)>=0).slice(0,5).forEach(x=>out.push(
+   {g:"Parceiros",ico:"P",t:x.nome,m:x.id,f:()=>{state.tela="contas";state.aba="parceiros";abrirPainel({tipo:"conta",kind:"parceiro",id:x.id});}}));
+ }
+ return out;
+}
+function renderCmd(){
+ const cx=$("#cmdlista");
+ if(CMD.modo==="atalhos"){
+  CMD.itens=[];
+  cx.innerHTML='<div class="cgrupo">Atalhos de teclado</div>'+ATALHOS.map(([k,t])=>
+   '<div class="cit"><span class="ctit">'+esc(t)+'</span><span class="cmeta"><kbd>'+
+   esc(k)+"</kbd></span></div>").join("");
+  return;
+ }
+ CMD.itens=itensCmd();
+ if(!CMD.itens.length){cx.innerHTML='<div class="cvazio">Nada com “'+esc(CMD.q)+"”.</div>";return;}
+ if(CMD.sel>=CMD.itens.length)CMD.sel=CMD.itens.length-1;
+ if(CMD.sel<0)CMD.sel=0;
+ let g="",h="";
+ CMD.itens.forEach((x,i)=>{
+  if(x.g!==g){g=x.g;h+='<div class="cgrupo">'+esc(g)+"</div>";}
+  h+='<div class="cit'+(i===CMD.sel?" sel":"")+'" data-cmd="'+i+'" role="option"'+
+   (i===CMD.sel?' aria-selected="true"':"")+'>'+
+   '<span class="cico">'+esc(x.ico)+"</span>"+
+   '<span class="ctit">'+esc(x.t)+"</span>"+
+   (x.m?'<span class="cmeta">'+esc(x.m)+"</span>":"")+"</div>";
+ });
+ cx.innerHTML=h;
+ const sel=cx.querySelector(".cit.sel");
+ if(sel&&sel.scrollIntoView)sel.scrollIntoView({block:"nearest"});
+}
+function abrirCmd(modo){
+ CMD.aberta=true;CMD.q="";CMD.sel=0;CMD.modo=modo||"tudo";
+ $("#cmd").className="on";$("#cmdshade").className="on";
+ const i=$("#cmdinput");i.value="";renderCmd();
+ setTimeout(()=>i.focus(),20);
+}
+function fecharCmd(){
+ CMD.aberta=false;CMD.modo="tudo";
+ $("#cmd").className="";$("#cmdshade").className="";
+}
+function rodarCmd(i){
+ const x=CMD.itens[i];if(!x)return;
+ /* Ação que devolve true fica com a paleta aberta — é o caso dos atalhos. */
+ const segue=x.f();
+ if(!segue)fecharCmd();
+}
+function irPara(tela){
+ state.tela=tela;state.perdidos=false;state.painel=null;render();
+}
+/* Digitação em campo não é atalho: sem isto, escrever "capital" numa nota
+   navegaria a tela três vezes. */
+const digitando=el=>!!el&&(el.tagName==="INPUT"||el.tagName==="TEXTAREA"||el.tagName==="SELECT"||el.isContentEditable);
+let teclaG=0;
 document.addEventListener("keydown",e=>{
+ /* A paleta responde primeiro: ela é modal. */
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();
+  if(CMD.aberta)fecharCmd();else abrirCmd();return;}
+ if(CMD.aberta){
+  if(e.key==="Escape"){e.preventDefault();fecharCmd();return;}
+  if(CMD.modo==="atalhos"){if(e.key==="Enter"){e.preventDefault();fecharCmd();}return;}
+  if(e.key==="ArrowDown"){e.preventDefault();CMD.sel++;renderCmd();return;}
+  if(e.key==="ArrowUp"){e.preventDefault();CMD.sel--;renderCmd();return;}
+  if(e.key==="Enter"){e.preventDefault();rodarCmd(CMD.sel);return;}
+  return;
+ }
  if(e.key==="Escape"&&state.hintBtn){e.preventDefault();fecharHint(true);return;}
+ if(!digitando(document.activeElement)&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+  const k=e.key.toLowerCase();
+  if(k==="g"){teclaG=Date.now();return;}
+  /* G seguido de letra, com um segundo de janela, como nas ferramentas de
+     onde a ideia vem. */
+  if(Date.now()-teclaG<1000&&(k==="p"||k==="n"||k==="c")){
+   teclaG=0;e.preventDefault();
+   irPara(k==="p"?"painel":k==="n"?"negocios":"contas");return;}
+  if(e.key==="/"){e.preventDefault();$("#busca").focus();$("#busca").select();return;}
+  if(e.key==="?"){e.preventDefault();abrirCmd("atalhos");return;}
+  if(k==="c"&&!state.painel){e.preventDefault();novoNegocio();return;}
+  if(k==="e"&&state.tela==="negocios"){e.preventDefault();
+   state.vista=state.vista==="lista"?"quadro":"lista";render();return;}
+ }
  /* Ctrl+S baixa um HTML com o dataset embutido, que no servidor está vazio.
     O arquivo baixado seria uma casca sem dados. */
  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();
