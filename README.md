@@ -128,7 +128,7 @@ Daí para o ar falta uma chave, uma vez só:
 
 | Destino | O que fazer, uma vez | O que fica no ar |
 |---|---|---|
-| GitHub Pages | **Settings → Pages → Source**: *GitHub Actions* (ou *Deploy from a branch* → `gh-pages`) | painel e `/admin` em `https://theneilagencia.github.io/pipe-oren/` |
+| GitHub Pages | já ligado em *Settings → Pages → Source: GitHub Actions* | painel e `/admin` em `https://theneilagencia.github.io/pipe-oren/` |
 | Vercel | três segredos em **Settings → Secrets and variables → Actions**: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | o mesmo, mais `api/admin.js` |
 
 O token do Actions não tem permissão para ligar o Pages sozinho, e o workflow não
