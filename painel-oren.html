@@ -44,8 +44,12 @@ select:hover,input:not([type=checkbox]):hover{border-color:#c9d0c9}
 a{color:var(--mid);text-decoration:none}
 a:hover{color:var(--deep);text-decoration:underline}
 .lbl{font-size:11px;letter-spacing:.1em;color:var(--tx3);text-transform:uppercase;font-weight:500}
-.num{font-size:24px;font-weight:600;letter-spacing:-.025em;line-height:1.25;
-font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+/* Algarismo proporcional no número grande: tabular deixa "121" solto nesse
+   corpo. Tabular fica para coluna de tabela, onde precisa alinhar. */
+.num{font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.1;
+font-variant-numeric:proportional-nums;overflow-wrap:anywhere}
+.uni{font-size:13px;font-weight:500;color:var(--tx2)}
+.qual{font-size:12px;color:var(--tx3);margin-top:2px}
 .d15{font-size:15px}
 .mut{color:var(--tx2)}
 .soft{color:var(--tx3)}
@@ -168,7 +172,10 @@ border-radius:calc(var(--r2) - 3px);font-weight:500;white-space:nowrap}
 .card{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);padding:14px;min-width:0}
 .card h2{font-size:13px;font-weight:600;margin-bottom:12px;letter-spacing:-.01em;
 display:flex;align-items:center}
-.kpi .num{margin:6px 0 4px}
+.kpi .lbl{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500;
+display:flex;align-items:center;min-height:18px}
+.kpi .val{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.kpi .delta{margin-top:6px;display:block}
 .delta{font-size:11px;letter-spacing:.04em}
 .up{color:var(--pos)}.down{color:var(--neg)}
 .tbl{overflow-x:auto}
@@ -582,7 +589,7 @@ const TEXTOS={
  semPerfil:"Sua conta entrou, mas não tem perfil cadastrado. Peça para criarem o seu.",
  novo:"Novo negócio",
  periodos:{mes:"Este mês",tri:"Trimestre",ano:"Ano",tudo:"Tudo"},
- kpi:{aberto:"Negócios em aberto (R$)",ponderada:"Chance ponderada (R$)",fechado:"Fechado no mês (R$)",conversao:"Taxa de conversão (%)"},
+ kpi:{aberto:"Negócios em aberto",ponderada:"Chance ponderada",fechado:"Fechado no mês",conversao:"Taxa de conversão"},
  semBase:"sem base de comparação",
  periodoLbl:"Período de fechamento",
  periodoAfeta:"afeta só Fechado no mês, Taxa de conversão e Atividade recente",
@@ -724,7 +731,11 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const nfBRL=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
 const nfN=new Intl.NumberFormat("pt-BR");
 const brl=v=>nfBRL.format(Math.round(Number(v)||0));
-const brlC=v=>{const n=Math.round(Number(v)||0);if(Math.abs(n)>=1e6)return "R$ "+nfN.format(Math.round(n/1e5)/10)+" mi";if(Math.abs(n)>=1e3)return "R$ "+nfN.format(Math.round(n/1e3))+" mil";return brl(n);};
+const brlC=v=>{const n=Math.round(Number(v)||0);
+ if(Math.abs(n)>=1e9)return "R$ "+nfN.format(Math.round(n/1e7)/100)+" bi";
+ if(Math.abs(n)>=1e6)return "R$ "+nfN.format(Math.round(n/1e5)/10)+" mi";
+ if(Math.abs(n)>=1e3)return "R$ "+nfN.format(Math.round(n/1e3))+" mil";
+ return brl(n);};
 const dt=v=>v?String(v).slice(0,10).split("-").reverse().join("/"):"—";
 const hoje=()=>new Date();
 const dias=(a,b)=>Math.round((b-a)/864e5);
@@ -1883,18 +1894,25 @@ function telaPainel(){
  const lista=negocios(),k=kpis(lista);
  const desfechados=ff=>lista.filter(d=>noDesfecho(d,ff));
  const kf=kpis(desfechados(f)),kfa=f?kpis(desfechados(f.ant)):null;
- /* Ticket de pessoa física é baixo: só o total em reais escondia o volume. */
- const qtd=(nn)=>(state.publico==="B2C"||state.publico==="B2B2C")?" · "+nn+(nn===1?" negócio":" negócios"):"";
- /* Soma zero com negócios dentro não é zero: é valor não cadastrado. Mostrar
-    "R$ 0" aqui diria que nada foi fechado, quando foram oito. */
- const soma=(v,nn)=>(nn>0&&!v)?nn+(nn===1?" negócio":" negócios")+" · valor a definir":brlV(v)+qtd(nn);
+ /* O cartão tem quatro partes: rótulo, número, unidade e rodapé. Antes a frase
+    inteira ("8 negócios · valor a definir") ia no lugar do número e quebrava em
+    duas linhas — deixava de ser número e virava texto grande.
+    Soma zero com negócios dentro não é zero: é valor não cadastrado. Nesse caso
+    o número passa a ser a contagem, e a falta do valor vira qualificação. */
+ const plural=nn=>nn+(nn===1?" negócio":" negócios");
+ const money=(v,nn)=>(nn>0&&!v)
+  ?{valor:String(nn),uni:nn===1?"negócio":"negócios",qual:TAG_VALOR}
+  :{valor:brlC(v),uni:nn>0?"em "+plural(nn):"",qual:""};
  const cards=[
-  ["aberto",soma(k.aberto,k.nAberto),null,null,TEXTOS.semPeriodo],
-  ["ponderada",soma(k.ponderada,k.nAberto),null,null,TEXTOS.semPeriodo],
-  ["fechado",soma(kf.fechado,kf.nFechado),kf.fechado,kfa&&kfa.fechado,TEXTOS.periodoLbl+": "+per],
-  ["conversao",kf.conversao==null?"—":Math.round(kf.conversao)+"%",kf.conversao,kfa?kfa.conversao:null,TEXTOS.periodoLbl+": "+per]];
+  ["aberto",money(k.aberto,k.nAberto),null,null,TEXTOS.semPeriodo],
+  ["ponderada",money(k.ponderada,k.nAberto),null,null,TEXTOS.semPeriodo],
+  ["fechado",money(kf.fechado,kf.nFechado),kf.fechado,kfa&&kfa.fechado,TEXTOS.periodoLbl+": "+per],
+  ["conversao",kf.conversao==null
+    ?{valor:"—",uni:"",qual:"nenhum negócio fechado ou perdido no período"}
+    :{valor:Math.round(kf.conversao)+"%",uni:"",qual:""},
+   kf.conversao,kfa?kfa.conversao:null,TEXTOS.periodoLbl+": "+per]];
  let h='<div class="grid kpis">';
- cards.forEach(([id,txt,v,pv,nota])=>{
+ cards.forEach(([id,cel,v,pv,nota])=>{
   let dl="";
   /* Com o período em "Tudo" não existe período anterior, então nem a frase
      "sem base de comparação" cabe: ela sugere dado faltando onde não falta. */
@@ -1904,7 +1922,10 @@ function telaPainel(){
     dl='<span class="delta '+(p>=0?"up":"down")+'">'+(p>=0?"▲ ":"▼ ")+Math.abs(p)+"% contra o período anterior</span>";}
    dl="<div>"+dl+"</div>";
   }
-  h+='<div class="card kpi"><div class="lbl">'+TEXTOS.kpi[id]+iconeHint("kpi_"+id)+'</div><div class="num">'+esc(txt)+"</div>"+
+  h+='<div class="card kpi"><div class="lbl">'+TEXTOS.kpi[id]+iconeHint("kpi_"+id)+"</div>"+
+   '<div class="val"><span class="num">'+esc(cel.valor)+"</span>"+
+   (cel.uni?'<span class="uni">'+esc(cel.uni)+"</span>":"")+"</div>"+
+   (cel.qual?'<div class="qual">'+esc(cel.qual)+"</div>":"")+
    dl+'<div class="delta soft">'+esc(nota)+"</div></div>";
  });
  h+="</div>";
