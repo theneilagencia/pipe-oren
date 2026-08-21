@@ -68,9 +68,16 @@ jobs:
             "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
           echo "branch gh-pages atualizada"
 
+      # enablement liga o Pages quando o token tem permissão para isso. No token do
+      # Actions ele falha com "Resource not accessible by integration": a criação
+      # do site na primeira vez exige credencial de administrador ou a chave em
+      # Settings, Pages. Fica aqui porque, ligado o Pages, este passo passa a
+      # configurar tudo sozinho — e falhar aqui não derruba a publicação.
       - id: config
         continue-on-error: true
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - if: steps.config.outcome == 'success'
         uses: actions/upload-pages-artifact@v3
