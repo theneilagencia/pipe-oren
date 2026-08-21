@@ -41,6 +41,14 @@ header .eu{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:1
 header .eu .mail{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42vw}
 header a{color:var(--luz)}
 
+/* menu de secoes */
+.menu{display:flex;gap:0;border:1px solid var(--bd);background:var(--surf);margin-bottom:20px}
+.menu button{flex:1 1 0;border:0;border-right:1px solid var(--bd);min-height:44px;
+ color:var(--tx2);font-weight:500}
+.menu button:last-child{border-right:0}
+.menu button:hover{background:var(--alt)}
+.menu button.on{background:var(--deep);color:#fff}
+
 main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
 
 /* barra de ações */
@@ -160,7 +168,12 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const sessao=()=>{try{return JSON.parse(localStorage.getItem(SESSAO)||"null")}catch(e){return null}};
 const guardar=s=>{try{s?localStorage.setItem(SESSAO,JSON.stringify(s)):localStorage.removeItem(SESSAO)}catch(e){}};
 
-const state={eu:null,pessoas:[],busca:"",aberta:null,carregando:true,aviso:null,ocupado:false};
+const SECOES=[["pessoas","Pessoas e acessos"],["responsaveis","Responsáveis"]];
+const state={eu:null,pessoas:[],busca:"",aberta:null,carregando:true,aviso:null,ocupado:false,
+ secao:"pessoas",
+ /* Responsaveis nao sao contas de acesso: sao os nomes que aparecem nos
+    negocios. Vivem no proprio documento do pipeline, nao no auth. */
+ resp:{lista:null,versao:0,uso:{},carregando:false,novo:""}};
 
 const dt=v=>{if(!v)return"—";const d=new Date(v);return isNaN(d)?"—":
  d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
@@ -183,6 +196,83 @@ async function chamar(acao,dados){
  if(r.status===401){guardar(null);state.eu=null;throw new Error("Sua sessão expirou. Entre de novo.")}
  if(!r.ok)throw new Error(c.erro||"Não consegui concluir.");
  return c.dados;
+}
+
+/* O documento do pipeline e o mesmo que o painel le e grava. A RLS decide se
+   este login pode escrever; a chave secreta nao entra aqui. */
+async function pipeline(opcoes){
+ const s=sessao();
+ if(!s)throw new Error("Sua sessão expirou. Entre de novo.");
+ const r=await fetch(SUPABASE_URL+"/rest/v1/pipeline"+((opcoes&&opcoes.consulta)||""),
+  {method:(opcoes&&opcoes.metodo)||"GET",
+   headers:Object.assign({apikey:SUPABASE_KEY,Authorization:"Bearer "+s.access_token,
+    "content-type":"application/json"},(opcoes&&opcoes.extras)||{}),
+   body:opcoes&&opcoes.corpo?JSON.stringify(opcoes.corpo):undefined});
+ if(r.status===401){guardar(null);state.eu=null;throw new Error("Sua sessão expirou. Entre de novo.")}
+ if(!r.ok)throw new Error("Não consegui falar com o banco dos negócios.");
+ return r.json().catch(()=>[]);
+}
+/* Cada nome contado onde ele realmente aparece. Sem isto, remover alguem
+   deixaria negocios apontando para um nome que nao existe mais. */
+function usoDeNomes(d){
+ const u={};
+ const soma=(nome,onde)=>{if(!nome)return;u[nome]=u[nome]||{negocios:0,pendencias:0,contas:0,historico:0};u[nome][onde]++;};
+ (d.deals||[]).forEach(x=>{
+  soma(x.responsavel,"negocios");
+  (x.pendencias||[]).forEach(pd=>soma(pd.responsavel,"pendencias"));
+  (x.historico||[]).forEach(h=>soma(h.quem,"historico"));
+ });
+ (d.customers||[]).forEach(c=>soma(c.responsavel,"contas"));
+ (d.partners||[]).forEach(c=>soma(c.responsavel,"contas"));
+ return u;
+}
+async function carregarResponsaveis(){
+ state.resp.carregando=true;render();
+ try{
+  const linhas=await pipeline({consulta:"?select=dados,versao&id=eq.1"});
+  const linha=linhas[0]||{dados:{},versao:0};
+  const d=linha.dados||{};
+  state.resp.uso=usoDeNomes(d);
+  const daBase=Array.isArray(d.responsaveis)?d.responsaveis.filter(x=>typeof x==="string"&&x.trim()):null;
+  /* Sem lista gravada, mostro os nomes que os negocios ja usam: a tela nasce
+     igual ao que o painel exibe hoje, sem inventar ninguem. */
+  state.resp.lista=daBase&&daBase.length?daBase.slice():Object.keys(state.resp.uso).sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  state.resp.gravada=!!(daBase&&daBase.length);
+  state.resp.versao=linha.versao;
+ }catch(e){state.aviso={texto:e.message,tipo:"ruim"}}
+ state.resp.carregando=false;render();
+}
+/* Uma gravacao, uma versao: se alguem no painel gravou no meio, recarrego e
+   nao sobrescrevo o trabalho dele. */
+async function gravarResponsaveis(lista,renomear){
+ const linhas=await pipeline({consulta:"?select=dados,versao&id=eq.1"});
+ const linha=linhas[0];
+ if(!linha)throw new Error("O documento dos negócios não existe ainda.");
+ if(linha.versao!==state.resp.versao){
+  await carregarResponsaveis();
+  throw new Error("Alguém gravou no painel enquanto você editava. Recarreguei a lista: confira e tente de novo.");
+ }
+ const d=linha.dados||{};
+ d.responsaveis=lista;
+ if(renomear&&renomear.de&&renomear.para&&renomear.de!==renomear.para){
+  const de=renomear.de,para=renomear.para;
+  (d.deals||[]).forEach(x=>{
+   if(x.responsavel===de)x.responsavel=para;
+   (x.pendencias||[]).forEach(pd=>{if(pd.responsavel===de)pd.responsavel=para;});
+   /* Historico tambem: e a mesma pessoa com outro nome, nao outra pessoa. */
+   (x.historico||[]).forEach(h=>{if(h.quem===de)h.quem=para;});
+  });
+  (d.customers||[]).forEach(c=>{if(c.responsavel===de)c.responsavel=para;});
+  (d.partners||[]).forEach(c=>{if(c.responsavel===de)c.responsavel=para;});
+ }
+ const gravadas=await pipeline({metodo:"PATCH",
+  consulta:"?id=eq.1&versao=eq."+encodeURIComponent(state.resp.versao),
+  corpo:{dados:d},extras:{Prefer:"return=representation"}});
+ if(!gravadas.length){
+  await carregarResponsaveis();
+  throw new Error("Não consegui gravar: a lista mudou no servidor. Confira e tente de novo.");
+ }
+ await carregarResponsaveis();
 }
 
 async function entrar(email,senha){
@@ -233,17 +323,24 @@ function linhaPessoa(p){
   "</button>";
 }
 
-function telaLista(){
- const q=state.busca.trim().toLowerCase();
- const vis=state.pessoas.filter(p=>!q||
-  (p.nome||"").toLowerCase().includes(q)||(p.email||"").toLowerCase().includes(q));
+/* Cabecalho e menu iguais nas duas secoes: o mesmo lugar para trocar de tela. */
+function moldura(){
  let h="<header>"+
   '<span class="marca">Oren<span>Administração</span></span>'+
   '<span class="eu"><span class="mail">'+esc(state.eu?state.eu.email:"")+"</span>"+
   '<a href="/">painel</a><a href="#" data-sair>sair</a></span></header><main>';
-
+ h+='<nav class="menu" aria-label="Seções da administração">'+SECOES.map(([k,l])=>
+  '<button data-secao="'+k+'" class="'+(state.secao===k?"on":"")+'"'+
+  (state.secao===k?' aria-current="page"':"")+">"+esc(l)+"</button>").join("")+"</nav>";
  if(state.aviso)h+='<div class="aviso '+state.aviso.tipo+'"><span>'+esc(state.aviso.texto)+
   '</span><button data-fecha-aviso aria-label="Fechar aviso">×</button></div>';
+ return h;
+}
+function telaLista(){
+ const q=state.busca.trim().toLowerCase();
+ const vis=state.pessoas.filter(p=>!q||
+  (p.nome||"").toLowerCase().includes(q)||(p.email||"").toLowerCase().includes(q));
+ let h=moldura();
 
  h+='<div class="barra">'+
   '<span class="busca"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/>'+
@@ -257,6 +354,46 @@ function telaLista(){
  else h+='<p class="cont">'+vis.length+(vis.length===1?" pessoa":" pessoas")+
   (q?" de "+state.pessoas.length:"")+'</p><div class="lista">'+vis.map(linhaPessoa).join("")+"</div>";
 
+ return h+"</main>";
+}
+
+/* ---------- responsáveis ---------- */
+function totalUso(u){return u?u.negocios+u.pendencias+u.contas:0;}
+function detalheUso(u){
+ if(!u)return "sem nada no nome ainda";
+ const ps=[];
+ if(u.negocios)ps.push(u.negocios+(u.negocios===1?" negócio":" negócios"));
+ if(u.pendencias)ps.push(u.pendencias+(u.pendencias===1?" pendência":" pendências"));
+ if(u.contas)ps.push(u.contas+(u.contas===1?" conta":" contas"));
+ if(!ps.length&&u.historico)return "só no histórico";
+ return ps.length?ps.join(" · "):"sem nada no nome ainda";
+}
+function linhaResp(nome){
+ const u=state.resp.uso[nome],n=totalUso(u);
+ return '<div class="row"><span class="av">'+esc(iniciais({nome:nome}))+"</span>"+
+  '<span class="quem"><span class="n">'+esc(nome)+
+  (n?"":'<span class="badge">sem uso</span>')+"</span>"+
+  '<span class="e">'+esc(detalheUso(u))+"</span></span>"+
+  '<span class="dir"><button data-renomear="'+esc(nome)+'">Renomear</button>'+
+  '<button class="per" data-tirar="'+esc(nome)+'"'+(n?" disabled":"")+
+  ' title="'+(n?"Tem registro no nome dele":"Tirar da lista")+'">Tirar</button></span></div>';
+}
+function telaResponsaveis(){
+ let h=moldura();
+ h+='<div class="bloco" style="margin-bottom:16px">'+
+  '<h3>Quem pode ser responsável por um negócio</h3>'+
+  '<div class="linha"><input id="rnovo" placeholder="Nome como aparece no painel" value="'+esc(state.resp.novo)+'">'+
+  '<button class="pri" data-add-resp>Acrescentar</button></div>'+
+  '<p class="dica">Esta lista é a que o painel oferece nos campos de responsável. '+
+  'Renomear troca o nome em todos os negócios, pendências, contas e no histórico. '+
+  'Tirar só é possível quando ninguém está no nome da pessoa.</p></div>';
+ if(state.resp.carregando)h+='<p class="carregando">Carregando…</p>';
+ else if(!state.resp.lista)h+='<div class="vazio-msg">Não consegui ler a lista.</div>';
+ else if(!state.resp.lista.length)h+='<div class="vazio-msg">Nenhum responsável na lista. Acrescente o primeiro acima.</div>';
+ else h+='<p class="cont">'+state.resp.lista.length+
+  (state.resp.lista.length===1?" responsável":" responsáveis")+
+  (state.resp.gravada?"":" · lista ainda não gravada, veio dos negócios")+
+  '</p><div class="lista">'+state.resp.lista.map(linhaResp).join("")+"</div>";
  return h+"</main>";
 }
 
@@ -343,10 +480,11 @@ function render(){
  const app=$("#app");
  if(!state.eu){app.innerHTML=telaLogin(state.erroLogin);state.aberta=null;renderGaveta();
   const c=$("#lemail");if(c)setTimeout(()=>c.focus(),50);return}
- const foco=document.activeElement,eraBusca=foco&&foco.id==="busca";
- const pos=eraBusca?foco.selectionStart:0;
- app.innerHTML=telaLista();
- if(eraBusca){const b=$("#busca");if(b){b.focus();try{b.setSelectionRange(pos,pos)}catch(e){}}}
+ const foco=document.activeElement,idFoco=foco&&foco.id;
+ const eraCampo=idFoco==="busca"||idFoco==="rnovo";
+ const pos=eraCampo?foco.selectionStart:0;
+ app.innerHTML=state.secao==="responsaveis"?telaResponsaveis():telaLista();
+ if(eraCampo){const b=$("#"+idFoco);if(b){b.focus();try{b.setSelectionRange(pos,pos)}catch(e){}}}
  renderGaveta();
 }
 
@@ -416,6 +554,53 @@ document.addEventListener("click",async e=>{
  let el;
 
  if(el=g("[data-fecha-aviso]")){aviso(null);return}
+
+ if(el=g("[data-secao]")){
+  const k=el.dataset.secao;
+  if(k===state.secao)return;
+  state.secao=k;state.aviso=null;render();
+  if(k==="responsaveis"&&state.resp.lista===null)await carregarResponsaveis();
+  return;
+ }
+
+ if(el=g("[data-add-resp]")){
+  const c=$("#rnovo"),nome=c?c.value.trim():"";
+  if(!nome){aviso("Escreva o nome antes de acrescentar.","ruim");return}
+  if((state.resp.lista||[]).some(x=>x.toLowerCase()===nome.toLowerCase())){
+   aviso("“"+nome+"” já está na lista.","ruim");return}
+  await comOcupado(el,async()=>{
+   await gravarResponsaveis((state.resp.lista||[]).concat([nome]));
+   state.resp.novo="";
+   aviso("“"+nome+"” entrou na lista de responsáveis.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-renomear]")){
+  const de=el.dataset.renomear;
+  const para=(prompt("Novo nome para “"+de+"”:",de)||"").trim();
+  if(!para||para===de)return;
+  if((state.resp.lista||[]).some(x=>x!==de&&x.toLowerCase()===para.toLowerCase())){
+   aviso("Já existe “"+para+"” na lista.","ruim");return}
+  const u=state.resp.uso[de],n=totalUso(u);
+  if(n&&!confirm("Trocar “"+de+"” por “"+para+"” em "+detalheUso(u)+" e no histórico?"))return;
+  await comOcupado(el,async()=>{
+   await gravarResponsaveis((state.resp.lista||[]).map(x=>x===de?para:x),{de:de,para:para});
+   aviso("Agora é “"+para+"” em todos os registros.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-tirar]")){
+  const nome=el.dataset.tirar,u=state.resp.uso[nome];
+  if(totalUso(u)){aviso("“"+nome+"” tem "+detalheUso(u)+". Passe para outra pessoa antes de tirar.","ruim");return}
+  if(!confirm("Tirar “"+nome+"” da lista? Ele deixa de aparecer nos campos de responsável."))return;
+  await comOcupado(el,async()=>{
+   await gravarResponsaveis((state.resp.lista||[]).filter(x=>x!==nome));
+   aviso("“"+nome+"” saiu da lista.","ok");
+  });
+  return;
+ }
  if(el=g("[data-sair]")){e.preventDefault();guardar(null);state.eu=null;state.pessoas=[];render();return}
  if(el=g("[data-nova]")){state.aberta="nova";renderGaveta();return}
  if(el=g("[data-fechar]")||t.id==="fundo"){state.aberta=null;renderGaveta();return}
@@ -469,6 +654,7 @@ document.addEventListener("click",async e=>{
 
 document.addEventListener("input",e=>{
  if(e.target.id==="busca"){state.busca=e.target.value;render()}
+ else if(e.target.id==="rnovo")state.resp.novo=e.target.value;
 });
 
 document.addEventListener("keydown",e=>{

@@ -435,7 +435,7 @@ const SUPABASE_KEY="sb_publishable_BZgO_66U6hFiY2ZwhqtnkQ_-vNXSvVq";
 /* ============================ TEXTOS ============================ */
 const TEXTOS={
  app:"Painel comercial",
- nav:{painel:"Painel",negocios:"Negócios",contas:"Contas"},
+ nav:{painel:"Painel",negocios:"Capital",contas:"Contas"},
  menu:{salvar:"Salvar arquivo",exportar:"Exportar",importar:"Importar",limpar:"Limpar dados de exemplo",imprimir:"Imprimir",recomecar:"Recomeçar"},
  buscaPh:"Buscar cliente, negócio, próximo passo ou pendência",
  salvo:"Salvo",naoSalvo:"Não salvo",salvando:"Salvando…",semRede:"Sem conexão",
@@ -454,14 +454,18 @@ const TEXTOS={
  porResp:"Por responsável",recente:"Atividade recente",
  motivos:{prazo:"Prazo vencido",passo:"Sem próximo passo definido",pend:"Pendência bloqueante",parado:"Parado há mais de 30 dias"},
  quadro:"Quadro",lista:"Lista",verPerdidos:"ver perdidos",voltarQuadro:"voltar ao funil",
- col:{cliente:"Cliente",frente:"Frente",etapa:"Etapa",resp:"Responsável",valor:"Valor",passo:"Próximo passo",prazo:"Prazo"},
+ col:{cliente:"Cliente",negocio:"Negócio",frente:"Frente",etapa:"Etapa",resp:"Responsável",valor:"Valor",passo:"Próximo passo",prazo:"Prazo"},
  abas:{clientes:"Clientes",parceiros:"Parceiros"},
  secoes:{pend:"Pendências",analise:"Análise",capital:"Capital",check:"Compliance e KYC",hist:"Histórico",notas:"Anotações"},
  vazio:{grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
-  b2c:"Nenhum negócio marcado como B2C ainda. A aba fica aqui para quando o primeiro aparecer."},
+  publico:"Nenhum negócio marcado com este público ainda. A aba fica aqui para quando o primeiro aparecer."},
  excluir:"Excluir",confirmaExcluir:"Excluir este registro? A ação pode ser desfeita por 8 segundos.",
  desfazer:"Desfazer",moveu:"Negócio movido.",excluiu:"Negócio excluído.",
  tipoVenda:{direta:"Venda direta",parceiro:"Venda por parceiro"},
+ novoCliente:"Novo cliente",novoParceiro:"Novo parceiro",
+ novoAjuda:"Três passos: para quem, o que, e como está.",
+ origemCliente:"A lista vem das contas da aba Clientes. Se ainda não está lá, escolha “Cadastrar cliente novo”.",
+ valorADefinir:"Sem valor definido ainda? Deixe vazio: o negócio entra marcado como valor a definir.",
  frentesLbl:{payments:"Payments",capital:"Capital",governance:"Governance"},
  erros:{
   parceiro:"Venda por parceiro precisa de um parceiro escolhido.",
@@ -476,7 +480,8 @@ const TEXTOS={
   comiteReq:"Para sair da aprovação, registre a decisão do comitê e até quando ela vale.",
   investidorReq:"Acompanhamento exige o investidor definido.",
   titulo:"Escreva um nome para o negócio.",
-  valor:"Informe um valor maior que zero.",
+  valor:"O valor precisa ser um número. Deixe vazio se ainda não há valor.",
+  clienteNovo:"Escreva o nome do cliente novo.",
   semUsuario:"Entre na sua conta para mover etapas.",
   importar:"Arquivo inválido: precisa ter parceiros, clientes e negócios.",
   bloqueiaPayments:"Pendência bloqueante em aberto: em Payments, o negócio não passa de Análise de compliance."
@@ -499,7 +504,8 @@ const FUNIS={
    posVenda é a primeira etapa de depois da venda, que não é pipeline aberto. */
 const CORTE={capital:{ganho:9,posVenda:10},governance:{ganho:4,posVenda:5},payments:{ganho:6,posVenda:7}};
 /* B2C não tem funil próprio: usa o funil da frente, igual a um B2B. */
-const PUBLICOS={"":"Todos",B2B:"B2B",B2C:"B2C"};
+const PUBLICOS={"":"Todos",B2B:"B2B",B2C:"B2C",B2B2C:"B2B2C"};
+const PUBLICOS_VALIDOS=["B2B","B2C","B2B2C"];
 /* Compliance e KYC são checklist, não etapa. Chave estável à esquerda para o
    texto poder mudar sem perder o que já foi marcado. */
 const CHECKLISTS={
@@ -513,7 +519,28 @@ const CHECKLISTS={
 };
 const CHECKETAPAS={governance:[5,6],payments:[3,4]};
 const CORF={payments:"#affa57",capital:"#62cc6d",governance:"#1da688"};
-const RESPS=["Paulo","Theo","Adriano","Adolfo"];
+const CLIENTE_NOVO="__novo";   /* valor sentinela do select de cliente */
+const TAG_VALOR="valor a definir";
+const RESPS_PADRAO=["Paulo","Theo","Adriano","Adolfo"];
+/* Mesma referência de array a vida toda: o Admin grava a lista em
+   dados.responsaveis e aqui ela é trocada no lugar, sem tocar em quem usa. */
+const RESPS=RESPS_PADRAO.slice();
+function aplicarResponsaveis(d){
+ const lista=(d&&Array.isArray(d.responsaveis)&&d.responsaveis.length)
+  ?d.responsaveis.filter(x=>typeof x==="string"&&x.trim()).map(x=>x.trim())
+  :RESPS_PADRAO;
+ RESPS.length=0;lista.forEach(x=>RESPS.push(x));
+}
+/* Se o Admin removeu alguém que ainda responde por um registro, o nome dele
+   continua na lista daquele select. Sem isto, abrir a gaveta e gravar trocaria
+   o responsável em silêncio. */
+function opcoesResp(atual,vazio){
+ const o={};
+ if(vazio!==undefined)o[""]=vazio;
+ RESPS.forEach(r=>o[r]=r);
+ if(atual&&o[atual]===undefined)o[atual]=atual+" (fora da lista)";
+ return o;
+}
 const CINCO=[["pagamento","Capacidade de pagamento"],["contrato","Contrato"],["garantias","Garantias"],["valorImovel","Valor do imóvel"],["usoAlternativo","Uso alternativo"]];
 const SEIS=[["qualidadeEmpresa","Qualidade da empresa"],["contratoLongoPrazo","Contrato de longo prazo"],["garantias","Garantias"],["valorImovel","Valor do imóvel"],["trocaOcupante","Troca de ocupante"],["usoAlternativo","Uso alternativo"]];
 const NOTAS5=["Forte","Fraca","NaoAvaliada"];
@@ -584,7 +611,7 @@ function etapaNome(d,e){
  if(v==="perdido")return "Perdido";
  return funilDe(d)[Number(v)-1]||"—";
 }
-const publicoDe=r=>(r&&r.publico==="B2C")?"B2C":"B2B";
+const publicoDe=r=>(r&&PUBLICOS_VALIDOS.indexOf(r.publico)>=0)?r.publico:"B2B";
 const ehB2C=r=>publicoDe(r)==="B2C";
 function checklistDe(d){
  const fr=frenteDe(d);
@@ -597,6 +624,10 @@ const checklistVisivel=d=>{const e=CHECKETAPAS[frenteDe(d)];
 const cliente=id=>state.data.customers.find(c=>c.id===id);
 const parceiro=id=>state.data.partners.find(p=>p.id===id);
 const contaNome=d=>{const c=cliente(d.clienteId);if(c)return c.nome;const p=parceiro(d.parceiroId);return p?p.nome:d.titulo;};
+/* Linha 1 e o nome do negocio. Antes era o nome da conta, e o que a pessoa
+   digitava em "nome do negocio" desaparecia da lista. */
+const nomeNegocio=d=>d.titulo||contaNome(d);
+const contaDetalhe=d=>{const c=contaNome(d);return c&&c!==nomeNegocio(d)?c:"";};
 const uid=p=>p+"-"+Math.random().toString(36).slice(2,8).toUpperCase();
 const agora=()=>new Date().toISOString().slice(0,10);
 
@@ -779,7 +810,7 @@ function migrar(origem){
  const rel={antes:d.deals.length+d.customers.length+d.partners.length,
   depois:0,porEtapa:{},porFrente:{},porPublico:{},revisar:[]};
  d.deals.forEach(x=>{
-  x.publico=x.publico==="B2C"?"B2C":"B2B";
+  x.publico=publicoDe(x);
   if(x.mandatoAssinadoEm===undefined)x.mandatoAssinadoEm="";
   if(!x.checklist||typeof x.checklist!=="object")x.checklist={};
   if(!FUNIS[x.frente])x.frente="governance";
@@ -796,7 +827,10 @@ function migrar(origem){
    rel.revisar.push(x.id+" (vinha da etapa "+de+")");
   }
  });
- d.customers.forEach(c=>{c.publico=c.tipo==="PF"?"B2C":"B2B";});
+ /* Só deriva do tipo quando o cliente ainda não tem público definido: um
+    B2B2C escolhido à mão não pode ser sobrescrito pela regra PF/PJ. */
+ d.customers.forEach(c=>{
+  c.publico=(PUBLICOS_VALIDOS.indexOf(c.publico)>=0)?c.publico:(c.tipo==="PF"?"B2C":"B2B");});
  d.partners.forEach(x=>{x.publico="B2B";});            /* parceiro é sempre B2B */
  d.schema=2;
  rel.depois=d.deals.length+d.customers.length+d.partners.length;
@@ -1232,8 +1266,8 @@ const HINTS={
   a:"Últimas movimentações de etapa, mostrando quem moveu e quem responde pelo negócio.",
   b:"São duas pessoas diferentes com frequência: quem moveu pode não ser o responsável. Segue o período selecionado."},
  publico:{t:"Público",
-  a:"Separa negócio de empresa (B2B) de negócio de pessoa física (B2C).",
-  b:"Filtra a tela inteira e não muda as etapas: um negócio B2C usa o mesmo funil da frente dele."},
+  a:"Quem está do outro lado: empresa (B2B), pessoa física (B2C), ou empresa que atende o consumidor final (B2B2C).",
+  b:"Filtra a tela inteira e não muda as etapas: qualquer público usa o funil da frente dele."},
  mandato:{t:"Mandato assinado em",
   a:"A data em que o cliente assinou o mandato.",
   b:"É diferente da aprovação do comitê, e fica vazio enquanto não houver assinatura."},
@@ -1392,6 +1426,7 @@ function fecharHint(devolveFoco){
 /* ============================ TELAS ============================ */
 function render(){
  fecharHint(false);
+ aplicarResponsaveis(state.data);   /* lista do Admin entra antes de qualquer select */
  renderTopo();renderNav();renderMenu();renderPubSeg();renderChips();
  const c=$("#content");
  if(state.tela==="painel")c.innerHTML=telaPainel();
@@ -1401,8 +1436,11 @@ function render(){
 }
 function renderTopo(){
  $("#title").textContent=TEXTOS.nav[state.tela];
- $("#btnnovo").textContent=TEXTOS.novo;
- $("#fab").title=TEXTOS.novo;
+ const rotuloNovo=state.tela==="contas"
+  ?(state.aba==="clientes"?TEXTOS.novoCliente:TEXTOS.novoParceiro):TEXTOS.novo;
+ $("#btnnovo").textContent=rotuloNovo;
+ $("#fab").title=rotuloNovo;
+ $("#fab").setAttribute("aria-label",rotuloNovo);
  $("#busca").placeholder=TEXTOS.buscaPh;
  if($("#busca").value!==state.filtros.busca)$("#busca").value=state.filtros.busca;
  const s=$("#savedot");
@@ -1471,7 +1509,7 @@ function telaPainel(){
  const desfechados=ff=>lista.filter(d=>noDesfecho(d,ff));
  const kf=kpis(desfechados(f)),kfa=f?kpis(desfechados(f.ant)):null;
  /* Ticket de pessoa física é baixo: só o total em reais escondia o volume. */
- const qtd=(nn)=>state.publico==="B2C"?" · "+nn+(nn===1?" negócio":" negócios"):"";
+ const qtd=(nn)=>(state.publico==="B2C"||state.publico==="B2B2C")?" · "+nn+(nn===1?" negócio":" negócios"):"";
  /* Soma zero com negócios dentro não é zero: é valor não cadastrado. Mostrar
     "R$ 0" aqui diria que nada foi fechado, quando foram oito. */
  const soma=(v,nn)=>(nn>0&&!v)?nn+(nn===1?" negócio":" negócios")+" · valor a definir":brlV(v)+qtd(nn);
@@ -1515,13 +1553,18 @@ function telaPainel(){
   '<div class="card"><h2>'+TEXTOS.funil+iconeHint("funil")+"</h2>"+funilH+"</div>"+
   '<div class="card"><h2>'+TEXTOS.frentes+iconeHint("frentes")+"</h2>"+rosca(porFrente)+"</div></div>";
  const at=atencao(lista);
- let ah=at.length?'<div class="rowlist">'+at.map(x=>itemLinha(esc(contaNome(x.d)),
+ let ah=at.length?'<div class="rowlist">'+at.map(x=>itemLinha(esc(nomeNegocio(x.d)),
   ['<span class="mut">'+esc(brlD(x.d.valor))+"</span>",
    '<span class="'+(x.motivo===TEXTOS.motivos.parado?"soft":"late")+'">'+esc(x.motivo)+"</span>"],
   ' data-abre="'+x.d.id+'" style="cursor:pointer"')).join("")+"</div>"
   :'<div class="empty">'+TEXTOS.vazio.atencao+"</div>";
- const porResp=RESPS.map(r=>{const a=lista.filter(d=>emAberto(d)&&d.responsavel===r);
-  return{nome:r,n:a.length,valor:a.reduce((s,d)=>s+(+d.valor||0),0),cor:"#1da688"};}).filter(x=>x.n);
+ /* Nomes fora da lista do Admin, mas com negócio aberto, entram no fim: some
+    do gráfico é pior que aparecer com a marca de fora da lista. */
+ const nomesResp=RESPS.slice();
+ lista.forEach(d=>{if(emAberto(d)&&d.responsavel&&nomesResp.indexOf(d.responsavel)<0)nomesResp.push(d.responsavel);});
+ const porResp=nomesResp.map(r=>{const a=lista.filter(d=>emAberto(d)&&d.responsavel===r);
+  return{nome:r+(RESPS.indexOf(r)<0?" (fora da lista)":""),n:a.length,
+   valor:a.reduce((s,d)=>s+(+d.valor||0),0),cor:"#1da688"};}).filter(x=>x.n);
  const totR=porResp.reduce((s,i)=>s+i.valor,0);
  h+='<div class="grid g2 mt16">'+
   '<div class="card"><h2>'+TEXTOS.atencao+iconeHint("atencao")+"</h2>"+ah+"</div>"+
@@ -1531,7 +1574,7 @@ function telaPainel(){
  ev.sort((a,b)=>String(b.x.quando).localeCompare(String(a.x.quando)));
  /* Dois nomes diferentes na mesma linha: quem moveu a etapa e quem responde
     pelo negócio. Sem rótulo, o leitor confundia um com o outro. */
- const evh=ev.length?'<div class="rowlist">'+ev.slice(0,10).map(e=>itemLinha(esc(contaNome(e.d)),
+ const evh=ev.length?'<div class="rowlist">'+ev.slice(0,10).map(e=>itemLinha(esc(nomeNegocio(e.d)),
   ['<span class="mut">'+esc(e.x.de+" → "+e.x.para)+"</span>",
    '<span class="soft">Movido por '+esc(e.x.quem||"—")+"</span>",
    '<span class="soft">Responsável: '+esc(e.d.responsavel||"—")+"</span>",
@@ -1561,7 +1604,7 @@ function telaNegocios(){
  const frs=state.filtros.frente?[state.filtros.frente]:["payments","capital","governance"];
  const vivos=lista.filter(d=>d.etapa!=="perdido");
  if(!vivos.length)return h+'<div class="card"><div class="empty" style="border:0">'+
-  esc(state.publico==="B2C"?TEXTOS.vazio.b2c:TEXTOS.vazio.lista)+"</div></div>";
+  esc(state.publico?TEXTOS.vazio.publico:TEXTOS.vazio.lista)+"</div></div>";
  frs.forEach(fr=>{
   const daFrente=vivos.filter(d=>frenteDe(d)===fr);
   /* Sem o filtro de frente, frente sem negócio nenhum não vira uma faixa de
@@ -1584,9 +1627,10 @@ function cardHTML(d){
  const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
  const err=state.erroCard&&state.erroCard.id===d.id?'<div class="err">'+esc(state.erroCard.msg)+"</div>":"";
  return '<div class="dc" draggable="'+(ehMobile()?"false":"true")+'" data-id="'+d.id+'">'+
-  '<div class="cl">'+esc(contaNome(d))+"</div>"+
+  '<div class="cl">'+esc(nomeNegocio(d))+"</div>"+
+  (contaDetalhe(d)?'<div class="soft" style="font-size:11px;margin-bottom:4px">'+esc(contaDetalhe(d))+"</div>":"")+
   '<div class="rw"><span class="vl">'+esc(brlD(d.valor))+'</span><span class="badge"><span class="dot" style="background:'+
-  CORF[d.frente]+'"></span>'+esc(TEXTOS.frentesLbl[d.frente])+"</span>"+marcaB2C(d)+
+  CORF[d.frente]+'"></span>'+esc(TEXTOS.frentesLbl[d.frente])+"</span>"+marcaPublico(d)+
   '<span class="ini" style="margin-left:auto" title="'+esc(d.responsavel)+'">'+esc(iniciais(d.responsavel))+"</span></div>"+
   '<div class="np">'+(d.proximoPasso?esc(d.proximoPasso):'<span class="soft">'+TEXTOS.motivos.passo+"</span>")+"</div>"+
   '<div class="rw"><span class="'+(late?"late":"soft")+'" style="font-size:11px">'+TEXTOS.col.prazo+": "+dt(d.prazo)+"</span></div>"+
@@ -1597,11 +1641,12 @@ function selEtapa(d){
   '<option value="'+(i+1)+'"'+(Number(d.etapa)===i+1?" selected":"")+">"+(i+1)+" · "+esc(nome)+"</option>").join("")+
   '<option value="perdido"'+(d.etapa==="perdido"?" selected":"")+">Perdido</option></select>";
 }
-/* Só na aba Todos: na aba B2C a marca seria repetição em cada linha. */
-const marcaB2C=d=>(!state.publico&&ehB2C(d))?'<span class="badge b2c">B2C</span>':"";
+/* Só na aba Todos: dentro de uma aba de público a marca repetiria em cada linha. */
+const marcaPublico=d=>(!state.publico&&publicoDe(d)!=="B2B")
+ ?'<span class="badge b2c">'+esc(publicoDe(d))+"</span>":"";
 function ordenarLista(lista){
  const o=state.ord;
- const val=(d,c)=>c==="cliente"?contaNome(d):c==="etapa"?(d.etapa==="perdido"?99:Number(d.etapa)):c==="valor"?+d.valor||0:String(d[c]||"");
+ const val=(d,c)=>c==="cliente"?nomeNegocio(d):c==="etapa"?(d.etapa==="perdido"?99:Number(d.etapa)):c==="valor"?+d.valor||0:String(d[c]||"");
  return lista.slice().sort((a,b)=>{const x=val(a,o.campo),y=val(b,o.campo);
   return (typeof x==="number"?x-y:String(x).localeCompare(String(y),"pt-BR"))*o.dir;});
 }
@@ -1610,14 +1655,15 @@ function cartoesNegocios(lista){
  if(!ds.length)return '<div class="card"><div class="empty" style="border:0">'+TEXTOS.vazio.lista+"</div></div>";
  return '<div class="clist">'+ds.map(d=>{
   const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
-  return '<div class="ci" data-abre="'+d.id+'"><span class="t">'+esc(contaNome(d))+"</span>"+
-   '<span class="s">'+esc(etapaNome(d))+(!state.publico&&ehB2C(d)?SEP+"B2C":"")+SEP+esc(d.responsavel)+SEP+esc(brlD(d.valor))+
+  const conta=contaDetalhe(d);
+  return '<div class="ci" data-abre="'+d.id+'"><span class="t">'+esc(nomeNegocio(d))+"</span>"+
+   '<span class="s">'+(conta?esc(conta)+SEP:"")+esc(etapaNome(d))+(!state.publico&&publicoDe(d)!=="B2B"?SEP+publicoDe(d):"")+SEP+esc(d.responsavel)+SEP+esc(brlD(d.valor))+
    SEP+'<span class="'+(late?"late":"soft")+'" title="'+esc(TEXTOS.col.prazo)+'">'+dt(d.prazo)+"</span></span></div>";
  }).join("")+"</div>";
 }
 function tabela(lista,paraImpressao){
  if(!paraImpressao&&ehMobile())return cartoesNegocios(lista);
- const cols=[["cliente",TEXTOS.col.cliente],["frente",TEXTOS.col.frente],["etapa",TEXTOS.col.etapa],
+ const cols=[["cliente",TEXTOS.col.negocio],["frente",TEXTOS.col.frente],["etapa",TEXTOS.col.etapa],
   ["responsavel",TEXTOS.col.resp],["valor",TEXTOS.col.valor],["proximoPasso",TEXTOS.col.passo],["prazo",TEXTOS.col.prazo]];
  const o=state.ord;
  const ds=ordenarLista(lista);
@@ -1625,9 +1671,10 @@ function tabela(lista,paraImpressao){
  return '<div class="card tbl" style="padding:0"><table><thead><tr>'+cols.map(([c,l])=>
   '<th class="s" data-ord="'+c+'">'+esc(l)+(o.campo===c?(o.dir>0?" ↑":" ↓"):"")+"</th>").join("")+"</tr></thead><tbody>"+
   ds.map(d=>{const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
-   return '<tr class="clk" data-abre="'+d.id+'"><td>'+esc(contaNome(d))+"</td>"+
+   return '<tr class="clk" data-abre="'+d.id+'"><td>'+esc(nomeNegocio(d))+
+   (contaDetalhe(d)?'<div class="soft" style="font-size:11px">'+esc(contaDetalhe(d))+"</div>":"")+"</td>"+
    '<td><span class="dot" style="background:'+CORF[d.frente]+'"></span>'+esc(TEXTOS.frentesLbl[d.frente])+"</td>"+
-   "<td>"+esc(etapaNome(d))+marcaB2C(d)+"</td><td>"+esc(d.responsavel)+'</td><td style="font-variant-numeric:tabular-nums">'+esc(brlD(d.valor))+"</td>"+
+   "<td>"+esc(etapaNome(d))+marcaPublico(d)+"</td><td>"+esc(d.responsavel)+'</td><td style="font-variant-numeric:tabular-nums">'+esc(brlD(d.valor))+"</td>"+
    '<td class="mut">'+(d.proximoPasso?esc(d.proximoPasso):'<span class="soft">—</span>')+"</td>"+
    '<td class="'+(late?"late":"")+'">'+dt(d.prazo)+"</td></tr>";}).join("")+"</tbody></table></div>";
 }
@@ -1635,8 +1682,9 @@ function telaContas(){
  let h='<div class="seg" style="margin-bottom:16px">'+
   ['clientes','parceiros'].map(k=>'<button data-aba="'+k+'" class="'+(state.aba===k?"on":"")+'">'+TEXTOS.abas[k]+"</button>").join("")+
   "</div>"+iconeHint("abas");
- h+='<div style="margin-bottom:16px"><button data-novaconta="'+(state.aba==="clientes"?"cliente":"parceiro")+'">'+
-  (state.aba==="clientes"?"Novo cliente":"Novo parceiro")+"</button>"+iconeHint("novaconta")+"</div>";
+ h+='<div style="margin-bottom:16px"><button data-novaconta="'+(state.aba==="clientes"?"cliente":"parceiro")+'"'+
+  ' style="background:#0e5351;color:#fff;border-color:#0e5351;font-weight:500;padding:8px 14px">'+
+  (state.aba==="clientes"?TEXTOS.novoCliente:TEXTOS.novoParceiro)+"</button>"+iconeHint("novaconta")+"</div>";
  const q=state.filtros.busca.trim().toLowerCase();
  const negs=o=>state.data.deals.filter(d=>o.tipo?d.clienteId===o.id:d.parceiroId===o.id);
  const resumo=ds=>ds.length+" neg."+SEP+esc(brlV(ds.reduce((s,d)=>s+(+d.valor||0),0)));
@@ -1721,12 +1769,13 @@ function sec(k,titulo,cnt,body,hk){
 function painelDeal(id){
  const d=state.data.deals.find(x=>x.id===id);
  if(!d)return "";
- const respOps={};RESPS.forEach(r=>respOps[r]=r);
- const papelOps={"":"—"};RESPS.forEach(r=>papelOps[r]=r);
+ const respOps=opcoesResp(d.responsavel);
+ const papelOps=opcoesResp("","—");
  const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
  let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
   '<div class="lbl" style="color:#affa57">'+esc(TEXTOS.frentesLbl[d.frente])+" · "+esc(TEXTOS.tipoVenda[d.tipoVenda])+"</div>"+
-  '<div style="font-size:20px;margin-top:6px">'+esc(contaNome(d))+"</div>"+
+  '<div style="font-size:20px;margin-top:6px">'+esc(nomeNegocio(d))+"</div>"+
+  (contaDetalhe(d)?'<div style="font-size:13px;margin-top:2px;opacity:.85">'+esc(contaDetalhe(d))+"</div>":"")+
   '<div style="font-size:15px;margin-top:4px;color:#affa57">'+esc(brlD(d.valor))+"</div></div>";
  h+='<div class="pb">';
  h+='<div class="lbl" style="margin-top:16px">'+esc(HINTS.trilha.t)+iconeHint("trilha")+"</div>";
@@ -1737,7 +1786,7 @@ function painelDeal(id){
  }).join("")+"</div>";
  if(state.erroCard&&state.erroCard.id===d.id)h+='<div class="err" style="margin-bottom:8px">'+esc(state.erroCard.msg)+"</div>";
  h+=fld(TEXTOS.col.etapa,esc(etapaNome(d))+(d.etapa==="perdido"?" · "+esc(d.motivoPerda||""):""),"etapa");
- h+=fld(TEXTOS.publicoLbl,ed("deal",d.id,"publico",publicoDe(d),"select",{B2B:"B2B",B2C:"B2C"}),"publico");
+ h+=fld(TEXTOS.publicoLbl,ed("deal",d.id,"publico",publicoDe(d),"select",{B2B:"B2B",B2C:"B2C",B2B2C:"B2B2C"}),"publico");
  if(d.etapa==="perdido")h+=fld("Motivo da perda",ed("deal",d.id,"motivoPerda",d.motivoPerda,"text"),"motivoPerda");
  h+=fld(TEXTOS.col.frente,ed("deal",d.id,"frente",d.frente,"select",frenteOps),"frente");
  h+=fld("Tipo de venda",ed("deal",d.id,"tipoVenda",d.tipoVenda,"select",
@@ -1820,7 +1869,7 @@ function painelConta(kind,id){
  const o=isC?cliente(id):parceiro(id);
  if(!o)return "";
  const ds=state.data.deals.filter(d=>isC?d.clienteId===id:d.parceiroId===id);
- const respOps={};RESPS.forEach(r=>respOps[r]=r);
+ const respOps=opcoesResp(o.responsavel);
  let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button><div class="lbl" style="color:#affa57">'+
   (isC?"Cliente":"Parceiro")+'</div><div style="font-size:20px;margin-top:6px">'+esc(o.nome)+"</div></div><div class=\"pb\">";
  h+=fld("Nome",ed(kind,o.id,"nome",o.nome,"text"));
@@ -1829,7 +1878,7 @@ function painelConta(kind,id){
     se a conta e cliente ou parceiro. */
  if(isC){h+=fld("Tipo",ed(kind,o.id,"tipo",o.tipo||"PJ","select",{PJ:"PJ",PF:"PF"}),"tipoConta");
   /* Parceiro não tem este campo: parceiro é sempre B2B. */
-  h+=fld(TEXTOS.publicoLbl,ed(kind,o.id,"publico",publicoDe(o),"select",{B2B:"B2B",B2C:"B2C"}),"publico");
+  h+=fld(TEXTOS.publicoLbl,ed(kind,o.id,"publico",publicoDe(o),"select",{B2B:"B2B",B2C:"B2C",B2B2C:"B2B2C"}),"publico");
   const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
   h+=fld(TEXTOS.col.frente,ed(kind,o.id,"frente",o.frente,"select",frenteOps),"frente");}
  h+=fld("Setor",ed(kind,o.id,"setor",o.setor,"text"));
@@ -1847,35 +1896,69 @@ function painelConta(kind,id){
   :'<div class="soft">Nenhum negócio.</div>';
  return h+"</div>";
 }
+/* A lista sai das contas da aba Clientes, e só dela: parceiro aparece no outro
+   select. Quem ainda não está cadastrado entra por NOVO, aqui mesmo, sem sair
+   do formulário e perder o que já foi digitado. */
+function selCliente(n,rotuloVazio){
+ return '<select data-novo="clienteId"><option value="">'+esc(rotuloVazio||"Escolha o cliente")+"</option>"+
+  state.data.customers.map(c=>'<option value="'+c.id+'"'+(n.clienteId===c.id?" selected":"")+">"+esc(c.nome)+"</option>").join("")+
+  '<option value="'+CLIENTE_NOVO+'"'+(n.clienteId===CLIENTE_NOVO?" selected":"")+">+ Cadastrar cliente novo</option></select>"+
+  '<div class="soft" style="font-size:11px;margin-top:4px">'+esc(TEXTOS.origemCliente)+"</div>";
+}
+function camposClienteNovo(n,err){
+ if(n.clienteId!==CLIENTE_NOVO)return "";
+ return fld("Nome do cliente novo",'<input data-novo="clienteNovoNome" value="'+esc(n.clienteNovoNome)+
+   '" placeholder="raz\u00e3o social ou nome de quem compra" style="width:100%;border:1px solid #d4d8d4;padding:8px">'+err("clienteNovoNome"))+
+  fld("Tipo",'<select data-novo="clienteNovoTipo"><option value="PJ"'+(n.clienteNovoTipo==="PJ"?" selected":"")+
+   '>PJ \u00b7 empresa</option><option value="PF"'+(n.clienteNovoTipo==="PF"?" selected":"")+">PF \u00b7 pessoa</option></select>"+
+   '<div class="soft" style="font-size:11px;margin-top:4px">O resto do cadastro (setor, UF, contato) fica em branco e voc\u00ea completa na tela Contas quando souber.</div>');
+}
+/* Tres passos na ordem da conversa real: para quem e o negocio, o que e o
+   negocio, e como ele esta. Antes o formulario pedia o nome do negocio antes
+   de saber quem compra, e quem digitava o nome do cliente ali. */
+function passoNovo(numero,texto){
+ return '<div class="lbl" style="margin-top:24px;color:#0e5351">'+numero+" \u00b7 "+esc(texto)+"</div>";
+}
 function painelNovo(){
  const n=state.novo;
- let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button><div style="font-size:20px">'+TEXTOS.novo+"</div></div><div class=\"pb\">";
+ let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button><div style="font-size:20px">'+TEXTOS.novo+"</div>"+
+  '<div class="soft" style="font-size:12px;margin-top:4px">'+esc(TEXTOS.novoAjuda)+"</div></div><div class=\"pb\">";
  const err=k=>n.erros&&n.erros[k]?'<span class="err">'+esc(n.erros[k])+"</span>":"";
- h+=fld("Nome do negócio",'<input data-novo="titulo" value="'+esc(n.titulo)+'" style="width:100%;border:1px solid #d4d8d4;padding:8px">'+err("titulo"),"titulo");
+ const txt=(campo,ph)=>'<input data-novo="'+campo+'" value="'+esc(n[campo])+'"'+
+  (ph?' placeholder="'+esc(ph)+'"':"")+' style="width:100%;border:1px solid #d4d8d4;padding:8px">';
+
+ h+=passoNovo(1,"Para quem \u00e9 o neg\u00f3cio");
  h+=fld("Tipo de venda",'<select data-novo="tipoVenda"><option value="direta"'+(n.tipoVenda==="direta"?" selected":"")+">"+TEXTOS.tipoVenda.direta+
   '</option><option value="parceiro"'+(n.tipoVenda==="parceiro"?" selected":"")+">"+TEXTOS.tipoVenda.parceiro+"</option></select>","tipoVenda");
  if(n.tipoVenda==="direta"){
-  h+=fld(TEXTOS.col.cliente,'<select data-novo="clienteId"><option value="">Escolha o cliente</option>'+
-   state.data.customers.map(c=>'<option value="'+c.id+'"'+(n.clienteId===c.id?" selected":"")+">"+esc(c.nome)+"</option>").join("")+"</select>"+err("clienteId"),"cliente");
+  h+=fld(TEXTOS.col.cliente,selCliente(n)+err("clienteId"),"cliente");
+  h+=camposClienteNovo(n,err);
  }else{
   h+=fld("Parceiro",'<select data-novo="parceiroId"><option value="">Escolha o parceiro</option>'+
    state.data.partners.map(p=>'<option value="'+p.id+'"'+(n.parceiroId===p.id?" selected":"")+">"+esc(p.nome)+"</option>").join("")+"</select>"+err("parceiroId"),"parceiro");
-  h+=fld("Cliente (opcional)",'<select data-novo="clienteId"><option value="">Sem cliente</option>'+
-   state.data.customers.map(c=>'<option value="'+c.id+'"'+(n.clienteId===c.id?" selected":"")+">"+esc(c.nome)+"</option>").join("")+"</select>");
+  h+=fld("Cliente (opcional)",selCliente(n,"Sem cliente"));
+  h+=camposClienteNovo(n,err);
  }
+
+ h+=passoNovo(2,"O que \u00e9 o neg\u00f3cio");
+ h+=fld("Nome do neg\u00f3cio",txt("titulo","o que est\u00e1 sendo vendido, n\u00e3o o nome de quem compra")+err("titulo"),"titulo");
  h+=fld(TEXTOS.col.frente,'<select data-novo="frente">'+["payments","capital","governance"].map(f=>
   '<option value="'+f+'"'+(n.frente===f?" selected":"")+">"+TEXTOS.frentesLbl[f]+"</option>").join("")+"</select>","frente");
- /* Cliente PJ nasce B2B, PF nasce B2C. Sugestão, não imposição. */
- h+=fld(TEXTOS.publicoLbl,'<select data-novo="publico">'+["B2B","B2C"].map(v=>
+ /* Cliente PJ nasce B2B, PF nasce B2C. Sugestao, nao imposicao. */
+ h+=fld(TEXTOS.publicoLbl,'<select data-novo="publico">'+PUBLICOS_VALIDOS.map(v=>
   '<option value="'+v+'"'+(n.publico===v?" selected":"")+">"+v+"</option>").join("")+"</select>","publico");
- if(n.frente==="capital")h+=fld("Tese",'<input data-novo="tese" value="'+esc(n.tese)+'" style="width:100%;border:1px solid #d4d8d4;padding:8px">'+err("tese"),"tese");
- h+=fld(TEXTOS.col.valor,'<input data-novo="valor" inputmode="numeric" value="'+esc(n.valor)+'" style="width:100%;border:1px solid #d4d8d4;padding:8px">'+err("valor"),"valor");
+ if(n.frente==="capital")h+=fld("Tese",txt("tese")+err("tese"),"tese");
+
+ h+=passoNovo(3,"Como o neg\u00f3cio est\u00e1");
+ h+=fld(TEXTOS.col.valor,'<input data-novo="valor" inputmode="numeric" value="'+esc(n.valor)+
+  '" placeholder="deixe vazio se ainda n\u00e3o h\u00e1 valor" style="width:100%;border:1px solid #d4d8d4;padding:8px">'+err("valor")+
+  '<div class="soft" style="font-size:11px;margin-top:4px">'+esc(TEXTOS.valorADefinir)+"</div>","valor");
  h+=fld(TEXTOS.col.resp,'<select data-novo="responsavel">'+RESPS.map(r=>
   '<option value="'+r+'"'+(n.responsavel===r?" selected":"")+">"+r+"</option>").join("")+"</select>","resp");
- h+=fld(TEXTOS.col.passo,'<input data-novo="proximoPasso" value="'+esc(n.proximoPasso)+'" style="width:100%;border:1px solid #d4d8d4;padding:8px">',"passo");
+ h+=fld(TEXTOS.col.passo,txt("proximoPasso","a pr\u00f3xima coisa que alguem precisa fazer"),"passo");
  h+=fld(TEXTOS.col.prazo,'<input data-novo="prazo" type="date" value="'+esc(n.prazo)+'" style="border:1px solid #d4d8d4;padding:8px">',"prazo");
  h+=fld("Chance de fechar",'<input data-novo="chance" inputmode="numeric" value="'+esc(n.chance)+'" style="width:80px;border:1px solid #d4d8d4;padding:8px"> %',"chance");
- h+='<div style="margin-top:24px;display:flex;gap:8px"><button data-criar="1" style="background:#0e5351;color:#fff;border-color:#0e5351;font-weight:500;padding:8px 14px">Cadastrar negócio</button>'+
+ h+='<div style="margin-top:24px;display:flex;gap:8px"><button data-criar="1" style="background:#0e5351;color:#fff;border-color:#0e5351;font-weight:500;padding:8px 14px">Cadastrar neg\u00f3cio</button>'+
   '<button data-fechar="1">Cancelar</button></div>';
  return h+"</div>";
 }
@@ -1995,7 +2078,12 @@ document.addEventListener("click",e=>{
  if(el=g("[data-abre]")){abrirPainel({tipo:"deal",id:el.dataset.abre});return;}
  if(el=g(".dc")&&!t.closest("select")){abrirPainel({tipo:"deal",id:g(".dc").dataset.id});return;}
  if(t.id==="shade"){fecharPainel();return;}
- if(t.closest("#btnnovo,#fab")){novoNegocio();return;}
+ /* Na tela Contas o botao grande cria conta. Antes criava negocio em qualquer
+    tela, e nao havia caminho obvio para cadastrar cliente ou parceiro. */
+ if(t.closest("#btnnovo,#fab")){
+  if(state.tela==="contas")criarConta(state.aba==="clientes"?"cliente":"parceiro");
+  else novoNegocio();
+  return;}
  if(t.id==="toastundo"){desfazer();return;}
  const edt=t.closest("[data-edit]");
  if(edt&&!edt.querySelector("input,select,textarea"))startEdit(edt);
@@ -2024,10 +2112,12 @@ document.addEventListener("change",e=>{
      no campo à mão. */
   if(t.dataset.novo==="clienteId"&&!state.novo.publicoManual){
    const c=cliente(t.value);
-   state.novo.publico=(c&&c.tipo==="PF")?"B2C":"B2B";
-   renderPainelLateral();
+   if(t.value!==CLIENTE_NOVO)state.novo.publico=(c&&c.tipo==="PF")?"B2C":"B2B";
+   else state.novo.publico=state.novo.clienteNovoTipo==="PF"?"B2C":"B2B";
   }
-  if(["tipoVenda","frente"].indexOf(t.dataset.novo)>=0)renderPainelLateral();return;}
+  if(t.dataset.novo==="clienteNovoTipo"&&!state.novo.publicoManual)
+   state.novo.publico=t.value==="PF"?"B2C":"B2B";
+  if(["tipoVenda","frente","clienteId","clienteNovoTipo"].indexOf(t.dataset.novo)>=0)renderPainelLateral();return;}
 });
 document.addEventListener("input",e=>{
  const t=e.target;
@@ -2077,6 +2167,7 @@ $("#hint").addEventListener("keydown",e=>{
 });
 function novoNegocio(){
  state.novo={titulo:"",tipoVenda:"direta",clienteId:"",parceiroId:"",frente:"payments",tese:"",
+  clienteNovoNome:"",clienteNovoTipo:"PJ",
   publico:"B2B",publicoManual:false,
   valor:"",responsavel:RESPS[0],proximoPasso:"",prazo:agora(),chance:"50",erros:null};
  abrirPainel({tipo:"novo"});
@@ -2084,20 +2175,36 @@ function novoNegocio(){
 function criar(){
  const n=state.novo,er={};
  if(!n.titulo.trim())er.titulo=TEXTOS.erros.titulo;
- if(!(Number(String(n.valor).replace(/\D/g,""))>0))er.valor=TEXTOS.erros.valor;
+ /* Valor vazio e um estado legitimo: o negocio entra com a marca de valor a
+    definir, como os credenciamentos que ja estao na base. Numero invalido
+    continua sendo erro. */
+ const valorLimpo=String(n.valor).replace(/\D/g,"");
+ if(String(n.valor).trim()&&!valorLimpo)er.valor=TEXTOS.erros.valor;
  if(n.tipoVenda==="direta"&&!n.clienteId)er.clienteId=TEXTOS.erros.cliente;
+ if(n.clienteId===CLIENTE_NOVO&&!n.clienteNovoNome.trim())er.clienteNovoNome=TEXTOS.erros.clienteNovo;
  if(n.tipoVenda==="parceiro"&&!n.parceiroId)er.parceiroId=TEXTOS.erros.parceiro;
  if(n.frente==="capital"&&!n.tese.trim())er.tese=TEXTOS.erros.tese;
  if(Object.keys(er).length){n.erros=er;renderPainelLateral();return;}
  snapshot();
+ /* Cliente novo nasce com o mínimo que o formulário sabe. O que ele não sabe
+    fica vazio: campo em branco é informação, palpite não é. */
+ let clienteId=n.clienteId;
+ if(clienteId===CLIENTE_NOVO){
+  const c={id:uid("C"),nome:n.clienteNovoNome.trim(),tipo:n.clienteNovoTipo,
+   publico:n.clienteNovoTipo==="PF"?"B2C":"B2B",responsavel:n.responsavel,
+   frente:n.frente,tier:"",status:"",porte:"",setor:"",uf:"",notas:"",
+   receitaRecorrente:0,parceiroId:n.tipoVenda==="parceiro"?n.parceiroId:null,
+   exemplo:false,criadoEm:agora(),atualizadoEm:agora()};
+  state.data.customers.push(c);clienteId=c.id;
+ }
  state.data.deals.push({id:uid("N"),titulo:n.titulo.trim(),frente:n.frente,tipoVenda:n.tipoVenda,
-  parceiroId:n.tipoVenda==="parceiro"?n.parceiroId:null,clienteId:n.clienteId||null,responsavel:n.responsavel,
-  valor:Number(String(n.valor).replace(/\D/g,"")),etapa:1,proximoPasso:n.proximoPasso,prazo:n.prazo,
-  publico:n.publico==="B2C"?"B2C":"B2B",mandatoAssinadoEm:"",checklist:{},
+  parceiroId:n.tipoVenda==="parceiro"?n.parceiroId:null,clienteId:clienteId||null,responsavel:n.responsavel,
+  valor:valorLimpo?Number(valorLimpo):"",etapa:1,proximoPasso:n.proximoPasso,prazo:n.prazo,
+  publico:publicoDe(n),mandatoAssinadoEm:"",checklist:{},
   chance:Math.max(0,Math.min(100,Number(n.chance)||0)),pendencias:[],tese:n.tese||"",estrutura:"",frenteCapital:"",
   investidor:"",statusCaptacao:"",cincoPerguntas:{pagamento:"NaoAvaliada",contrato:"NaoAvaliada",garantias:"NaoAvaliada",valorImovel:"NaoAvaliada",usoAlternativo:"NaoAvaliada"},
   seisCamadas:{qualidadeEmpresa:{nota:0,obs:""},contratoLongoPrazo:{nota:0,obs:""},garantias:{nota:0,obs:""},valorImovel:{nota:0,obs:""},trocaOcupante:{nota:0,obs:""},usoAlternativo:{nota:0,obs:""}},
-  tags:[],situacao:"",segmento:"",origem:"",ufs:"",papeis:novoPapeis(),territorio:novoTerritorio(),comite:novoComite(),
+  tags:valorLimpo?[]:[TAG_VALOR],situacao:"",segmento:"",origem:"",ufs:"",papeis:novoPapeis(),territorio:novoTerritorio(),comite:novoComite(),
   motivoPerda:"",notas:"",exemplo:false,criadoEm:agora(),atualizadoEm:agora(),fechadoEm:null,
   historico:[{de:"—",para:FUNIS[FUNIS[n.frente]?n.frente:"governance"][0],
    quando:new Date().toISOString(),quem:(state.usuario&&state.usuario.nome)||n.responsavel}]});
