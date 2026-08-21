@@ -3,12 +3,14 @@
 # Existe porque publicar à mão dependia de alguém rodar ./publicar.sh no próprio
 # computador, e o que estava no ar deixava de ser o que está no repositório.
 #
-# São dois destinos, e eles não competem:
-#   - GitHub Pages: o painel e a página de administração. Não precisa de segredo
-#     nenhum. É o endereço do time.
+# São três destinos, e nenhum atropela o outro:
+#   - branch gh-pages: recebe sempre o conteúdo montado. Não precisa de nada.
+#   - GitHub Pages por Actions: se o Pages estiver ligado, publica também por ali.
+#     Ligar é uma chave em Settings, Pages, Source: GitHub Actions. O token do
+#     Actions não tem permissão para ligar sozinho.
 #   - Vercel: o mesmo conteúdo mais api/admin.js, a função que guarda a chave
-#     service_role e é a única que cria pessoa e define senha. Só roda quando os
-#     três segredos do Vercel existirem no repositório.
+#     service_role e é a única que cria pessoa e define senha. Entra quando os
+#     três segredos existirem no repositório.
 name: publicar
 
 on:
@@ -17,7 +19,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -26,11 +28,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pages:
+  publicar:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -54,19 +53,45 @@ jobs:
           grep -q 'gravarResponsaveis' site/admin/index.html
           echo "painel e administração conferidos"
 
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
+      # Serve para os dois modos do Pages: "GitHub Actions" e "Deploy from a
+      # branch". Assim o conteúdo já está no lugar qualquer que seja a escolha.
+      - name: Guardar o conteúdo na branch gh-pages
+        run: |
+          set -e
+          cd site
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "publicação de ${GITHUB_SHA::7}"
+          git push -q --force \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          echo "branch gh-pages atualizada"
+
+      - id: config
+        continue-on-error: true
+        uses: actions/configure-pages@v5
+
+      - if: steps.config.outcome == 'success'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: site
+
       - id: deploy
+        if: steps.config.outcome == 'success'
+        continue-on-error: true
         uses: actions/deploy-pages@v4
 
-  vercel:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Onde ficou
+        run: |
+          if [ "${{ steps.deploy.outcome }}" = "success" ]; then
+            echo "No ar em ${{ steps.deploy.outputs.page_url }}"
+          else
+            echo "O Pages ainda não está ligado neste repositório."
+            echo "Settings, Pages, Source: GitHub Actions — depois disso o próximo push publica."
+            echo "A branch gh-pages já tem o conteúdo, se preferir Deploy from a branch."
+          fi
+
       - name: Publicar no Vercel, se houver credencial
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -76,9 +101,8 @@ jobs:
           set -e
           if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
             echo "Sem VERCEL_TOKEN, VERCEL_ORG_ID e VERCEL_PROJECT_ID nos segredos do repositório."
-            echo "O Pages já publicou o painel. A função api/admin.js, que cria pessoa e"
-            echo "define senha, continua só no Vercel: acrescente os três segredos em"
-            echo "Settings, Secrets and variables, Actions, e o próximo push publica lá também."
+            echo "A função api/admin.js, que cria pessoa e define senha, só existe no Vercel:"
+            echo "acrescente os três em Settings, Secrets and variables, Actions."
             exit 0
           fi
           ./publicar.sh "$RUNNER_TEMP/painel-oren"
