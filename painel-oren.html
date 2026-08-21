@@ -233,6 +233,12 @@ flex-wrap:wrap;min-width:0}
 .pend input[type=checkbox]{width:24px;height:24px;margin:8px 0;flex:0 0 auto}
 .pend>span{min-width:0;overflow-wrap:anywhere}
 .pend .blk{color:var(--neg);font-size:11px;letter-spacing:.06em}
+.pend .corpo{flex:1 1 12em;min-width:0;overflow-wrap:anywhere}
+.pend .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--tx3);margin-top:2px}
+.pend .meta [data-edit]{font-size:11px;padding:2px 0}
+.pend .acs{display:flex;gap:4px;align-items:center;flex:0 0 auto;margin-left:auto}
+.pend .acs button{font-size:11px;padding:6px 8px;min-height:32px;letter-spacing:.04em}
+.pend .acs button.on{border-color:var(--neg);color:var(--neg)}
 .pend.done{color:var(--tx3);text-decoration:line-through}
 .err{color:var(--neg);font-size:11px;margin-top:4px;display:block}
 /* ================= AVISO ================= */
@@ -437,7 +443,7 @@ const TEXTOS={
  app:"Painel comercial",
  nav:{painel:"Painel",negocios:"Negócios",contas:"Contas"},
  menu:{salvar:"Salvar arquivo",exportar:"Exportar",importar:"Importar",limpar:"Limpar dados de exemplo",imprimir:"Imprimir",recomecar:"Recomeçar"},
- buscaPh:"Buscar cliente, negócio, próximo passo ou pendência",
+ buscaPh:"Buscar por código, cliente, negócio, próximo passo ou pendência",
  salvo:"Salvo",naoSalvo:"Não salvo",salvando:"Salvando…",semRede:"Sem conexão",
  conflitoAviso:"Outra pessoa salvou antes de você. Recarreguei os dados do servidor.",
  entrando:"Entrando…",erroLogin:"E-mail ou senha inválidos.",erroRede:"Não consegui falar com o servidor.",
@@ -1253,8 +1259,12 @@ function dataDesfecho(d){
 const noDesfecho=(d,f)=>naFaixa(dataDesfecho(d),f);
 function textoBusca(d){
  const c=cliente(d.clienteId),p=parceiro(d.parceiroId);
- return [d.titulo,d.proximoPasso,c&&c.nome,p&&p.nome,(d.pendencias||[]).map(x=>x.texto).join(" ")].filter(Boolean).join(" ").toLowerCase();
+ /* O codigo entra na busca: e como as pessoas se referem ao registro entre si
+    ("o N-048"), e digitar isso nao achava nada. */
+ return [d.id,d.titulo,d.proximoPasso,c&&c.id,c&&c.nome,p&&p.id,p&&p.nome,
+  (d.pendencias||[]).map(x=>x.texto).join(" ")].filter(Boolean).join(" ").toLowerCase();
 }
+const achaConta=(o,q)=>!q||(o.nome+" "+o.id).toLowerCase().indexOf(q)>=0;
 function negocios(){
  const q=state.filtros.busca.trim().toLowerCase();
  return state.data.deals.filter(d=>{
@@ -1917,7 +1927,7 @@ function telaContas(){
  if(state.aba==="clientes"){
   /* A aba de público vale para clientes. Parceiro é sempre B2B e ignora,
      em vez de desaparecer da tela sem explicação. */
-  const cs=state.data.customers.filter(c=>(!q||c.nome.toLowerCase().indexOf(q)>=0)&&
+  const cs=state.data.customers.filter(c=>achaConta(c,q)&&
    (!state.publico||publicoDe(c)===state.publico));
   if(ehCel()){
    h+=cs.length?'<div class="clist">'+cs.map(c=>'<div class="ci" data-conta="cliente:'+c.id+'">'+
@@ -1932,7 +1942,7 @@ function telaContas(){
     esc(TEXTOS.frentesLbl[c.frente]||c.frente)+"</td><td>"+esc(c.uf)+"</td><td>"+esc(c.responsavel)+
     '</td><td>'+ds.length+" · "+esc(brlV(ds.reduce((s,d)=>s+(+d.valor||0),0)))+"</td></tr>";}).join("")+"</tbody></table></div>";
  }else{
-  const ps=state.data.partners.filter(p=>!q||p.nome.toLowerCase().indexOf(q)>=0);
+  const ps=state.data.partners.filter(p=>achaConta(p,q));
   if(ehCel()){
    h+=ps.length?'<div class="clist">'+ps.map(p=>'<div class="ci" data-conta="parceiro:'+p.id+'">'+
     '<span class="t">'+esc(p.nome)+'</span><span class="s">'+esc((p.frentes||[]).map(f=>TEXTOS.frentesLbl[f]).join(" · "))+SEP+
@@ -1992,6 +2002,23 @@ function sec(k,titulo,cnt,body,hk){
   '</span><span class="cnt">'+(cnt||"")+"</span></button>"+(hk?iconeHint(hk):"")+"</div>"+
   (on?'<div class="body">'+body+"</div>":"")+"</div>";
 }
+/* Texto, responsável e prazo editáveis no mesmo lugar em que se lê, como o
+   resto da gaveta. Bloqueia e excluir são botões: são decisão, não digitação.
+   A chave junta os dois códigos com "|" porque data-edit separa por ":". */
+function linhaPendencia(d,p){
+ const chave=d.id+"|"+p.id;
+ return '<div class="pend'+(p.resolvida?" done":"")+'">'+
+  '<input type="checkbox" data-pend="'+d.id+":"+p.id+'"'+(p.resolvida?" checked":"")+
+   ' aria-label="Marcar como resolvida">'+
+  '<span class="corpo">'+ed("pend",chave,"texto",p.texto,"textarea")+
+   '<span class="meta">'+ed("pend",chave,"responsavel",p.responsavel,"select",opcoesResp(p.responsavel,"—"))+
+   "<span>·</span>"+ed("pend",chave,"prazo",p.prazo,"date")+"</span></span>"+
+  '<span class="acs">'+
+   '<button data-bloq="'+chave+'" class="'+(p.bloqueante?"on":"")+'" aria-pressed="'+(p.bloqueante?"true":"false")+'">'+
+    (p.bloqueante?"BLOQUEIA":"não bloqueia")+"</button>"+
+   '<button data-delpend="'+chave+'" aria-label="Excluir pendência">Excluir</button>'+
+  "</span></div>";
+}
 function painelDeal(id){
  const d=state.data.deals.find(x=>x.id===id);
  if(!d)return "";
@@ -2033,10 +2060,7 @@ function painelDeal(id){
  h+=fld(TEXTOS.col.prazo,ed("deal",d.id,"prazo",d.prazo,"date"),"prazo");
  const pend=(d.pendencias||[]);
  h+=sec("pend",TEXTOS.secoes.pend,pend.filter(p=>!p.resolvida).length+" abertas",
-  (pend.length?pend.map(p=>'<div class="pend'+(p.resolvida?" done":"")+'">'+
-   '<input type="checkbox" data-pend="'+d.id+":"+p.id+'"'+(p.resolvida?" checked":"")+">"+
-   '<span style="flex:1">'+esc(p.texto)+'<br><span class="soft" style="font-size:11px">'+esc(p.responsavel)+" · "+dt(p.prazo)+"</span></span>"+
-   (p.bloqueante?'<span class="blk">BLOQUEIA</span>':"")+"</div>").join(""):'<div class="soft">Sem pendências.</div>')+
+  (pend.length?pend.map(p=>linhaPendencia(d,p)).join(""):'<div class="soft">Sem pendências.</div>')+
   '<button data-novapend="'+d.id+'" style="margin-top:12px">Adicionar pendência</button>',"pend");
  /* Compliance e KYC como checklist, não como etapa. Aparece só nas etapas em
     que o assunto está na mesa, e em Payments muda de conteúdo para pessoa
@@ -2221,6 +2245,12 @@ function setCampo(kind,id,campo,valor){
   if(kind==="territorio")d.territorio[campo].status=valor;else d.territorio[campo].obs=valor;
   d.atualizadoEm=agora();marcar();return;
  }
+ if(kind==="pend"){
+  const [did,pid]=id.split("|");
+  const d=state.data.deals.find(x=>x.id===did);if(!d)return;
+  const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
+  snapshot();pd[campo]=valor;d.atualizadoEm=agora();marcar();return;
+ }
  if(kind==="papeis"){
   const d=state.data.deals.find(x=>x.id===id);d.papeis=d.papeis||novoPapeis();
   d.papeis[campo]=valor;d.atualizadoEm=agora();marcar();return;
@@ -2289,10 +2319,22 @@ document.addEventListener("click",e=>{
   if(et==="perdido"&&!pedirMotivo(id)){render();return;}
   const err=moverEtapa(id,et);state.erroCard=err?{id:id,msg:err}:null;if(err)render();return;}
  if(el=g("[data-novaconta]")){criarConta(el.dataset.novaconta);return;}
+ if(el=g("[data-bloq]")){
+  const [did,pid]=el.dataset.bloq.split("|");
+  const d=state.data.deals.find(x=>x.id===did);if(!d)return;
+  const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
+  snapshot();pd.bloqueante=!pd.bloqueante;d.atualizadoEm=agora();marcar();return;}
+ if(el=g("[data-delpend]")){
+  const [did,pid]=el.dataset.delpend.split("|");
+  const d=state.data.deals.find(x=>x.id===did);if(!d)return;
+  const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
+  if(!confirm("Excluir esta pendência? "+TEXTOS.confirmaExcluir.split("? ")[1]))return;
+  snapshot();d.pendencias=d.pendencias.filter(x=>x.id!==pid);d.atualizadoEm=agora();
+  marcar();toast("Pendência excluída.");return;}
  if(el=g("[data-novapend]")){
   const d=state.data.deals.find(x=>x.id===el.dataset.novapend);
   snapshot();d.pendencias=d.pendencias||[];
-  d.pendencias.push({id:uid("PD"),texto:"Nova pendência",responsavel:d.responsavel,prazo:agora(),bloqueante:false,resolvida:false});
+  d.pendencias.push({id:uid("PD"),texto:"",responsavel:d.responsavel,prazo:agora(),bloqueante:false,resolvida:false});
   d.atualizadoEm=agora();marcar();return;}
  if(el=g("[data-excluir]")){
   const id=el.dataset.excluir;
