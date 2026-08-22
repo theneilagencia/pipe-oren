@@ -24,10 +24,28 @@ find "$PASTA" -type f -not -path "*/.vercel/*" -not -name ".env*" \
 echo
 
 cd "$PASTA"
-# Com VERCEL_TOKEN no ambiente roda sem perguntar nada: e o caminho do CI.
-# Sem ele, e o npx de sempre, que pergunta o que precisa.
+
+# Versao travada de proposito. Sem travar, o npx puxa a CLI mais nova a
+# qualquer momento, e uma CLI recem-baixada nao encontra a sessao do login
+# anterior: o deploy morre com "Error: Not authorized" sem nada ter mudado
+# aqui. Para experimentar outra versao: VERCEL_CLI=vercel@latest ./publicar.sh
+CLI=${VERCEL_CLI:-vercel@59.3.0}
+
+# set -e mataria o script antes da mensagem de ajuda abaixo.
+set +e
 if [ -n "$VERCEL_TOKEN" ]; then
-  npx --yes vercel --prod --yes --token "$VERCEL_TOKEN"
+  # Caminho do CI: token no ambiente, nenhuma pergunta.
+  npx --yes "$CLI" --prod --yes --token "$VERCEL_TOKEN"
 else
-  npx vercel --prod
+  npx --yes "$CLI" --prod
+fi
+CODIGO=$?
+set -e
+if [ "$CODIGO" -ne 0 ]; then
+  echo
+  echo "O deploy nao saiu (codigo $CODIGO)."
+  echo "Se a mensagem foi \"Not authorized\", a sessao da CLI expirou ou mudou de versao:"
+  echo "  npx --yes $CLI login"
+  echo "e rode ./publicar.sh de novo."
+  exit "$CODIGO"
 fi

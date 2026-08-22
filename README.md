@@ -155,8 +155,15 @@ lugar errado.
 À mão, quando quiser:
 
 ```
-./publicar.sh
+cd ~/oren-publicar && git pull && ./publicar.sh
 ```
+
+A versão da CLI do Vercel está travada no script (`vercel@59.3.0`). Não é
+capricho: sem travar, o `npx` baixa a versão mais nova a qualquer momento, e uma
+CLI recém-baixada não encontra a sessão do login anterior — o deploy morre com
+`Error: Not authorized` sem nada ter mudado no repositório. Se acontecer, o
+script diz o comando de login. Para experimentar outra versão:
+`VERCEL_CLI=vercel@latest ./publicar.sh`.
 
 Ele monta a pasta de trabalho com os três arquivos que o Vercel serve — o painel
 como `index.html`, a página de administração em `admin/index.html` e a função de
