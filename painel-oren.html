@@ -917,7 +917,10 @@ async function entrar(email,senha){
  const ok=await carregarPerfil();
  if(!ok)throw new Error(TEXTOS.semPerfil);
  if(state.usuario.senhaProvisoria)return exigirTroca();
- return carregarDoServidor();
+ /* carregarEMigrar, não carregarDoServidor: quem entra pelo formulário precisa
+    passar pela migração e pelas cargas igual a quem já tinha sessão. Com o
+    caminho curto aqui, o dado novo só aparecia no recarregamento seguinte. */
+ return carregarEMigrar();
 }
 async function carregarPerfil(){
  const s=sessaoGuardada();
@@ -3871,7 +3874,7 @@ $("#senhaform").addEventListener("submit",async e=>{
    await senhaTrocada();
    state.trocaObrigatoria=false;
    fecharTrocaSenha();
-   await carregarDoServidor();
+   await carregarEMigrar();
    toast("Senha definida. Bem-vindo.",true);
   }else{fecharTrocaSenha();toast("Senha alterada.",true);}
  }catch(x){err.textContent=x.message;err.className="erro on";}
