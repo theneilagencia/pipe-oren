@@ -41,6 +41,14 @@ jobs:
           cp admin-oren.html  site/admin/index.html
           # Sem isto o Pages passa o conteúdo pelo Jekyll e ignora o que começa com _
           touch site/.nojekyll
+          # Mesmo selo de versão do publicar.sh, para os dois endereços dizerem
+          # o que está no ar.
+          SELO="$(git rev-parse --short HEAD) · $(date -u +%d/%m/%Y\ %H:%M) UTC"
+          for F in site/index.html site/admin/index.html; do
+            sed -i "s|const VERSAO=\"local\"|const VERSAO=\"$SELO\"|" "$F"
+            grep -q "const VERSAO=\"$SELO\"" "$F"
+          done
+          echo "Selo desta publicação: $SELO"
           test -s site/index.html
           test -s site/admin/index.html
 

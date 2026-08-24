@@ -15,6 +15,17 @@ cp "$REPO/painel-oren.html" "$PASTA/index.html"
 cp "$REPO/admin-oren.html"  "$PASTA/admin/index.html"
 cp "$REPO/api/admin.js"     "$PASTA/api/admin.js"
 
+# Selo de versão no que sobe: commit curto e data. Existe para a pergunta
+# "isto já está no ar?" ter resposta na propria tela, no pé da lateral.
+# sed -i não é portátil entre GNU e BSD, então escreve em arquivo novo e troca.
+SELO="$(cd "$REPO" && git rev-parse --short HEAD 2>/dev/null || echo sem-git)"
+SELO="$SELO · $(date +%d/%m/%Y\ %H:%M)"
+for F in "$PASTA/index.html" "$PASTA/admin/index.html"; do
+  sed "s|const VERSAO=\"local\"|const VERSAO=\"$SELO\"|" "$F" > "$F.novo" && mv "$F.novo" "$F"
+  grep -q "const VERSAO=\"$SELO\"" "$F" || { echo "Nao consegui gravar o selo de versao em $F"; exit 1; }
+done
+echo "Selo desta publicacao: $SELO"
+
 # Nada de .env no que sobe: a chave secreta vive nas variáveis do Vercel.
 printf '.env*\n.gitignore\n' > "$PASTA/.vercelignore"
 

@@ -46,6 +46,8 @@ header .marca span{font-size:10px;letter-spacing:.16em;font-weight:400;
 header .eu{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:12px;opacity:.9;min-width:0}
 header .eu .mail{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42vw}
 header a{color:var(--luz)}
+header .ver{font-size:10px;letter-spacing:.06em;color:rgba(232,243,232,.45);
+font-variant-numeric:tabular-nums}
 
 /* menu de secoes */
 /* Controle segmentado, a mesma pastilha do painel. */
@@ -170,6 +172,8 @@ const SUPABASE_URL="https://ktnngkyyocvfhnqfajmz.supabase.co";
 const SUPABASE_KEY="sb_publishable_BZgO_66U6hFiY2ZwhqtnkQ_-vNXSvVq";
 const SESSAO="oren.sessao.v1";      /* a mesma do painel: entrar num, entra no outro */
 const SENHA_PADRAO="Asd@1234";
+/* Trocado pelo publicar.sh no arquivo que sobe. Ver o comentário no painel. */
+const VERSAO="local";
 const PAPEIS=["editor","leitor"];
 
 const $=s=>document.querySelector(s);
@@ -350,7 +354,8 @@ function moldura(){
   '<span class="eu"><span class="mail">'+esc(state.eu?state.eu.email:"")+"</span>"+
   /* Relativo, não "/": no GitHub Pages a administração fica em /pipe-oren/admin/
      e a barra sozinha levaria para fora do site. */
-  '<a href="../">painel</a><a href="#" data-sair>sair</a></span></header><main>';
+  '<a href="../">painel</a><a href="#" data-sair>sair</a>'+
+  '<span class="ver" title="Versão publicada">'+esc(VERSAO)+"</span></span></header><main>";
  h+='<nav class="menu" aria-label="Seções da administração">'+SECOES.map(([k,l])=>
   '<button data-secao="'+k+'" class="'+(state.secao===k?"on":"")+'"'+
   (state.secao===k?' aria-current="page"':"")+">"+esc(l)+"</button>").join("")+"</nav>";

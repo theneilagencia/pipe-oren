@@ -381,6 +381,8 @@ border-top:1px solid rgba(232,243,232,.1);display:flex;align-items:center;gap:8p
 #quem button{border:0;background:none;color:rgba(232,243,232,.6);font-size:11px;padding:6px 0;
 min-height:32px}
 #quem button:hover{color:var(--luz);background:none}
+#quem .ver{flex:1 1 100%;font-size:10px;letter-spacing:.06em;color:rgba(232,243,232,.4);
+font-variant-numeric:tabular-nums}
 /* ================= HINTS ================= */
 .hint{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
 width:15px;height:15px;min-height:15px;padding:0;margin-left:6px;vertical-align:middle;
@@ -814,6 +816,10 @@ function itemLinha(principal,partes,attrs){
  const sub=(partes||[]).filter(x=>x!=null&&x!=="").join(SEP);
  return '<div class="rl"'+(attrs||"")+'><span class="rl-main">'+principal+'</span><span class="rl-sub">'+sub+"</span></div>";
 }
+/* Trocado pelo publicar.sh e pelo workflow no arquivo que sobe. "local" quer
+   dizer arquivo aberto direto do computador, sem passar por publicação.
+   Existe para a pergunta "isto já está no ar?" ter resposta na própria tela. */
+const VERSAO="local";
 const ATALHO_TELA={painel:"G P",negocios:"G N",contas:"G C"};
 const ICONES={
  painel:"<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'/></svg>",
@@ -2824,7 +2830,8 @@ function renderTopo(){
  if(state.usuario)q.innerHTML="<b>"+esc(state.usuario.nome)+"</b>"+
   (state.usuario.papel==="leitor"?"<span>somente leitura</span>":"")+
   '<button data-senha="1">Trocar senha</button>'+
-  '<button data-sair="1" style="margin-left:auto">'+TEXTOS.sair+"</button>";
+  '<button data-sair="1" style="margin-left:auto">'+TEXTOS.sair+"</button>"+
+  '<span class="ver" title="Versão publicada">'+esc(VERSAO)+"</span>";
  else q.innerHTML="";
 }
 function renderNav(){
@@ -3678,7 +3685,8 @@ function acoesCmd(){
   {g:"Ação",ico:"+",t:"Cadastrar cliente",m:"",f:()=>{state.tela="contas";state.aba="clientes";criarConta("cliente");}},
   {g:"Ação",ico:"+",t:"Cadastrar parceiro",m:"",f:()=>{state.tela="contas";state.aba="parceiros";criarConta("parceiro");}},
   {g:"Ação",ico:"↔",t:"Alternar quadro e lista",m:"E",f:()=>{state.vista=state.vista==="lista"?"quadro":"lista";render();}},
-  {g:"Ação",ico:"?",t:"Ver atalhos de teclado",m:"?",f:()=>{CMD.modo="atalhos";CMD.q="";CMD.sel=0;renderCmd();return true;}}
+  {g:"Ação",ico:"?",t:"Ver atalhos de teclado",m:"?",f:()=>{CMD.modo="atalhos";CMD.q="";CMD.sel=0;renderCmd();return true;}},
+  {g:"Ação",ico:"i",t:"Versão publicada: "+VERSAO,m:"",f:()=>{toast("Versão publicada: "+VERSAO,true);}}
  ];
  (state.servidor?["exportar","imprimir"]:Object.keys(TEXTOS.menu)).forEach(k=>{
   if(k==="importar"&&!(state.usuario&&state.usuario.papel==="editor"))return;
