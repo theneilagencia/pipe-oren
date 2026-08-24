@@ -3132,7 +3132,7 @@ function renderTopo(){
  else q.innerHTML="";
 }
 function renderNav(){
- const telas=["painel","todo","negocios","contas"];
+ const telas=["painel","negocios","contas","todo"];
  /* Ícone, nome e o atalho aparecendo no hover: quem usa todo dia aprende o
     atalho sem ler manual. */
  $("#nav").innerHTML=telas.map(k=>
@@ -3975,6 +3975,7 @@ const ATALHOS=[
  ["G depois P","Painel"],
  ["G depois N","Negócios"],
  ["G depois C","Contas"],
+ ["G depois T","To Do"],
  ["J e K","Andar pela lista do To Do"],
  ["C","Cadastrar negócio"],
  ["E","Alternar quadro e lista"],
@@ -3984,9 +3985,9 @@ const ATALHOS=[
 function acoesCmd(){
  const a=[
   {g:"Ir para",ico:"→",t:TEXTOS.nav.painel,m:"G P",f:()=>irPara("painel")},
-  {g:"Ir para",ico:"→",t:TEXTOS.nav.todo,m:"G T",f:()=>irPara("todo")},
   {g:"Ir para",ico:"→",t:TEXTOS.nav.negocios,m:"G N",f:()=>irPara("negocios")},
   {g:"Ir para",ico:"→",t:TEXTOS.nav.contas,m:"G C",f:()=>irPara("contas")},
+  {g:"Ir para",ico:"→",t:TEXTOS.nav.todo,m:"G T",f:()=>irPara("todo")},
   {g:"Ação",ico:"+",t:"Cadastrar negócio",m:"C",f:()=>novoNegocio()},
   {g:"Ação",ico:"+",t:"Cadastrar cliente",m:"",f:()=>{state.tela="contas";state.aba="clientes";criarConta("cliente");}},
   {g:"Ação",ico:"+",t:"Cadastrar parceiro",m:"",f:()=>{state.tela="contas";state.aba="parceiros";criarConta("parceiro");}},
