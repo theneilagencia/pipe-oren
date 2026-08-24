@@ -603,13 +603,15 @@ const TEXTOS={
  quadro:"Quadro",lista:"Lista",verPerdidos:"ver perdidos",voltarQuadro:"voltar ao funil",
  col:{cliente:"Cliente",negocio:"Negócio",frente:"Frente",etapa:"Etapa",resp:"Responsável",valor:"Valor",passo:"Próximo passo",prazo:"Prazo"},
  abas:{clientes:"Clientes",parceiros:"Parceiros"},
- secoes:{pend:"Pendências",analise:"Análise",capital:"Capital",check:"Compliance e KYC",hist:"Histórico",notas:"Anotações"},
+ origemLbl:"Veio do negócio",
+ novoOriundo:"Cadastrar cliente originado",
+ secoes:{origem:"Clientes originados",pend:"Pendências",analise:"Análise",capital:"Capital",check:"Compliance e KYC",hist:"Histórico",notas:"Anotações"},
  kpiExplica:{
   aberto:"Todos os negócios em aberto, do maior valor para o menor. Não depende do período.",
   ponderada:"Os mesmos negócios em aberto, cada um multiplicado pela chance de fechar.",
   fechado:"Negócios que fecharam dentro do período selecionado.",
   conversao:"O denominador da taxa: tudo que teve desfecho no período, fechado ou perdido."},
- vazio:{kpi:"Nenhum negócio compõe este número agora.",grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
+ vazio:{origem:"Nenhum cliente nasceu deste negócio ainda.",kpi:"Nenhum negócio compõe este número agora.",grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
   publico:"Nenhum negócio marcado com este público ainda. A aba fica aqui para quando o primeiro aparecer."},
  excluir:"Excluir",confirmaExcluir:"Excluir este registro? A ação pode ser desfeita por 8 segundos.",
  desfazer:"Desfazer",moveu:"Negócio movido.",excluiu:"Negócio excluído.",
@@ -768,6 +770,16 @@ function etapaNome(d,e){
  return funilDe(d)[Number(v)-1]||"—";
 }
 const publicoDe=r=>(r&&PUBLICOS_VALIDOS.indexOf(r.publico)>=0)?r.publico:"B2B";
+/* Um cliente pode ter nascido de um negócio B2B — o credenciamento que trouxe
+   o consumidor final — ou ter sido cadastrado direto. Campo vazio ou ausente
+   quer dizer cadastro direto: é o caso da maioria e não exige nada de ninguém.
+   Guardamos o negócio, não o parceiro, porque o parceiro se deriva do negócio
+   e o contrário não: dois negócios do mesmo parceiro são origens diferentes. */
+const negocio=id=>id?state.data.deals.find(x=>x.id===id):null;
+const origemDe=c=>negocio(c&&c.origemNegocioId);
+const clientesOriundos=id=>state.data.customers.filter(c=>c.origemNegocioId===id);
+/* Um negócio pode originar cliente quando ele mesmo não é o consumidor final. */
+const podeOriginar=d=>!!d&&publicoDe(d)!=="B2C";
 const ehB2C=r=>publicoDe(r)==="B2C";
 function checklistDe(d){
  const fr=frenteDe(d);
@@ -2585,6 +2597,12 @@ const HINTS={
  motivoPerda:{t:"Motivo da perda",
   a:"Por que o negócio não seguiu.",
   b:"É pedido no momento de marcar como perdido, e fica editável depois."},
+ origemNegocio:{t:"Veio do negócio",
+  a:"O negócio B2B que trouxe este cliente. Vazio quer dizer cadastro direto.",
+  b:"Serve para saber quanto de consumidor final cada credenciamento gerou. Guardamos o negócio, não o parceiro: dois negócios do mesmo parceiro são origens diferentes, e o parceiro se descobre pelo negócio."},
+ origem:{t:"Clientes originados",
+  a:"Clientes que nasceram deste negócio.",
+  b:"“Cadastrar cliente originado” cria um cliente já B2C, ligado a este negócio, com o mesmo responsável e o mesmo parceiro. Nome e o resto ficam para quem sabe preencher. Cliente sem origem continua podendo ser cadastrado direto em Contas."},
  tipoConta:{t:"Tipo",
   a:"Se a conta é uma empresa (PJ) ou uma pessoa (PF).",
   b:"Não pode ficar vazio: é por este campo que a tela separa clientes de parceiros."},
@@ -3069,14 +3087,19 @@ function telaContas(){
    (!state.publico||publicoDe(c)===state.publico));
   if(ehCel()){
    h+=cs.length?'<div class="clist">'+cs.map(c=>'<div class="ci" data-conta="cliente:'+c.id+'">'+
-    '<span class="t">'+esc(c.nome)+'</span><span class="s">'+esc(TEXTOS.frentesLbl[c.frente]||c.frente)+SEP+
-    esc(c.tipo)+SEP+esc(c.uf)+SEP+esc(c.responsavel)+SEP+resumo(negs(c))+"</span></div>").join("")+"</div>"
+    '<span class="t">'+esc(c.nome||"—")+'</span><span class="s">'+esc(TEXTOS.frentesLbl[c.frente]||c.frente)+SEP+
+    esc(c.tipo)+SEP+esc(publicoDe(c))+(origemDe(c)?SEP+"via "+esc(nomeNegocio(origemDe(c))):"")+
+    SEP+esc(c.responsavel)+SEP+resumo(negs(c))+"</span></div>").join("")+"</div>"
     :'<div class="card"><div class="empty" style="border:0">Nenhuma conta.</div></div>';
    return h;
   }
-  h+='<div class="card tbl" style="padding:0"><table><thead><tr><th>Cliente</th><th>Tipo</th><th>Frente</th><th>UF</th><th>Responsável</th><th>Negócios</th></tr></thead><tbody>'+
-   cs.map(c=>{const ds=negs(c);
-    return '<tr class="clk" data-conta="cliente:'+c.id+'"><td>'+esc(c.nome)+"</td><td>"+esc(c.tipo)+"</td><td>"+
+  h+='<div class="card tbl" style="padding:0"><table><thead><tr><th>Cliente</th><th>Tipo</th>'+
+   '<th>'+esc(TEXTOS.publicoLbl)+'</th><th>'+esc(TEXTOS.origemLbl)+"</th>"+
+   '<th>Frente</th><th>UF</th><th>Responsável</th><th>Negócios</th></tr></thead><tbody>'+
+   cs.map(c=>{const ds=negs(c),og=origemDe(c);
+    return '<tr class="clk" data-conta="cliente:'+c.id+'"><td>'+esc(c.nome||"—")+"</td><td>"+esc(c.tipo)+"</td>"+
+    "<td>"+esc(publicoDe(c))+"</td>"+
+    "<td>"+(og?esc(nomeNegocio(og)):'<span class="soft">direto</span>')+"</td><td>"+
     esc(TEXTOS.frentesLbl[c.frente]||c.frente)+"</td><td>"+esc(c.uf)+"</td><td>"+esc(c.responsavel)+
     '</td><td>'+ds.length+" · "+esc(brlV(ds.reduce((s,d)=>s+(+d.valor||0),0)))+"</td></tr>";}).join("")+"</tbody></table></div>";
  }else{
@@ -3248,6 +3271,17 @@ function painelDeal(id){
  h+=fld(TEXTOS.col.passo,ed("deal",d.id,"proximoPasso",d.proximoPasso,"text"),"passo");
  h+=fld(TEXTOS.col.prazo,ed("deal",d.id,"prazo",d.prazo,"date"),"prazo");
  const pend=(d.pendencias||[]);
+ /* Clientes que nasceram deste negócio. Fica antes das pendências porque é
+    leitura de rotina de quem trabalha o canal. */
+ if(podeOriginar(d)){
+  const filhos=clientesOriundos(d.id);
+  h+=sec("origem",TEXTOS.secoes.origem,String(filhos.length),
+   (filhos.length?'<div class="rowlist">'+filhos.map(c=>itemLinha(esc(c.nome),
+     [esc(publicoDe(c)),esc(c.tipo||"—"),'<span class="mut">'+esc(c.responsavel||"—")+"</span>"],
+     ' data-conta="cliente:'+c.id+'"')).join("")+"</div>"
+    :'<div class="soft">'+TEXTOS.vazio.origem+"</div>")+
+   '<button data-novofilho="'+d.id+'" style="margin-top:12px">'+TEXTOS.novoOriundo+"</button>","origem");
+ }
  h+=sec("pend",TEXTOS.secoes.pend,pend.filter(p=>!p.resolvida).length+" abertas",
   (pend.length?pend.map(p=>linhaPendencia(d,p)).join(""):'<div class="soft">Sem pendências.</div>')+
   '<button data-novapend="'+d.id+'" style="margin-top:12px">Adicionar pendência</button>',"pend");
@@ -3318,6 +3352,14 @@ function painelConta(kind,id){
  if(isC){h+=fld("Tipo",ed(kind,o.id,"tipo",o.tipo||"PJ","select",{PJ:"PJ",PF:"PF"}),"tipoConta");
   /* Parceiro não tem este campo: parceiro é sempre B2B. */
   h+=fld(TEXTOS.publicoLbl,ed(kind,o.id,"publico",publicoDe(o),"select",{B2B:"B2B",B2C:"B2C",B2B2C:"B2B2C"}),"publico");
+  /* Só os negócios que podem originar entram na lista, mais o que já estiver
+     gravado — inclusive um que tenha sido apagado, para o vínculo não sumir
+     em silêncio. */
+  const orOps={"":"Cadastro direto"};
+  state.data.deals.filter(podeOriginar).forEach(d=>orOps[d.id]=nomeNegocio(d)+" · "+TEXTOS.frentesLbl[d.frente]);
+  if(o.origemNegocioId&&orOps[o.origemNegocioId]===undefined)
+   orOps[o.origemNegocioId]=o.origemNegocioId+" (negócio não encontrado)";
+  h+=fld(TEXTOS.origemLbl,ed(kind,o.id,"origemNegocioId",o.origemNegocioId||"","select",orOps),"origemNegocio");
   const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
   h+=fld(TEXTOS.col.frente,ed(kind,o.id,"frente",o.frente,"select",frenteOps),"frente");}
  h+=fld("Setor",ed(kind,o.id,"setor",o.setor,"text"));
@@ -3520,6 +3562,20 @@ document.addEventListener("click",e=>{
   if(!confirm("Excluir esta pendência? "+TEXTOS.confirmaExcluir.split("? ")[1]))return;
   snapshot();d.pendencias=d.pendencias.filter(x=>x.id!==pid);d.atualizadoEm=agora();
   marcar();toast("Pendência excluída.");return;}
+ if(el=g("[data-novofilho]")){
+  const d=state.data.deals.find(x=>x.id===el.dataset.novofilho);
+  if(!d)return;
+  snapshot();
+  /* Nasce B2C, ligado a este negócio, com o mesmo responsável e o mesmo
+     parceiro do negócio de origem. O resto fica vazio para quem sabe preencher. */
+  const c={id:uid("C"),nome:"",tipo:"PF",publico:"B2C",origemNegocioId:d.id,
+   responsavel:d.responsavel,frente:d.frente,parceiroId:d.parceiroId||null,
+   tier:"",status:"",porte:"",setor:"",uf:"",notas:"",receitaRecorrente:0,
+   exemplo:false,criadoEm:agora(),atualizadoEm:agora()};
+  state.data.customers.push(c);
+  state.tela="contas";state.aba="clientes";
+  state.painel={tipo:"conta",kind:"cliente",id:c.id};
+  marcar();return;}
  if(el=g("[data-novapend]")){
   const d=state.data.deals.find(x=>x.id===el.dataset.novapend);
   snapshot();d.pendencias=d.pendencias||[];
@@ -3791,7 +3847,7 @@ function criar(){
  if(clienteId===CLIENTE_NOVO){
   const c={id:uid("C"),nome:n.clienteNovoNome.trim(),tipo:n.clienteNovoTipo,
    publico:n.clienteNovoTipo==="PF"?"B2C":"B2B",responsavel:n.responsavel,
-   frente:n.frente,tier:"",status:"",porte:"",setor:"",uf:"",notas:"",
+   frente:n.frente,origemNegocioId:"",tier:"",status:"",porte:"",setor:"",uf:"",notas:"",
    receitaRecorrente:0,parceiroId:n.tipoVenda==="parceiro"?n.parceiroId:null,
    exemplo:false,criadoEm:agora(),atualizadoEm:agora()};
   state.data.customers.push(c);clienteId=c.id;
@@ -3817,7 +3873,8 @@ function criarConta(kind){
   responsavel:RESPS[0],tier:"",status:"",porte:"",setor:"",notas:"",
   exemplo:false,criadoEm:agora(),atualizadoEm:agora()};
  if(kind==="cliente"){
-  const o=Object.assign(base,{tipo:"PJ",frente:"capital",uf:"",receitaRecorrente:0,parceiroId:null});
+  const o=Object.assign(base,{tipo:"PJ",publico:"B2B",frente:"capital",uf:"",receitaRecorrente:0,
+   parceiroId:null,origemNegocioId:""});
   state.data.customers.push(o);state.aba="clientes";state.painel={tipo:"conta",kind:"cliente",id:o.id};
  }else{
   const o=Object.assign(base,{frentes:[],potencial:"",contato:""});
