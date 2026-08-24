@@ -10,6 +10,34 @@ set -e
 REPO=$(cd "$(dirname "$0")" && pwd)
 PASTA=${1:-$HOME/painel-oren}
 
+# Antes de qualquer copia, trazer o repositorio para o dia. A causa mais comum
+# de "publiquei e nao mudou nada" e' deploy de um clone atrasado: o arquivo que
+# sobe e' o que esta nesta pasta, nao o que esta no GitHub. Para pular: SEM_PULL=1
+if [ -z "$SEM_PULL" ] && [ -d "$REPO/.git" ] && git -C "$REPO" remote get-url origin >/dev/null 2>&1; then
+  ANTES=$(git -C "$REPO" rev-parse --short HEAD)
+  # --untracked-files=no de proposito: arquivo solto na pasta nao corre risco
+  # num pull fast-forward, e e travar por causa dele so atrasaria a publicacao.
+  if [ -n "$(git -C "$REPO" status --porcelain --untracked-files=no)" ]; then
+    echo "Atencao: ha alteracao nao commitada neste clone. Nao vou puxar do GitHub."
+    echo "Vai subir o que esta aqui, em $ANTES."
+  else
+    RAMO=$(git -C "$REPO" rev-parse --abbrev-ref HEAD)
+    echo "Trazendo o repositorio para o dia ($RAMO)..."
+    set +e
+    git -C "$REPO" pull --ff-only origin "$RAMO"
+    PULLOK=$?
+    set -e
+    DEPOIS=$(git -C "$REPO" rev-parse --short HEAD)
+    if [ "$PULLOK" -ne 0 ]; then
+      echo "Nao consegui puxar do GitHub. Vai subir o que ja esta aqui, em $DEPOIS."
+    elif [ "$ANTES" = "$DEPOIS" ]; then
+      echo "Ja estava no dia, em $DEPOIS."
+    else
+      echo "Atualizado de $ANTES para $DEPOIS."
+    fi
+  fi
+fi
+
 mkdir -p "$PASTA/admin" "$PASTA/api"
 cp "$REPO/painel-oren.html" "$PASTA/index.html"
 cp "$REPO/admin-oren.html"  "$PASTA/admin/index.html"
@@ -60,3 +88,8 @@ if [ "$CODIGO" -ne 0 ]; then
   echo "e rode ./publicar.sh de novo."
   exit "$CODIGO"
 fi
+echo
+echo "No ar: https://crm-oren.vercel.app/ e https://crm-oren.vercel.app/admin"
+echo "O pe da lateral do painel tem de mostrar: $SELO"
+echo "Se mostrar outra coisa, o navegador esta com a versao velha em cache:"
+echo "recarregue com Shift e F5 (ou Cmd Shift R no Mac)."
