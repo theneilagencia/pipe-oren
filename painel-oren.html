@@ -2715,13 +2715,13 @@ function telaTodo(){
   return h+'<div class="tgrupo"><div class="empty" style="border:0;padding:28px 16px;text-align:center">'+
    vazio+"</div></div>";
  }
- /* Em "minhas" é uma sequência só, de cima para baixo. Em "de todo o time",
-    uma seção por pessoa — e cada pessoa aparece UMA vez, com tudo o que é
-    dela dentro, o sem data no fim da própria seção. Antes o sem data virava
-    um bloco geral no fim e a mesma pessoa aparecia duas vezes na tela. */
- if(mostrandoMinhas)
-  return h+'<section class="tgrupo">'+linhasTodo(ordenarTodo(filtrados),true)+"</section>";
- /* corpoTodo monta TODO_SECOES, e a barra depende dela: primeiro o corpo. */
+ /* Um caminho só para as duas abas: uma seção por responsável, cada pessoa
+    aparecendo UMA vez, com tudo o que é dela dentro e o sem data no fim da
+    própria seção. Em "minhas" isso dá exatamente uma seção — sequência só,
+    de cima para baixo, mas agora com o cabeçalho que conta os bloqueios.
+    Antes o sem data virava um bloco geral no fim e a mesma pessoa aparecia
+    duas vezes na tela; e a aba de quem entrou não somava nada.
+    corpoTodo monta TODO_SECOES, e a barra depende dela: primeiro o corpo. */
  const corpo=corpoTodo(filtrados);
  return h+barraAcordeao()+corpo;
 }
