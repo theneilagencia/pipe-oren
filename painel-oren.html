@@ -363,6 +363,20 @@ border-radius:999px;padding:2px 7px;font-variant-numeric:tabular-nums}
 overflow:hidden;margin-bottom:12px}
 .tgrupo .th{display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--surf);
 border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:2}
+/* Cabeçalho que abre e fecha: botão de largura inteira, com a seta na frente. */
+.tgrupo .th.ac{width:100%;border-left:0;border-right:0;border-top:0;border-radius:0;
+text-align:left;cursor:pointer;transition:background var(--fast) ease-out}
+.tgrupo .th.ac:hover{background:var(--alt)}
+.tgrupo.fechada .th{border-bottom:0}
+.chev{width:14px;height:14px;flex:0 0 auto;color:var(--tx3);display:flex;
+transition:transform var(--fast) ease-out}
+.chev svg{width:14px;height:14px}
+.chev.on{transform:rotate(90deg)}
+/* Abrir e fechar todas: discreto, à direita, encostado na primeira seção. */
+.tacc{display:flex;justify-content:flex-end;margin:-6px 0 8px}
+.tacc button{display:inline-flex;align-items:center;gap:6px;background:none;border:0;
+padding:4px 6px;font-size:12px;font-weight:500;color:var(--tx3);border-radius:var(--r)}
+.tacc button:hover{background:var(--alt);color:var(--tx)}
 .tgrupo .th .ic{width:16px;height:16px;flex:0 0 auto;color:var(--tx3);display:flex}
 .tgrupo .th .ic svg{width:16px;height:16px;fill:currentColor}
 .tgrupo .th .tn{font-size:13px;font-weight:600;letter-spacing:-.012em;min-width:0;
@@ -371,6 +385,9 @@ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 border-radius:999px;padding:2px 7px;flex:0 0 auto;font-variant-numeric:tabular-nums}
 .tgrupo .th .tb{font-size:11px;font-weight:600;color:var(--crit);background:#fdf0f2;
 border-radius:999px;padding:2px 8px;flex:0 0 auto}
+.tgrupo .th .tw{font-size:11px;font-weight:600;color:var(--warn);background:#fdf6ea;
+border-radius:999px;padding:2px 8px;flex:0 0 auto}
+.tgrupo .th .tp{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto}
 .tgrupo .th .td{font-size:12px;color:var(--tx3);margin-left:auto;text-align:right}
 .av{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
 border-radius:999px;font-size:10px;font-weight:600;color:var(--tx2);flex:0 0 auto;
@@ -577,6 +594,9 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
  .ti .rt{flex:0 0 84px}
  .ti .qd{white-space:normal;line-height:1.3}
  .tgrupo .th .td{display:none}
+ .tgrupo .th{flex-wrap:wrap;row-gap:7px}
+ .tgrupo .th .tn{flex:1 1 auto}
+ .tgrupo .th .tp{flex:1 0 100%}
 }
 /* ===== quem pediu menos movimento ===== */
 @media (prefers-reduced-motion:reduce){
@@ -691,6 +711,9 @@ const TEXTOS={
   return p.join(". ")+".";
  },
  semQuem:"sem responsável",
+ todoExpandir:"Abrir todos",todoRecolher:"Fechar todos",
+ todoAbrirSec:n=>"Abrir as "+n+(n===1?" tarefa":" tarefas")+" desta pessoa",
+ todoFecharSec:"Fechar esta pessoa",
  semPrazoT:"Sem prazo definido",
  semPrazoSub:"defina uma data para poder cobrar",
  menu:{salvar:"Salvar arquivo",exportar:"Exportar",importar:"Importar",limpar:"Limpar dados de exemplo",imprimir:"Imprimir",recomecar:"Recomeçar"},
@@ -2591,6 +2614,8 @@ const ICO_ESTADO={
  prazo:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='5.5' fill='none' stroke='currentColor' stroke-width='2'/></svg>",
  semPrazo:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='5.5' fill='none' stroke='currentColor' stroke-width='2' stroke-dasharray='2.6 2.4'/></svg>"
 };
+/* Seta do acordeão: aponta para baixo fechada, gira 90 graus ao abrir. */
+const ICO_CHEV="<svg viewBox='0 0 16 16' aria-hidden='true'><path d='M6 4l5 4-5 4' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>";
 const ICO_NEG="<svg viewBox='0 0 24 24' aria-hidden='true' style='fill:none;stroke:currentColor;stroke-width:1.8'><path d='M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v11h-4'/></svg>";
 const TODO_TIPOS={bloqueio:"Bloqueio",pendencia:"Pendência",passo:"Próximo passo",definir:"Sem próximo passo"};
 /* Estado de cada item, na ordem em que interessa. É o que pinta a barra da
@@ -2681,7 +2706,7 @@ function telaTodo(){
     :state.todoFiltro==="semPrazo"?!x.prazo
     :x.estado===state.todoFiltro)
   :base;
- TODO_FOCO.length=0;
+ TODO_FOCO.length=0;TODO_SECOES.length=0;
  if(!filtrados.length){
   const vazio=mostrandoMinhas&&!state.todoFiltro
    ?esc(TEXTOS.vazio.todoMinhas)+' <button class="lnk" data-todoquem="todos" style="margin:0">'+
@@ -2696,10 +2721,49 @@ function telaTodo(){
     um bloco geral no fim e a mesma pessoa aparecia duas vezes na tela. */
  if(mostrandoMinhas)
   return h+'<section class="tgrupo">'+linhasTodo(ordenarTodo(filtrados),true)+"</section>";
- return h+corpoTodo(filtrados);
+ /* corpoTodo monta TODO_SECOES, e a barra depende dela: primeiro o corpo. */
+ const corpo=corpoTodo(filtrados);
+ return h+barraAcordeao()+corpo;
 }
-/* A ordem em que as linhas aparecem, para j e k andarem por ela. */
+/* A ordem em que as linhas aparecem, para j e k andarem por ela. Só entra
+   aqui o que está visível: seção fechada não tem linha, e Enter não pode
+   abrir um negócio que ninguém está vendo. */
 const TODO_FOCO=[];
+/* Os nomes das seções desta renderização, na ordem da tela. */
+const TODO_SECOES=[];
+/* Quais seções ficam abertas. Guardado no navegador de quem lê, porque é
+   preferência de leitura, não dado do negócio: não vai para o banco nem
+   aparece para os outros. Nome ausente do mapa = ainda não houve escolha,
+   e vale o padrão. */
+const TODO_ABRE_CHAVE="oren.todo.secoes.v1";
+let TODO_ABRE=(function(){
+ try{const o=JSON.parse(localStorage.getItem(TODO_ABRE_CHAVE)||"{}");
+  return (o&&typeof o==="object")?o:{};}catch(e){return {};}
+})();
+function gravarAbertas(){
+ try{localStorage.setItem(TODO_ABRE_CHAVE,JSON.stringify(TODO_ABRE));}catch(e){}
+}
+/* Sem escolha registrada, abre a seção de quem entrou; se ela não existe,
+   abre a primeira da ordem. Uma aberta, sempre: tela com tudo fechado
+   parece tela sem dado. */
+function secaoPadrao(ordem){
+ const eu=(state.usuario&&state.usuario.nome)||"";
+ return (eu&&ordem.indexOf(eu)>=0)?eu:(ordem[0]||"");
+}
+function secaoAberta(k,padrao){
+ return TODO_ABRE[k]!==undefined?!!TODO_ABRE[k]:k===padrao;
+}
+/* Abrir e fechar todas de uma vez. Fica acima da primeira seção, à direita,
+   e só aparece quando há mais de uma pessoa e nenhum filtro ligado. */
+function barraAcordeao(){
+ if(state.todoFiltro||TODO_SECOES.length<2)return "";
+ const padrao=secaoPadrao(TODO_SECOES);
+ const fechadas=TODO_SECOES.filter(k=>!secaoAberta(k,padrao)).length;
+ const abrir=fechadas>0;
+ return '<div class="tacc"><button data-todoacc="'+(abrir?"abrir":"fechar")+'">'+
+  '<span class="chev'+(abrir?"":" on")+'">'+ICO_CHEV+"</span>"+
+  esc(abrir?TEXTOS.todoExpandir:TEXTOS.todoRecolher)+"</button></div>";
+}
 function corpoTodo(itens){
  const chave=x=>(x.quem||TEXTOS.semQuem);
  const grupos={};
@@ -2710,17 +2774,36 @@ function corpoTodo(itens){
   if(grupos[a].length!==grupos[b].length)return grupos[b].length-grupos[a].length;
   return a.localeCompare(b,"pt-BR");
  });
+ TODO_SECOES.length=0;
+ ordem.forEach(k=>TODO_SECOES.push(k));
+ /* Com filtro ligado tudo abre, e o cabeçalho volta a ser cabeçalho: filtro
+    já é um estreitamento, e estreitar duas vezes esconde a resposta. Uma
+    pessoa só também não vira acordeão — não há o que organizar. */
+ const semAcordeao=!!state.todoFiltro||ordem.length<2;
+ const padrao=secaoPadrao(ordem);
  return ordem.map(k=>{
   const g=ordenarTodo(grupos[k]),bl=g.filter(x=>x.estado==="bloqueio").length;
+  const vc=g.filter(x=>x.estado==="vencido"||x.estado==="hoje").length;
   /* Com o filtro "Sem data" ligado o total já é o número de sem data. */
   const sd=state.todoFiltro==="semPrazo"?0:g.filter(x=>!x.prazo).length;
-  return '<section class="tgrupo"><header class="th">'+
-   '<span class="av" style="background:'+corDoNome(k)+'">'+
+  const aberta=semAcordeao||secaoAberta(k,padrao);
+  /* Fechada, o cabeçalho é tudo o que se lê: ele tem de dizer se vale abrir.
+     Daí total, bloqueados, atrasados e sem data ficarem nele. */
+  const miolo='<span class="av" style="background:'+corDoNome(k)+'">'+
     esc(k===TEXTOS.semQuem?"?":iniciais(k))+"</span>"+
    '<span class="tn">'+esc(k)+'</span><span class="tc">'+g.length+"</span>"+
-   (bl?'<span class="tb">'+bl+(bl===1?" bloqueado":" bloqueados")+"</span>":"")+
-   (sd?'<span class="td">'+sd+" sem data</span>":"")+
-   "</header>"+linhasTodo(g,true)+"</section>";
+   ((bl||vc)?'<span class="tp">'+
+     (bl?'<span class="tb">'+bl+(bl===1?" bloqueado":" bloqueados")+"</span>":"")+
+     (vc?'<span class="tw">'+vc+(vc===1?" atrasado":" atrasados")+"</span>":"")+
+    "</span>":"")+
+   (sd?'<span class="td">'+sd+" sem data</span>":"");
+  const cab=semAcordeao
+   ?'<header class="th">'+miolo+"</header>"
+   :'<button class="th ac" data-todosec="'+esc(k)+'" aria-expanded="'+(aberta?"true":"false")+
+    '" title="'+esc(aberta?TEXTOS.todoFecharSec:TEXTOS.todoAbrirSec(g.length))+'">'+
+    '<span class="chev'+(aberta?" on":"")+'">'+ICO_CHEV+"</span>"+miolo+"</button>";
+  return '<section class="tgrupo'+(aberta?"":" fechada")+'">'+cab+
+   (aberta?linhasTodo(g,true):"")+"</section>";
  }).join("");
 }
 /* Cor do avatar tirada do nome: estável, discreta, e nunca a cor de estado. */
@@ -3892,6 +3975,16 @@ document.addEventListener("click",e=>{
  if(el=g("[data-todofiltro]")){
   const v=el.dataset.todofiltro;
   state.todoFiltro=(v&&state.todoFiltro===v)?"":v;state.todoSel=-1;render();return;}
+ /* Abrir e fechar a seção de uma pessoa. A escolha fica gravada no
+    navegador; todoSel volta a -1 porque a lista visível mudou de tamanho. */
+ if(el=g("[data-todosec]")){
+  const k=el.dataset.todosec;
+  TODO_ABRE[k]=el.getAttribute("aria-expanded")!=="true";
+  gravarAbertas();state.todoSel=-1;render();return;}
+ if(el=g("[data-todoacc]")){
+  const abrir=el.dataset.todoacc==="abrir";
+  TODO_SECOES.forEach(k=>{TODO_ABRE[k]=abrir;});
+  gravarAbertas();state.todoSel=-1;render();return;}
  /* Clicar numa linha também move o foco do teclado para ela. */
  if(el=g("[data-tirow]"))state.todoSel=Number(el.dataset.tirow);
  if(el=g("[data-perdidos]")){state.perdidos=!state.perdidos;render();return;}
