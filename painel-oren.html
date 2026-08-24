@@ -332,6 +332,20 @@ opacity:1;transition:opacity var(--fast) ease-out}
 .pend.done .corpo{text-decoration:line-through}
 .err{color:var(--neg);font-size:11px;margin-top:4px;display:block}
 /* ================= TO DO ================= */
+/* Duas abas grandes: o que é meu, e o que é do time. Nada mais para escolher. */
+.tabs{display:flex;gap:2px;background:var(--alt);border:1px solid var(--bd);border-radius:var(--r2);
+padding:3px;margin-bottom:14px}
+.tabs button{flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+background:none;border:0;min-height:40px;border-radius:calc(var(--r2) - 4px);
+font-size:14px;font-weight:600;color:var(--tx2);letter-spacing:-.01em}
+.tabs button:hover:not(:disabled){background:rgba(255,255,255,.7);color:var(--tx)}
+.tabs button.on{background:var(--surf);color:var(--deep);box-shadow:var(--sh1)}
+.tabs button .n{font-size:11px;font-weight:600;background:var(--bg);color:var(--tx3);
+border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.tabs button.on .n{background:var(--deep);color:#fff}
+.tabs button:disabled{opacity:.4}
+/* A frase que explica a tela antes de qualquer lista. */
+.tresumo{font-size:14px;line-height:1.5;color:var(--tx2);margin:0 0 14px;max-width:62ch}
 .tfil{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .tf{display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid transparent;
 padding:5px 10px;min-height:32px;border-radius:999px;color:var(--tx2);font-weight:500;font-size:13px}
@@ -659,7 +673,15 @@ const SUPABASE_KEY="sb_publishable_BZgO_66U6hFiY2ZwhqtnkQ_-vNXSvVq";
 const TEXTOS={
  app:"Painel comercial",
  nav:{painel:"Painel",todo:"To Do",negocios:"Negócios",contas:"Contas"},
- todoVistas:{pessoa:"Por pessoa",negocio:"Por negócio",prazo:"Por urgência"},
+ todoMinhas:"Minhas tarefas",todoTodos:"De todo o time",
+ todoResumo:(n,bl,vc,sp,eu)=>{
+  if(!n)return eu?"Nada no seu nome agora.":"Nada em aberto.";
+  const p=[(eu?"Você tem ":"O time tem ")+n+(n===1?" tarefa":" tarefas")+" em aberto"];
+  if(bl)p.push(bl+(bl===1?" está impedindo":" estão impedindo")+" um negócio de andar");
+  if(vc)p.push(vc+(vc===1?" passou":" passaram")+" da data");
+  if(sp)p.push(sp+(sp===1?" está":" estão")+" sem data marcada");
+  return p.join(". ")+".";
+ },
  semQuem:"sem responsável",
  semPrazoT:"Sem prazo definido",
  semPrazoSub:"defina uma data para poder cobrar",
@@ -693,7 +715,8 @@ const TEXTOS={
   ponderada:"Os mesmos negócios em aberto, cada um multiplicado pela chance de fechar.",
   fechado:"Negócios que fecharam dentro do período selecionado.",
   conversao:"O denominador da taxa: tudo que teve desfecho no período, fechado ou perdido."},
- vazio:{todoFiltro:"Nada neste estado. Toque no cartão aceso para ver o resto.",
+ vazio:{todoMinhas:"Nada no seu nome agora. Para ver o que está com o resto do time:",
+  todoFiltro:"Nada neste estado. Toque na pastilha acesa para ver o resto.",
   todo:"Nada em aberto com estes filtros. Se a base tem negócios, ou tudo tem próximo passo e nenhuma pendência, ou os filtros estão estreitos.",
   origem:"Nenhum cliente nasceu deste negócio ainda.",kpi:"Nenhum negócio compõe este número agora.",grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
   publico:"Nenhum negócio marcado com este público ainda. A aba fica aqui para quando o primeiro aparecer."},
@@ -814,7 +837,7 @@ const CHAVE="oren.pipeline.v1";
 
 /* ============================ ESTADO ============================ */
 const state={
- data:null,tela:"painel",todo:"pessoa",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
+ data:null,tela:"painel",todoQuem:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
  painel:null,secoes:{},dirty:false,undo:null,undoTimer:null,dbTimer:null,
@@ -2614,47 +2637,63 @@ function ordenarTodo(itens){
 }
 function telaTodo(){
  const todos=itensTodo();
- const conta={tudo:todos.length,
-  bloqueio:todos.filter(x=>x.estado==="bloqueio").length,
-  vencido:todos.filter(x=>x.estado==="vencido"||x.estado==="hoje").length,
-  semPrazo:todos.filter(x=>x.estado==="semPrazo").length,
-  semQuem:todos.filter(x=>!x.quem).length};
- /* Filtro em linha, com a contagem dentro de cada pastilha. Quatro cartões
-    grandes ocupavam meia tela para dizer quatro números. */
- const filtros=[["","Tudo",conta.tudo,""],
-  ["bloqueio","Bloqueios",conta.bloqueio,"crit"],
-  ["vencido","Vencidos e de hoje",conta.vencido,"warn"],
-  ["semPrazo","Sem prazo",conta.semPrazo,"neutro"],
-  ["semQuem","Sem responsável",conta.semQuem,"crit"]];
- let h='<div class="tfil">'+filtros.map(([k,l,n,cls])=>
+ /* Quem está logado vem primeiro, sempre. A tela abre respondendo "o que eu
+    tenho para fazer", não "como está o time" — e só depois oferece o resto. */
+ const eu=(state.usuario&&state.usuario.nome)||"";
+ const meus=eu?todos.filter(x=>x.quem===eu):[];
+ if(!state.todoQuem)state.todoQuem=(eu&&meus.length)?"minhas":"todos";
+ const mostrandoMinhas=state.todoQuem==="minhas"&&!!eu;
+ const base=mostrandoMinhas?meus:todos;
+
+ let h='<div class="tabs">'+
+  '<button data-todoquem="minhas" class="'+(mostrandoMinhas?"on":"")+'"'+(eu?"":" disabled")+'>'+
+   esc(TEXTOS.todoMinhas)+'<span class="n">'+meus.length+"</span></button>"+
+  '<button data-todoquem="todos" class="'+(mostrandoMinhas?"":"on")+'">'+
+   esc(TEXTOS.todoTodos)+'<span class="n">'+todos.length+"</span></button></div>";
+
+ const nBloq=base.filter(x=>x.estado==="bloqueio").length;
+ const nVenc=base.filter(x=>x.estado==="vencido"||x.estado==="hoje").length;
+ const nSem=base.filter(x=>x.estado==="semPrazo").length;
+ /* Uma frase em português antes de qualquer lista: quantos, e o que urge. */
+ h+='<p class="tresumo">'+esc(TEXTOS.todoResumo(base.length,nBloq,nVenc,nSem,mostrandoMinhas?eu:""))+"</p>";
+
+ const filtros=[["","Tudo",base.length,""],
+  ["bloqueio","Bloqueados",nBloq,"crit"],
+  ["vencido","Atrasados",nVenc,"warn"],
+  ["semPrazo","Sem data",nSem,"neutro"]];
+ h+='<div class="tfil">'+filtros.map(([k,l,n,cls])=>
   '<button data-todofiltro="'+k+'" class="tf'+(cls?" "+cls:"")+(state.todoFiltro===k?" on":"")+'"'+
-  ' aria-pressed="'+(state.todoFiltro===k?"true":"false")+'">'+
+  ' aria-pressed="'+(state.todoFiltro===k?"true":"false")+'"'+(n?"":" disabled")+'>'+
   (cls?'<span class="pt"></span>':"")+esc(l)+'<span class="n">'+n+"</span></button>").join("")+"</div>";
 
  const filtrados=state.todoFiltro
-  ?todos.filter(x=>state.todoFiltro==="semQuem"?!x.quem
-    :state.todoFiltro==="vencido"?(x.estado==="vencido"||x.estado==="hoje")
+  ?base.filter(x=>state.todoFiltro==="vencido"?(x.estado==="vencido"||x.estado==="hoje")
     :x.estado===state.todoFiltro)
-  :todos;
- h+='<div class="tbar"><div class="seg">'+
-  Object.keys(TEXTOS.todoVistas).map(k=>'<button data-todo="'+k+'" class="'+
-   (state.todo===k?"on":"")+'">'+esc(TEXTOS.todoVistas[k])+"</button>").join("")+"</div>"+
-  iconeHint("todo")+
-  '<span class="soft" style="margin-left:auto">'+filtrados.length+
-  (filtrados.length===1?" item":" itens")+"</span></div>";
- if(!filtrados.length)
-  return h+'<div class="card"><div class="empty" style="border:0">'+
-   (state.todoFiltro?TEXTOS.vazio.todoFiltro:TEXTOS.vazio.todo)+"</div></div>";
-
- /* Com prazo e sem prazo em blocos separados: a fila de urgência primeiro,
-    e depois a lista do que precisa de data — visível, não escondida atrás de
-    um clique. São duas perguntas diferentes: "o que faço hoje" e "o que
-    ninguém marcou quando". */
- const comPrazo=ordenarTodo(filtrados.filter(x=>x.estado!=="semPrazo"));
- const semPrazo=filtrados.filter(x=>x.estado==="semPrazo");
+  :base;
  TODO_FOCO.length=0;
- h+=comPrazo.length?corpoTodo(comPrazo):"";
- if(semPrazo.length)h+=blocoSemPrazo(semPrazo);
+ if(!filtrados.length){
+  const vazio=mostrandoMinhas&&!state.todoFiltro
+   ?esc(TEXTOS.vazio.todoMinhas)+' <button class="lnk" data-todoquem="todos" style="margin:0">'+
+    esc(TEXTOS.todoTodos)+"</button>"
+   :esc(state.todoFiltro?TEXTOS.vazio.todoFiltro:TEXTOS.vazio.todo);
+  return h+'<div class="tgrupo"><div class="empty" style="border:0;padding:28px 16px;text-align:center">'+
+   vazio+"</div></div>";
+ }
+ const comData=ordenarTodo(filtrados.filter(x=>x.estado!=="semPrazo"));
+ const semData=filtrados.filter(x=>x.estado==="semPrazo");
+ /* Em "minhas" é uma sequência só, sem cabeçalho de grupo: quem abre quer ler
+    de cima para baixo. Em "de todo o time", uma seção por pessoa, para saber
+    com quem está cada coisa. */
+ if(mostrandoMinhas){
+  h+=comData.length?'<section class="tgrupo">'+linhasTodo(comData,true)+"</section>":"";
+  if(semData.length)h+='<section class="tgrupo semdata"><header class="th">'+
+   '<span class="ic">'+ICO_ESTADO.semPrazo+'</span><span class="tn">'+esc(TEXTOS.semPrazoT)+"</span>"+
+   '<span class="tc">'+semData.length+'</span><span class="td">'+esc(TEXTOS.semPrazoSub)+"</span></header>"+
+   linhasTodo(semData,true)+"</section>";
+  return h;
+ }
+ h+=comData.length?corpoTodo(comData):"";
+ if(semData.length)h+=blocoSemPrazo(semData);
  return h;
 }
 /* A ordem em que as linhas aparecem, para j e k andarem por ela. */
@@ -2671,10 +2710,10 @@ function blocoSemPrazo(itens){
    '<span class="tc">'+porQuem[n].length+"</span></div>"+
    linhasTodo(porQuem[n],true)).join("")+"</section>";
 }
+/* Uma seção por pessoa. As vistas "por negócio" e "por urgência" saíram: três
+   agrupamentos era escolha demais para uma tela que precisa dizer o que fazer. */
 function corpoTodo(itens){
- if(state.todo==="prazo")
-  return '<section class="tgrupo">'+linhasTodo(itens,false)+"</section>";
- const chave=x=>state.todo==="pessoa"?(x.quem||TEXTOS.semQuem):nomeNegocio(x.d);
+ const chave=x=>(x.quem||TEXTOS.semQuem);
  const grupos={};
  itens.forEach(x=>{const k=chave(x);(grupos[k]=grupos[k]||[]).push(x);});
  const ordem=Object.keys(grupos).sort((a,b)=>{
@@ -2685,13 +2724,12 @@ function corpoTodo(itens){
  });
  return ordem.map(k=>{
   const g=ordenarTodo(grupos[k]),bl=g.filter(x=>x.estado==="bloqueio").length;
-  const pessoa=state.todo==="pessoa";
   return '<section class="tgrupo"><header class="th">'+
-   (pessoa?'<span class="av" style="background:'+corDoNome(k)+'">'+
-     esc(k===TEXTOS.semQuem?"?":iniciais(k))+"</span>":'<span class="ic">'+ICO_NEG+"</span>")+
+   '<span class="av" style="background:'+corDoNome(k)+'">'+
+    esc(k===TEXTOS.semQuem?"?":iniciais(k))+"</span>"+
    '<span class="tn">'+esc(k)+'</span><span class="tc">'+g.length+"</span>"+
-   (bl?'<span class="tb">'+bl+(bl===1?" bloqueio":" bloqueios")+"</span>":"")+
-   "</header>"+linhasTodo(g,pessoa)+"</section>";
+   (bl?'<span class="tb">'+bl+(bl===1?" bloqueado":" bloqueados")+"</span>":"")+
+   "</header>"+linhasTodo(g,true)+"</section>";
  }).join("");
 }
 /* Cor do avatar tirada do nome: estável, discreta, e nunca a cor de estado. */
@@ -3157,12 +3195,18 @@ function renderMenu(){
 /* Público é filtro, não navegação: fica dentro da tela, acima dos chips, e
    vale para as três telas. Em Contas ele filtra só a lista de clientes. */
 function renderPubSeg(){
+ /* Público é filtro de negócio, não de tarefa: no To Do ele não diz nada. */
+ if(state.tela==="todo"){$("#pubseg").innerHTML="";return;}
  $("#pubseg").innerHTML='<span class="soft" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase">'+
   esc(TEXTOS.publicoLbl)+iconeHint("publico")+"</span>"+
   '<div class="seg">'+Object.keys(PUBLICOS).map(k=>
    '<button data-pub="'+k+'" class="'+(state.publico===k?"on":"")+'">'+esc(PUBLICOS[k])+"</button>").join("")+"</div>";
 }
 function renderChips(){
+ /* No To Do quem filtra são as abas e as pastilhas da própria tela. Deixar o
+    seletor de responsável aqui era pior que ruído: escolher outra pessoa nele
+    esvaziava "Minhas tarefas" sem explicar por quê. */
+ if(state.tela==="todo"){$("#chips").innerHTML="";return;}
  const f=state.filtros,ch=[];
  if(state.tela==="painel"){
   ch.push('<span class="soft" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase">'+
@@ -3843,7 +3887,8 @@ document.addEventListener("click",e=>{
  if(el=g("[data-per]")){state.filtros.periodo=el.dataset.per;render();return;}
  if(el=g("[data-limpa]")){state.filtros[el.dataset.limpa]="";render();return;}
  if(el=g("[data-vista]")){state.vista=el.dataset.vista;state.perdidos=false;render();return;}
- if(el=g("[data-todo]")){state.todo=el.dataset.todo;render();return;}
+ if(el=g("[data-todoquem]")){
+  state.todoQuem=el.dataset.todoquem;state.todoFiltro="";state.todoSel=-1;render();return;}
  /* Clicar no cartão aceso apaga o filtro: o mesmo gesto liga e desliga. */
  if(el=g("[data-todofiltro]")){
   const v=el.dataset.todofiltro;
