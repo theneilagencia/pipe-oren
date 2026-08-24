@@ -2963,9 +2963,11 @@ function telaNegocios(){
   '<div class="seg"><button data-vista="quadro" class="'+(state.vista==="quadro"?"on":"")+'">'+TEXTOS.quadro+"</button>"+
   '<button data-vista="lista" class="'+(state.vista==="lista"?"on":"")+'">'+TEXTOS.lista+"</button></div>"+
   iconeHint("vista")+iconeHint("fases")+(state.vista==="quadro"?iconeHint("arrastar"):"")+
-  '<span class="soft">'+(nv=>nv+(nv===1?" negócio":" negócios"))(lista.filter(d=>d.etapa!=="perdido").length)+
+  '<span class="soft">'+(state.filtros.busca.trim()?"encontrados: ":"")+
+  (nv=>nv+(nv===1?" negócio":" negócios"))(lista.filter(d=>d.etapa!=="perdido").length)+
   (state.publico?" · "+PUBLICOS[state.publico]:"")+" · "+
-  brlV(lista.filter(d=>d.etapa!=="perdido").reduce((s,d)=>s+(+d.valor||0),0))+"</span>"+
+  /* Soma zero com negócios dentro é valor não cadastrado, não zero. */
+  ((sm=>sm?brlV(sm):TAG_VALOR)(lista.filter(d=>d.etapa!=="perdido").reduce((s,d)=>s+(+d.valor||0),0)))+"</span>"+
   '<button data-perdidos="1" class="lnk">'+
   (state.perdidos?TEXTOS.voltarQuadro:TEXTOS.verPerdidos+" ("+lista.filter(d=>d.etapa==="perdido").length+")")+"</button>"+
   iconeHint("perdidos")+"</div>";
@@ -3582,7 +3584,17 @@ document.addEventListener("change",e=>{
 document.addEventListener("input",e=>{
  const t=e.target;
  if(t.id==="cmdinput"){CMD.q=t.value;CMD.sel=0;CMD.modo="tudo";renderCmd();return;}
- if(t.id==="busca"){state.filtros.busca=t.value;clearTimeout(state.bt);state.bt=setTimeout(render,200);}
+ if(t.id==="busca"){
+  const antes=state.filtros.busca.trim(),agora=t.value.trim();
+  state.filtros.busca=t.value;
+  /* Só no começo da busca, uma vez: depois disso a pessoa troca de tela e de
+     vista à vontade sem a busca puxando de volta. */
+  if(!antes&&agora){
+   if(state.tela!=="negocios"){state.tela="negocios";state.perdidos=false;}
+   if(state.vista!=="lista")state.vista="lista";
+  }
+  clearTimeout(state.bt);state.bt=setTimeout(render,200);
+ }
  else if(t.matches("[data-novo]"))state.novo[t.dataset.novo]=t.value;
 });
 /* ===================== PALETA DE COMANDOS =====================
