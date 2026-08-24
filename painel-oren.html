@@ -332,57 +332,60 @@ opacity:1;transition:opacity var(--fast) ease-out}
 .pend.done .corpo{text-decoration:line-through}
 .err{color:var(--neg);font-size:11px;margin-top:4px;display:block}
 /* ================= TO DO ================= */
-/* Cartão que filtra: o número leva ao que ele conta. A cor mora numa faixa
-   fina no topo, não no fundo — fundo colorido em quatro cartões seguidos
-   transforma triagem em vitral. */
-.todokpi .tk{display:flex;flex-direction:column;align-items:flex-start;gap:0;
-text-align:left;padding:14px;background:var(--surf);border:1px solid var(--bd);
-border-radius:var(--r2);position:relative;overflow:hidden;min-height:0;font-weight:400;color:inherit}
-.todokpi .tk::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--tkc)}
-.todokpi .tk:hover{background:var(--surf);border-color:var(--bdf);box-shadow:var(--sh2)}
-.todokpi .tk .num{color:var(--tkc)}
-.todokpi .tk.on{border-color:var(--tkc);box-shadow:var(--sh2)}
-.todokpi .tk.on .lbl{color:var(--tx)}
-/* Cabeçalho do grupo: quem, e dois números. */
-.todolista{padding:0}
-.todolista .gh{display:flex;align-items:center;gap:8px;padding:12px 14px;
-border-bottom:1px solid var(--bd);flex-wrap:wrap}
-.todolista .gh .gn{font-size:13px;font-weight:600;letter-spacing:-.01em;min-width:0}
-.todolista .gh .pill{font-size:11px;color:var(--tx3);background:var(--alt);border-radius:999px;
-padding:3px 8px;font-weight:500;white-space:nowrap}
-.todolista .gh .pill.crit{color:var(--crit);background:#fdf0f2}
-.todolista .gh .pill:nth-of-type(1){margin-left:auto}
-/* A linha: barra de estado, texto, e a data como coluna própria à direita.
-   Antes o texto ia num canto e a data no outro, com quatro fatos no meio. */
-.ti{display:flex;align-items:stretch;gap:0;border-bottom:1px solid var(--bd);
-cursor:pointer;position:relative;transition:background var(--fast) ease-out}
+.tfil{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.tf{display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid transparent;
+padding:5px 10px;min-height:32px;border-radius:999px;color:var(--tx2);font-weight:500;font-size:13px}
+.tf:hover{background:var(--alt);color:var(--tx)}
+.tf .n{font-size:11px;font-weight:600;color:var(--tx3);background:var(--alt);
+border-radius:999px;padding:2px 7px;font-variant-numeric:tabular-nums}
+.tf .pt{width:7px;height:7px;border-radius:999px;flex:0 0 auto}
+.tf.crit .pt{background:var(--crit)}
+.tf.warn .pt{background:var(--warn)}
+.tf.neutro .pt{background:var(--neutro)}
+.tf.on{background:var(--deep);color:#fff;border-color:var(--deep)}
+.tf.on .n{background:rgba(255,255,255,.16);color:#fff}
+/* Uma superfície por grupo, com o cabeçalho grudando no topo ao rolar. */
+.tgrupo{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);
+overflow:hidden;margin-bottom:12px}
+.tgrupo .th{display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--surf);
+border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:2}
+.tgrupo .th .ic{width:16px;height:16px;flex:0 0 auto;color:var(--tx3);display:flex}
+.tgrupo .th .ic svg{width:16px;height:16px;fill:currentColor}
+.tgrupo .th .tn{font-size:13px;font-weight:600;letter-spacing:-.012em;min-width:0;
+overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tgrupo .th .tc{font-size:11px;font-weight:600;color:var(--tx3);background:var(--alt);
+border-radius:999px;padding:2px 7px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.tgrupo .th .tb{font-size:11px;font-weight:600;color:var(--crit);background:#fdf0f2;
+border-radius:999px;padding:2px 8px;flex:0 0 auto}
+.tgrupo .th .td{font-size:12px;color:var(--tx3);margin-left:auto;text-align:right}
+.av{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+border-radius:999px;font-size:10px;font-weight:600;color:var(--tx2);flex:0 0 auto;
+letter-spacing:.02em;text-transform:uppercase}
+.tsub{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--alt);
+border-bottom:1px solid var(--bd);font-size:12px;font-weight:600;color:var(--tx2)}
+.tsub .tc{font-size:11px;color:var(--tx3);background:var(--surf);border-radius:999px;padding:2px 7px}
+/* A linha: gutter de estado, texto, data. */
+.ti{display:flex;align-items:center;border-bottom:1px solid var(--bd);cursor:pointer;
+position:relative;transition:background var(--fast) ease-out}
 .ti:last-child{border-bottom:0}
 .ti:hover{background:var(--alt)}
-.ti .bar{flex:0 0 3px;background:var(--tkc);align-self:stretch}
-.ti .mid{flex:1 1 auto;min-width:0;padding:9px 12px;display:flex;flex-direction:column;gap:2px}
-.ti .tt{font-size:13px;font-weight:500;line-height:1.4;overflow-wrap:anywhere;
+.ti.sel{background:#eef4f0}
+.ti.sel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--mid)}
+.ti>.ic{flex:0 0 34px;display:flex;align-items:center;justify-content:center;color:var(--tkc)}
+.ti>.ic svg{width:13px;height:13px;fill:var(--tkc)}
+.ti.prazo>.ic svg,.ti.semPrazo>.ic svg{fill:none}
+.ti .mid{flex:1 1 auto;min-width:0;padding:9px 10px 9px 0;display:flex;flex-direction:column;gap:1px}
+.ti .tt{font-size:13px;font-weight:500;line-height:1.35;letter-spacing:-.005em;overflow-wrap:anywhere;
 display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ti .mt{font-size:12px;color:var(--tx3);overflow-wrap:anywhere}
-.ti .rt{flex:0 0 auto;padding:9px 12px 9px 8px;display:flex;flex-direction:column;
+.ti .mt{font-size:12px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ti .rt{flex:0 0 auto;padding:9px 14px 9px 8px;display:flex;flex-direction:column;
 align-items:flex-end;gap:1px;text-align:right;justify-content:center}
 .ti .dt{font-size:12px;font-variant-numeric:tabular-nums;color:var(--tx2);white-space:nowrap}
-.ti.semPrazo .dt{color:var(--tx3);font-variant-numeric:normal}
-/* Cabeçalho de sequência: o estado dito uma vez, com a bolinha da cor. */
-.tsh{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--alt);
-border-bottom:1px solid var(--bd);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
-font-weight:600;color:var(--tx2)}
-.tsh .pt{width:7px;height:7px;border-radius:999px;background:var(--tkc);flex:0 0 auto}
-.tsh .soft{margin-left:auto;letter-spacing:0;text-transform:none;font-weight:500}
+.ti .dt.vazia{color:var(--tx3);font-variant-numeric:normal;font-style:italic}
 .ti .qd{font-size:11px;color:var(--tx3);white-space:nowrap}
 .ti.vencido .qd,.ti.hoje .qd{color:var(--warn);font-weight:500}
-.ti.semPrazo .dt{color:var(--tx3)}
-/* Bloco do que não tem prazo: fechado, porque não é urgência — é indefinição. */
-.semprazo{padding:0}
-.semprazo .sph{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
-background:none;border:0;padding:14px;font-weight:500;color:var(--tx2);border-radius:var(--r2)}
-.semprazo .sph:hover{background:var(--alt);color:var(--tx)}
-.semprazo .sph .pt{width:8px;height:8px;border-radius:999px;background:var(--neutro);flex:0 0 auto}
-.semprazo .sph .soft{margin-left:auto;font-size:12px}
+.semdata .th{background:var(--alt)}
+.semdata .th .ic{color:var(--tx3)}
 /* ================= PALETA DE COMANDOS ================= */
 #cmdshade{position:fixed;inset:0;background:rgba(9,45,41,.32);z-index:48;display:none}
 #cmdshade.on{display:block}
@@ -507,10 +510,10 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
  .chip select{padding:4px 6px;min-height:26px}
  .seg button{min-height:28px;padding:5px 12px}
  .chip{border-radius:999px;flex-wrap:nowrap}
- .ti .rt{flex:0 0 124px}
- .todolista .gh{padding:12px 16px}
- .ti .mid{padding:10px 16px}
- .tsh{padding:8px 16px}
+ .ti .rt{flex:0 0 116px}
+ .tgrupo .th{padding:11px 16px}
+ .tsub{padding:8px 16px}
+ .ti>.ic{flex:0 0 38px}
  .chip>.cl{display:inline}
  /* As colunas são as etapas do funil, que variam de sete a dez: a faixa rola
     na horizontal e cada coluna tem largura própria, porque nome de etapa por
@@ -545,14 +548,13 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
  #cmd .cpe{display:none}
  /* No celular os quatro cartões empilhados enchiam a tela antes da primeira
     tarefa. Em 2×2 compacto eles cabem em um terço da altura. */
- .todokpi{grid-template-columns:1fr 1fr;gap:8px}
- .todokpi .tk{padding:10px 12px}
- .todokpi .tk .lbl{font-size:11px}
- .todokpi .tk .num{font-size:20px}
- .todokpi .tk .val{margin:4px 0 0}
- .todokpi .tk .qual{display:none}
- .ti .rt{flex:0 0 82px}
+ /* Filtros numa faixa que rola, em vez de quebrar em quatro linhas. */
+ .tfil{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px 12px;padding:0 16px 2px;scrollbar-width:none}
+ .tfil::-webkit-scrollbar{display:none}
+ .tf{flex:0 0 auto}
+ .ti .rt{flex:0 0 84px}
  .ti .qd{white-space:normal;line-height:1.3}
+ .tgrupo .th .td{display:none}
 }
 /* ===== quem pediu menos movimento ===== */
 @media (prefers-reduced-motion:reduce){
@@ -659,6 +661,8 @@ const TEXTOS={
  nav:{painel:"Painel",todo:"To Do",negocios:"Negócios",contas:"Contas"},
  todoVistas:{pessoa:"Por pessoa",negocio:"Por negócio",prazo:"Por urgência"},
  semQuem:"sem responsável",
+ semPrazoT:"Sem prazo definido",
+ semPrazoSub:"defina uma data para poder cobrar",
  menu:{salvar:"Salvar arquivo",exportar:"Exportar",importar:"Importar",limpar:"Limpar dados de exemplo",imprimir:"Imprimir",recomecar:"Recomeçar"},
  buscaPh:"Buscar por código, cliente, negócio, próximo passo ou pendência",
  salvo:"Salvo",naoSalvo:"Não salvo",salvando:"Salvando…",semRede:"Sem conexão",
@@ -810,7 +814,7 @@ const CHAVE="oren.pipeline.v1";
 
 /* ============================ ESTADO ============================ */
 const state={
- data:null,tela:"painel",todo:"pessoa",todoFiltro:"",vista:"quadro",perdidos:false,aba:"clientes",publico:"",
+ data:null,tela:"painel",todo:"pessoa",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
  painel:null,secoes:{},dirty:false,undo:null,undoTimer:null,dbTimer:null,
@@ -2547,6 +2551,16 @@ function kpis(lista){
    dos Papéis, quando estão preenchidos — em Capital costumam estar. I não
    existe no modelo e não vou inventar: a tela diz isso em vez de fingir.
    Nada aqui é campo novo. Tudo é leitura do que já está gravado. */
+/* O estado tem forma, não só cor: quem não distingue vermelho de âmbar lê a
+   forma, e o rótulo aparece no title e no filtro. */
+const ICO_ESTADO={
+ bloqueio:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='6'/><path d='M5.5 8h5' stroke='#fff' stroke-width='2' fill='none'/></svg>",
+ vencido:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='6'/><path d='M8 4.5v4' stroke='#fff' stroke-width='2' fill='none'/><circle cx='8' cy='11.2' r='1' fill='#fff'/></svg>",
+ hoje:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='6'/><path d='M8 4.5v4' stroke='#fff' stroke-width='2' fill='none'/><circle cx='8' cy='11.2' r='1' fill='#fff'/></svg>",
+ prazo:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='5.5' fill='none' stroke='currentColor' stroke-width='2'/></svg>",
+ semPrazo:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='5.5' fill='none' stroke='currentColor' stroke-width='2' stroke-dasharray='2.6 2.4'/></svg>"
+};
+const ICO_NEG="<svg viewBox='0 0 24 24' aria-hidden='true' style='fill:none;stroke:currentColor;stroke-width:1.8'><path d='M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v11h-4'/></svg>";
 const TODO_TIPOS={bloqueio:"Bloqueio",pendencia:"Pendência",passo:"Próximo passo",definir:"Sem próximo passo"};
 /* Estado de cada item, na ordem em que interessa. É o que pinta a barra da
    esquerda e o que os cartões do topo filtram. Cor sozinha não informa: cada
@@ -2600,58 +2614,66 @@ function ordenarTodo(itens){
 }
 function telaTodo(){
  const todos=itensTodo();
- const conta={bloqueio:todos.filter(x=>x.estado==="bloqueio").length,
+ const conta={tudo:todos.length,
+  bloqueio:todos.filter(x=>x.estado==="bloqueio").length,
   vencido:todos.filter(x=>x.estado==="vencido"||x.estado==="hoje").length,
   semPrazo:todos.filter(x=>x.estado==="semPrazo").length,
   semQuem:todos.filter(x=>!x.quem).length};
- /* Quatro cartões que filtram. Antes eram só números, e o filtro morava em
-    outro lugar: o número dizia "16 bloqueios" e não levava a eles. */
- const cartoes=[
-  ["bloqueio","Bloqueios",conta.bloqueio,"impedem o negócio de avançar","var(--crit)"],
-  ["vencido","No prazo ou vencidos",conta.vencido,"têm data e ela chegou","var(--warn)"],
-  ["semPrazo","Sem prazo",conta.semPrazo,"não é urgente: é indefinido","var(--neutro)"],
-  ["semQuem","Sem responsável",conta.semQuem,"parado com ninguém","var(--crit)"]
- ];
- let h='<div class="grid kpis todokpi">'+cartoes.map(([k,l,n,sub,cor])=>
-  '<button class="card kpi tk'+(state.todoFiltro===k?" on":"")+'" data-todofiltro="'+k+'"'+
-  ' style="--tkc:'+cor+'" aria-pressed="'+(state.todoFiltro===k?"true":"false")+'">'+
-  '<span class="lbl">'+esc(l)+"</span>"+
-  '<span class="val"><span class="num">'+n+"</span></span>"+
-  '<span class="qual">'+esc(sub)+"</span></button>").join("")+"</div>";
+ /* Filtro em linha, com a contagem dentro de cada pastilha. Quatro cartões
+    grandes ocupavam meia tela para dizer quatro números. */
+ const filtros=[["","Tudo",conta.tudo,""],
+  ["bloqueio","Bloqueios",conta.bloqueio,"crit"],
+  ["vencido","Vencidos e de hoje",conta.vencido,"warn"],
+  ["semPrazo","Sem prazo",conta.semPrazo,"neutro"],
+  ["semQuem","Sem responsável",conta.semQuem,"crit"]];
+ let h='<div class="tfil">'+filtros.map(([k,l,n,cls])=>
+  '<button data-todofiltro="'+k+'" class="tf'+(cls?" "+cls:"")+(state.todoFiltro===k?" on":"")+'"'+
+  ' aria-pressed="'+(state.todoFiltro===k?"true":"false")+'">'+
+  (cls?'<span class="pt"></span>':"")+esc(l)+'<span class="n">'+n+"</span></button>").join("")+"</div>";
 
  const filtrados=state.todoFiltro
   ?todos.filter(x=>state.todoFiltro==="semQuem"?!x.quem
     :state.todoFiltro==="vencido"?(x.estado==="vencido"||x.estado==="hoje")
     :x.estado===state.todoFiltro)
   :todos;
- /* Sem prazo é a maioria e não é urgência: sai da lista principal e fica num
-    bloco no fim, fechado. Era isso que fazia a tela ter 58 linhas iguais. */
- const separar=!state.todoFiltro||state.todoFiltro!=="semPrazo";
- const principais=ordenarTodo(separar?filtrados.filter(x=>x.estado!=="semPrazo"):filtrados);
- const guardados=separar?filtrados.filter(x=>x.estado==="semPrazo"):[];
-
- h+='<div class="tbar mt16"><div class="seg">'+
+ h+='<div class="tbar"><div class="seg">'+
   Object.keys(TEXTOS.todoVistas).map(k=>'<button data-todo="'+k+'" class="'+
    (state.todo===k?"on":"")+'">'+esc(TEXTOS.todoVistas[k])+"</button>").join("")+"</div>"+
   iconeHint("todo")+
-  (state.todoFiltro?'<button class="chip ativo" data-todofiltro="">'+
-   esc(cartoes.filter(c=>c[0]===state.todoFiltro)[0][1])+" ×</button>":"")+
-  '<span class="soft" style="margin-left:auto">'+principais.length+
-  (principais.length===1?" item":" itens")+"</span></div>";
+  '<span class="soft" style="margin-left:auto">'+filtrados.length+
+  (filtrados.length===1?" item":" itens")+"</span></div>";
+ if(!filtrados.length)
+  return h+'<div class="card"><div class="empty" style="border:0">'+
+   (state.todoFiltro?TEXTOS.vazio.todoFiltro:TEXTOS.vazio.todo)+"</div></div>";
 
- if(!principais.length&&!guardados.length)
-  return h+'<div class="card"><div class="empty" style="border:0">'+TEXTOS.vazio.todo+"</div></div>";
- h+=corpoTodo(principais);
- if(guardados.length)h+='<div class="card mt16 semprazo">'+
-  '<button class="sph" data-todofiltro="semPrazo"><span class="pt"></span>'+
-  guardados.length+" "+(guardados.length===1?"item sem prazo":"itens sem prazo")+
-  '<span class="soft">ver todos</span></button></div>';
+ /* Com prazo e sem prazo em blocos separados: a fila de urgência primeiro,
+    e depois a lista do que precisa de data — visível, não escondida atrás de
+    um clique. São duas perguntas diferentes: "o que faço hoje" e "o que
+    ninguém marcou quando". */
+ const comPrazo=ordenarTodo(filtrados.filter(x=>x.estado!=="semPrazo"));
+ const semPrazo=filtrados.filter(x=>x.estado==="semPrazo");
+ TODO_FOCO.length=0;
+ h+=comPrazo.length?corpoTodo(comPrazo):"";
+ if(semPrazo.length)h+=blocoSemPrazo(semPrazo);
  return h;
 }
+/* A ordem em que as linhas aparecem, para j e k andarem por ela. */
+const TODO_FOCO=[];
+function blocoSemPrazo(itens){
+ const porQuem={};
+ itens.forEach(x=>{const k=x.quem||TEXTOS.semQuem;(porQuem[k]=porQuem[k]||[]).push(x);});
+ const nomes=Object.keys(porQuem).sort((a,b)=>porQuem[b].length-porQuem[a].length||a.localeCompare(b,"pt-BR"));
+ return '<section class="tgrupo semdata"><header class="th"><span class="ic">'+ICO_ESTADO.semPrazo+"</span>"+
+  '<span class="tn">'+esc(TEXTOS.semPrazoT)+'</span><span class="tc">'+itens.length+"</span>"+
+  '<span class="td">'+esc(TEXTOS.semPrazoSub)+"</span></header>"+
+  nomes.map(n=>'<div class="tsub"><span class="av" style="background:'+corDoNome(n)+'">'+
+   esc(n===TEXTOS.semQuem?"?":iniciais(n))+"</span>"+esc(n)+
+   '<span class="tc">'+porQuem[n].length+"</span></div>"+
+   linhasTodo(porQuem[n],true)).join("")+"</section>";
+}
 function corpoTodo(itens){
- if(!itens.length)return '<div class="card mt16"><div class="empty" style="border:0">'+
-  TEXTOS.vazio.todoFiltro+"</div></div>";
- if(state.todo==="prazo")return '<div class="card mt16 todolista">'+linhasTodo(itens,false)+"</div>";
+ if(state.todo==="prazo")
+  return '<section class="tgrupo">'+linhasTodo(itens,false)+"</section>";
  const chave=x=>state.todo==="pessoa"?(x.quem||TEXTOS.semQuem):nomeNegocio(x.d);
  const grupos={};
  itens.forEach(x=>{const k=chave(x);(grupos[k]=grupos[k]||[]).push(x);});
@@ -2663,46 +2685,41 @@ function corpoTodo(itens){
  });
  return ordem.map(k=>{
   const g=ordenarTodo(grupos[k]),bl=g.filter(x=>x.estado==="bloqueio").length;
-  const semDono=state.todo==="pessoa"&&k===TEXTOS.semQuem;
-  return '<div class="card mt16 todolista"><div class="gh">'+
-   (state.todo==="pessoa"
-    ?'<span class="ini'+(semDono?" vazio":"")+'">'+esc(semDono?"?":iniciais(k))+"</span>"
-    :"")+
-   '<span class="gn">'+esc(k)+"</span>"+
-   (bl?'<span class="pill crit">'+bl+(bl===1?" bloqueio":" bloqueios")+"</span>":"")+
-   '<span class="pill">'+g.length+(g.length===1?" item":" itens")+"</span></div>"+
-   linhasTodo(g,state.todo==="pessoa")+"</div>";
+  const pessoa=state.todo==="pessoa";
+  return '<section class="tgrupo"><header class="th">'+
+   (pessoa?'<span class="av" style="background:'+corDoNome(k)+'">'+
+     esc(k===TEXTOS.semQuem?"?":iniciais(k))+"</span>":'<span class="ic">'+ICO_NEG+"</span>")+
+   '<span class="tn">'+esc(k)+'</span><span class="tc">'+g.length+"</span>"+
+   (bl?'<span class="tb">'+bl+(bl===1?" bloqueio":" bloqueios")+"</span>":"")+
+   "</header>"+linhasTodo(g,pessoa)+"</section>";
  }).join("");
 }
-function linhasTodo(itens,dentroDaPessoa){
- /* O estado é dito uma vez, no cabeçalho da sequência, e não repetido em cada
-    linha: com a barra colorida ao lado, "BLOQUEIO" vinte vezes seguidas é
-    ruído, não informação. */
- let ultimo="",h="";
+/* Cor do avatar tirada do nome: estável, discreta, e nunca a cor de estado. */
+const AVCORES=["#e6efe8","#e9ecf4","#f3ecdf","#efe7f0","#e2eff0","#f0eae2"];
+function corDoNome(n){
+ let t=0;String(n).split("").forEach(c=>t=(t*31+c.charCodeAt(0))%9973);
+ return AVCORES[t%AVCORES.length];
+}
+function linhasTodo(itens,dentroDoGrupo){
+ let h="";
  itens.forEach(x=>{
   const e=TODO_ESTADOS[x.estado];
-  if(x.estado!==ultimo){
-   ultimo=x.estado;
-   const n=itens.filter(y=>y.estado===x.estado).length;
-   h+='<div class="tsh" style="--tkc:'+e.cor+'"><span class="pt"></span>'+
-    esc(e.lbl)+'<span class="soft">'+n+"</span></div>";
-  }
+  const i=TODO_FOCO.length;TODO_FOCO.push(x.d.id);
   const quando=x.prazo
    ?(x.atraso>0?"vencido há "+x.atraso+(x.atraso===1?" dia":" dias")
      :x.atraso===0?"hoje":"em "+(-x.atraso)+(x.atraso===-1?" dia":" dias"))
    :"";
   const meta=[esc(nomeNegocio(x.d)),esc(TEXTOS.frentesLbl[x.d.frente])+" · "+esc(etapaNome(x.d))];
-  if(!dentroDaPessoa)meta.push(x.quem?esc(x.quem):'<span class="late">'+esc(TEXTOS.semQuem)+"</span>");
+  if(!dentroDoGrupo)meta.push(x.quem?esc(x.quem):'<span class="late">'+esc(TEXTOS.semQuem)+"</span>");
   if(x.aprova&&x.aprova!==x.quem)meta.push("responde: "+esc(x.aprova));
-  h+='<div class="ti '+x.estado+'" data-abre="'+x.d.id+'" style="--tkc:'+e.cor+'">'+
-   '<span class="bar"></span>'+
-   '<span class="mid">'+
-    '<span class="tt">'+esc(x.texto)+"</span>"+
+  h+='<div class="ti '+x.estado+(state.todoSel===i?" sel":"")+'" data-abre="'+x.d.id+
+   '" data-tirow="'+i+'" style="--tkc:'+e.cor+'" title="'+esc(e.lbl)+'">'+
+   '<span class="ic">'+ICO_ESTADO[x.estado]+"</span>"+
+   '<span class="mid"><span class="tt">'+esc(x.texto)+"</span>"+
     '<span class="mt">'+meta.join(SEP)+"</span></span>"+
-   '<span class="rt">'+
-    '<span class="dt">'+(x.prazo?esc(dt(x.prazo)):"sem prazo")+"</span>"+
-    (quando?'<span class="qd">'+esc(quando)+"</span>":"")+"</span>"+
-   "</div>";
+   '<span class="rt">'+(x.prazo
+     ?'<span class="dt">'+esc(dt(x.prazo))+"</span>"+(quando?'<span class="qd">'+esc(quando)+"</span>":"")
+     :'<span class="dt vazia">definir data</span>')+"</span></div>";
  });
  return h;
 }
@@ -3830,7 +3847,9 @@ document.addEventListener("click",e=>{
  /* Clicar no cartão aceso apaga o filtro: o mesmo gesto liga e desliga. */
  if(el=g("[data-todofiltro]")){
   const v=el.dataset.todofiltro;
-  state.todoFiltro=(v&&state.todoFiltro===v)?"":v;render();return;}
+  state.todoFiltro=(v&&state.todoFiltro===v)?"":v;state.todoSel=-1;render();return;}
+ /* Clicar numa linha também move o foco do teclado para ela. */
+ if(el=g("[data-tirow]"))state.todoSel=Number(el.dataset.tirow);
  if(el=g("[data-perdidos]")){state.perdidos=!state.perdidos;render();return;}
  if(el=g("[data-aba]")){state.aba=el.dataset.aba;render();return;}
  if(el=g("[data-ord]")){const c=el.dataset.ord;
@@ -3956,6 +3975,7 @@ const ATALHOS=[
  ["G depois P","Painel"],
  ["G depois N","Negócios"],
  ["G depois C","Contas"],
+ ["J e K","Andar pela lista do To Do"],
  ["C","Cadastrar negócio"],
  ["E","Alternar quadro e lista"],
  ["Esc","Fechar gaveta, paleta ou explicação"],
@@ -4071,6 +4091,18 @@ document.addEventListener("keydown",e=>{
    irPara(k==="p"?"painel":k==="n"?"negocios":k==="t"?"todo":"contas");return;}
   if(e.key==="/"){e.preventDefault();$("#busca").focus();$("#busca").select();return;}
   if(e.key==="?"){e.preventDefault();abrirCmd("atalhos");return;}
+  /* j e k andam pela lista do To Do; Enter abre o negócio da linha. */
+  if(state.tela==="todo"&&!state.painel&&(k==="j"||k==="k"||e.key==="Enter")){
+   if(!TODO_FOCO.length)return;
+   if(e.key==="Enter"){
+    if(state.todoSel>=0){e.preventDefault();abrirPainel({tipo:"deal",id:TODO_FOCO[state.todoSel]});}
+    return;}
+   e.preventDefault();
+   state.todoSel=Math.max(0,Math.min(TODO_FOCO.length-1,state.todoSel+(k==="j"?1:-1)));
+   render();
+   const el=document.querySelector('[data-tirow="'+state.todoSel+'"]');
+   if(el&&el.scrollIntoView)el.scrollIntoView({block:"nearest"});
+   return;}
   if(k==="c"&&!state.painel){e.preventDefault();novoNegocio();return;}
   if(k==="e"&&state.tela==="negocios"){e.preventDefault();
    state.vista=state.vista==="lista"?"quadro":"lista";render();return;}
