@@ -6,8 +6,36 @@
 #
 #   ./publicar.sh                  usa ~/painel-oren como pasta de trabalho
 #   ./publicar.sh /outro/caminho   usa outra pasta
+#   ./publicar.sh --conferir       nao publica: so diz o que esta no ar agora
 set -e
 REPO=$(cd "$(dirname "$0")" && pwd)
+ENDERECO=${ENDERECO:-https://crm-oren.vercel.app}
+
+# Le o selo de versao da pagina que esta no ar. Existe porque "publiquei e nao
+# mudou nada" precisa de uma resposta que nao seja opiniao: ou o selo do ar e' o
+# do commit, ou nao e'.
+selo_no_ar() {
+  curl -fsS -H "Cache-Control: no-cache" "$ENDERECO/?c=$$$(date +%s)" 2>/dev/null \
+    | grep -o 'const VERSAO="[^"]*"' | head -1 | sed -e 's/^const VERSAO="//' -e 's/"$//'
+}
+
+if [ "$1" = "--conferir" ]; then
+  echo "No ar em $ENDERECO:"
+  AR=$(selo_no_ar || true)
+  if [ -z "$AR" ]; then
+    echo "  nao consegui ler o selo. Sem rede, ou a pagina nao respondeu."
+    exit 1
+  fi
+  echo "  $AR"
+  AQUI=$(cd "$REPO" && git rev-parse --short HEAD 2>/dev/null || echo sem-git)
+  echo "Neste clone: $AQUI"
+  case "$AR" in
+    "$AQUI"*) echo "Iguais: o que esta no ar e' o que esta aqui." ;;
+    *) echo "Diferentes: o ar esta atrasado em relacao a este clone. Rode ./publicar.sh" ;;
+  esac
+  exit 0
+fi
+
 PASTA=${1:-$HOME/painel-oren}
 
 # Antes de qualquer copia, trazer o repositorio para o dia. A causa mais comum
@@ -88,8 +116,34 @@ if [ "$CODIGO" -ne 0 ]; then
   echo "e rode ./publicar.sh de novo."
   exit "$CODIGO"
 fi
+
+# Deploy que devolve codigo 0 nao prova nada sobre o que o endereco serve: ja
+# subiu arquivo velho com "Ready" na tela. Entao confere no proprio endereco.
 echo
-echo "No ar: https://crm-oren.vercel.app/ e https://crm-oren.vercel.app/admin"
-echo "O pe da lateral do painel tem de mostrar: $SELO"
-echo "Se mostrar outra coisa, o navegador esta com a versao velha em cache:"
-echo "recarregue com Shift e F5 (ou Cmd Shift R no Mac)."
+echo "Conferindo o que $ENDERECO esta servindo..."
+TENTATIVA=1
+while [ "$TENTATIVA" -le 6 ]; do
+  AR=$(selo_no_ar || true)
+  if [ "$AR" = "$SELO" ]; then
+    echo "Confirmado: no ar em $SELO"
+    echo "  $ENDERECO/  e  $ENDERECO/admin"
+    exit 0
+  fi
+  if [ -n "$AR" ]; then
+    echo "  tentativa $TENTATIVA de 6: o ar ainda diz \"$AR\""
+  else
+    echo "  tentativa $TENTATIVA de 6: nao consegui ler o selo do ar"
+  fi
+  TENTATIVA=$((TENTATIVA + 1))
+  [ "$TENTATIVA" -le 6 ] && sleep 5
+done
+echo
+echo "O deploy saiu, mas o endereco continua servindo outra versao."
+echo "  aqui:  $SELO"
+echo "  no ar: ${AR:-nao consegui ler}"
+echo "Duas causas possiveis, nesta ordem:"
+echo "  1. Este projeto do Vercel nao e' o que responde por $ENDERECO."
+echo "     Confira em vercel.com qual projeto tem esse dominio."
+echo "  2. O deploy foi para preview, nao para producao."
+echo "Rode ./publicar.sh --conferir depois de um minuto para ver de novo."
+exit 1
