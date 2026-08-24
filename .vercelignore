@@ -1,0 +1,8 @@
+# O que nao sobe para o Vercel. Sem isto, um deploy a partir do Git serviria a
+# raiz do repositorio: SQL, carga inicial e README ficariam publicos.
+README.md
+carga-inicial.json
+publicar.sh
+supabase/
+.github/
+.gitignore

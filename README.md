@@ -140,6 +140,31 @@ Enquanto o Vercel não estiver ligado ao repositório, ele fica na versão do ú
 `./publicar.sh` que alguém rodou — e foi assim que ele ficou semanas atrás do
 repositório. O Pages serve de conferência: ele sempre tem o `main`.
 
+### Ligar o Vercel ao repositório
+
+*vercel.com → projeto **crm-oren** → Settings → Git → Connect Git Repository →
+`theneilagencia/pipe-oren`, branch `main`.* Depois disso todo push publica sozinho
+e ninguém precisa de terminal.
+
+O repositório já está preparado para esse modo, e a preparação não é opcional: a
+raiz **não tem a forma de um site**. O painel se chama `painel-oren.html`, não
+`index.html`, e ao lado dele moram arquivos que não podem ficar públicos. Três
+arquivos resolvem isso:
+
+| Arquivo | Para que serve |
+|---|---|
+| `vercel.json` | manda o Vercel rodar `vercel-build.sh` e servir a pasta `site/` |
+| `vercel-build.sh` | monta `site/index.html` e `site/admin/index.html`, grava o selo de versão (do `VERCEL_GIT_COMMIT_SHA`) e derruba o build se o selo não entrou |
+| `.vercelignore` | mantém `supabase/`, `carga-inicial.json` e o `README` fora do que sobe |
+
+`api/admin.js` continua na raiz, sem passar pelo build: é de lá que o Vercel tira
+a função de servidor. As quatro variáveis de ambiente do projeto continuam como
+estão — ligar o Git não mexe nelas.
+
+Depois de ligar, confira duas coisas no primeiro deploy: o selo no pé da lateral
+do painel tem de ser o commit do `main`, e em `/admin` a criação de pessoa tem de
+funcionar (é ela que depende da função de servidor).
+
 O token do Actions não tem permissão para ligar o Pages sozinho, e o workflow não
 falha por isso: ele avisa no log e segue. Sem os segredos do Vercel, mesma coisa.
 
