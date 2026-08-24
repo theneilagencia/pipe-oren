@@ -607,6 +607,8 @@ const TEXTOS={
  abas:{clientes:"Clientes",parceiros:"Parceiros"},
  origemLbl:"Veio do negócio",
  novoOriundo:"Cadastrar cliente originado",
+ backupOk:(c,v)=>"Backup gerado: "+c.parceiros+" parceiros, "+c.clientes+" clientes e "+
+  c.negocios+" negócios, na versão "+v+" do documento.",
  secoes:{origem:"Clientes originados",pend:"Pendências",analise:"Análise",capital:"Capital",check:"Compliance e KYC",hist:"Histórico",notas:"Anotações"},
  kpiExplica:{
   aberto:"Todos os negócios em aberto, do maior valor para o menor. Não depende do período.",
@@ -2349,11 +2351,42 @@ function baixar(nome,tipo,txt){
  a.href=URL.createObjectURL(new Blob([txt],{type:tipo}));a.download=nome;
  document.body.appendChild(a);a.click();a.remove();
 }
-function exportarJSON(){baixar("oren-negocios.json","application/json",JSON.stringify(state.data,null,1));}
+/* Backup tem três exigências que um "salvar como" não tem: ser o que está no
+   banco agora (e não o que esta aba viu quando abriu), dizer no nome de qual
+   momento ele é, e dizer dentro de si o que ele contém. */
+function nomeBackup(sufixo){
+ const d=new Date(),z=n=>String(n).padStart(2,"0");
+ return "oren-backup-"+d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+
+  "-"+z(d.getHours())+z(d.getMinutes())+(sufixo||"")+".json";
+}
+async function exportarJSON(){
+ let sufixo="";
+ /* Reler antes de gerar, para o backup não sair de uma aba velha. Com
+    alteração ainda não gravada nesta aba, não releio: sobrescreveria o
+    trabalho de quem está exportando. */
+ if(state.servidor&&!state.dirty){
+  if(!await carregarDoServidor(true))sufixo="-NAO-CONFERIDO-COM-O-BANCO";
+  else render();
+ }else if(state.dirty)sufixo="-COM-ALTERACAO-NAO-GRAVADA";
+ const d=state.data||{};
+ const conteudo={parceiros:(d.partners||[]).length,clientes:(d.customers||[]).length,
+  negocios:(d.deals||[]).length};
+ /* _backup descreve o arquivo; a importação o descarta, para ele nunca virar
+    parte do documento e reaparecer no backup seguinte. */
+ const copia=Object.assign({},d,{_backup:{
+  gerado:new Date().toISOString(),versaoDocumento:state.versao,
+  por:(state.usuario&&state.usuario.nome)||"",selo:VERSAO,conteudo:conteudo,
+  observacao:"Este arquivo é o documento do pipeline inteiro. Contas de acesso "+
+   "(tabela perfil e auth) e o histórico de versões (pipeline_historico) vivem no "+
+   "banco e não entram aqui."}});
+ baixar(nomeBackup(sufixo),"application/json",JSON.stringify(copia,null,1));
+ toast(TEXTOS.backupOk(conteudo,state.versao),true);
+}
 function importarJSON(txt){
  if(state.servidor&&!confirm("Isto substitui TODOS os dados no banco, para todo mundo. Continuar?"))return;
  try{const o=JSON.parse(txt);
   if(!o||!Array.isArray(o.deals)||!Array.isArray(o.customers)||!Array.isArray(o.partners))throw 0;
+  delete o._backup;   /* descrição do arquivo, não dado do documento */
   snapshot();state.data=o;marcar();
  }catch(e){toast(TEXTOS.erros.importar,true);}
 }

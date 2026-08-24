@@ -191,8 +191,21 @@ outro em silêncio.
 Cada pessoa troca a própria senha no rodapé da lateral esquerda. Quem esqueceu usa
 **Esqueci minha senha** na tela de entrada, e o Supabase manda o link.
 
-**Exportar** baixa um arquivo com todos os dados. Vale como cópia de segurança
-fora do Supabase, e é o caminho de volta se você quiser mudar de ferramenta.
+**Exportar** baixa o documento do pipeline inteiro: parceiros, clientes,
+negócios, pendências, histórico de etapas e a lista de responsáveis. O arquivo é
+idêntico ao que está no banco — dá para reimportar e voltar ao mesmo estado.
+
+Antes de gerar, o painel relê o banco, para o backup não sair de uma aba aberta
+desde a manhã. O nome do arquivo traz data e hora
+(`oren-backup-2026-08-24-1330.json`) e, se algo saiu do combinado, o nome diz:
+`-NAO-CONFERIDO-COM-O-BANCO` quando a releitura falhou,
+`-COM-ALTERACAO-NAO-GRAVADA` quando havia edição pendente nesta aba. Dentro do
+arquivo, a chave `_backup` registra data, versão do documento, quem exportou e a
+contagem de registros; a importação descarta essa chave.
+
+**O que não entra nesse arquivo:** as contas de acesso (tabela `perfil` e
+`auth.users`) e o histórico de versões (`pipeline_historico`). Isso vive no banco.
+`supabase/backup-completo.sql` tem as consultas para baixar cada um em CSV.
 
 ## O que o banco guarda
 
