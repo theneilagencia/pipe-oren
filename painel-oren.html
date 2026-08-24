@@ -171,7 +171,7 @@ border-radius:calc(var(--r2) - 3px);font-weight:500;white-space:nowrap}
 .g2{grid-template-columns:1fr}
 .card{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);padding:14px;min-width:0}
 .card h2{font-size:13px;font-weight:600;margin-bottom:12px;letter-spacing:-.01em;
-display:flex;align-items:center}
+display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .kpi[data-kpi]{cursor:pointer;transition:border-color var(--fast) ease-out,box-shadow var(--fast) ease-out}
 .kpi[data-kpi]:hover{border-color:var(--bdf);box-shadow:var(--sh2)}
 .kpi[data-kpi]:hover .lbl{color:var(--mid)}
@@ -210,6 +210,11 @@ border-radius:var(--r)}
 .rowlist>div[data-abre]:hover{background:var(--alt)}
 .rl-main{display:block;max-width:100%;min-width:0;font-size:13px;font-weight:500;
 white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* No To Do o texto da tarefa é o conteúdo, não um rótulo: pode ocupar duas
+   linhas em vez de ser cortado. */
+#content .rowlist .rl-main{white-space:normal;overflow:visible;
+display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rl-main .blk{color:var(--neg);font-size:10px;letter-spacing:.06em;font-weight:600;margin-right:4px}
 .rl-sub{display:block;max-width:100%;min-width:0;font-size:12px;color:var(--tx3);
 white-space:normal;overflow-wrap:anywhere}
 /* lista de cartões (celular) */
@@ -584,7 +589,9 @@ const SUPABASE_KEY="sb_publishable_BZgO_66U6hFiY2ZwhqtnkQ_-vNXSvVq";
 /* ============================ TEXTOS ============================ */
 const TEXTOS={
  app:"Painel comercial",
- nav:{painel:"Painel",negocios:"Negócios",contas:"Contas"},
+ nav:{painel:"Painel",todo:"To Do",negocios:"Negócios",contas:"Contas"},
+ todoVistas:{pessoa:"Por pessoa",negocio:"Por negócio",prazo:"Por urgência"},
+ semQuem:"sem responsável",
  menu:{salvar:"Salvar arquivo",exportar:"Exportar",importar:"Importar",limpar:"Limpar dados de exemplo",imprimir:"Imprimir",recomecar:"Recomeçar"},
  buscaPh:"Buscar por código, cliente, negócio, próximo passo ou pendência",
  salvo:"Salvo",naoSalvo:"Não salvo",salvando:"Salvando…",semRede:"Sem conexão",
@@ -615,7 +622,8 @@ const TEXTOS={
   ponderada:"Os mesmos negócios em aberto, cada um multiplicado pela chance de fechar.",
   fechado:"Negócios que fecharam dentro do período selecionado.",
   conversao:"O denominador da taxa: tudo que teve desfecho no período, fechado ou perdido."},
- vazio:{origem:"Nenhum cliente nasceu deste negócio ainda.",kpi:"Nenhum negócio compõe este número agora.",grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
+ vazio:{todo:"Nada em aberto com estes filtros. Se a base tem negócios, ou tudo tem próximo passo e nenhuma pendência, ou os filtros estão estreitos.",
+  origem:"Nenhum cliente nasceu deste negócio ainda.",kpi:"Nenhum negócio compõe este número agora.",grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
   publico:"Nenhum negócio marcado com este público ainda. A aba fica aqui para quando o primeiro aparecer."},
  excluir:"Excluir",confirmaExcluir:"Excluir este registro? A ação pode ser desfeita por 8 segundos.",
  desfazer:"Desfazer",moveu:"Negócio movido.",excluiu:"Negócio excluído.",
@@ -734,7 +742,7 @@ const CHAVE="oren.pipeline.v1";
 
 /* ============================ ESTADO ============================ */
 const state={
- data:null,tela:"painel",vista:"quadro",perdidos:false,aba:"clientes",publico:"",
+ data:null,tela:"painel",todo:"pessoa",vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
  painel:null,secoes:{},dirty:false,undo:null,undoTimer:null,dbTimer:null,
@@ -822,11 +830,12 @@ function itemLinha(principal,partes,attrs){
    dizer arquivo aberto direto do computador, sem passar por publicação.
    Existe para a pergunta "isto já está no ar?" ter resposta na própria tela. */
 const VERSAO="local";
-const ATALHO_TELA={painel:"G P",negocios:"G N",contas:"G C"};
+const ATALHO_TELA={painel:"G P",todo:"G T",negocios:"G N",contas:"G C"};
 const ICONES={
  painel:"<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'/></svg>",
  negocios:"<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v11h-4z'/></svg>",
- contas:"<svg viewBox='0 0 24 24' aria-hidden='true'><circle cx='9' cy='8' r='3'/><path d='M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5'/><path d='M16 11h5v9h-5'/></svg>"
+ contas:"<svg viewBox='0 0 24 24' aria-hidden='true'><circle cx='9' cy='8' r='3'/><path d='M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5'/><path d='M16 11h5v9h-5'/></svg>",
+ todo:"<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M4 6h10M4 12h10M4 18h7'/><path d='M17 5l2 2 3-3'/><path d='M17 11l2 2 3-3'/></svg>"
 };
 
 /* ============================ VALIDACAO ============================ */
@@ -2463,6 +2472,110 @@ function kpis(lista){
   fechado:soma(fe),conversao:conv,n:lista.length,
   nAberto:ab.length,nFechado:fe.length,nPerdido:pe.length};
 }
+/* ===================== TO DO =====================
+   Uma lista só, com o que está parado e com quem. O RACI que existe no dado é
+   de duas letras: R é quem faz (o responsável da pendência, ou o do negócio
+   quando a tarefa é o próximo passo) e A é quem responde pelo negócio. C sai
+   dos Papéis, quando estão preenchidos — em Capital costumam estar. I não
+   existe no modelo e não vou inventar: a tela diz isso em vez de fingir.
+   Nada aqui é campo novo. Tudo é leitura do que já está gravado. */
+const TODO_TIPOS={bloqueio:"Bloqueio",pendencia:"Pendência",passo:"Próximo passo",definir:"Sem próximo passo"};
+function itensTodo(){
+ const h=hoje(),out=[];
+ /* O filtro de responsável desta tela vale para quem FAZ, não para o dono do
+    negócio: senão filtrar por Theo esconderia a pendência dele dentro de um
+    negócio do Paulo, que é justamente o que se quer ver. */
+ const f=state.filtros;
+ const base=state.data.deals.filter(d=>{
+  if(f.frente&&d.frente!==f.frente)return false;
+  if(f.tipoVenda&&d.tipoVenda!==f.tipoVenda)return false;
+  if(state.publico&&publicoDe(d)!==state.publico)return false;
+  if(f.busca.trim()&&textoBusca(d).indexOf(f.busca.trim().toLowerCase())<0)return false;
+  return emAberto(d);
+ });
+ const consultados=d=>PAPEIS.map(([k,l])=>{const v=(d.papeis||{})[k];return v?l+": "+v:"";})
+  .filter(Boolean);
+ const item=(d,tipo,texto,quem,prazo)=>({
+  tipo:tipo,texto:texto,d:d,
+  quem:(quem||"").trim(),          /* R — quem faz */
+  aprova:d.responsavel||"",        /* A — quem responde pelo negócio */
+  consultados:consultados(d),      /* C — papéis preenchidos */
+  prazo:prazo||"",
+  atraso:prazo?dias(new Date(prazo),h):null
+ });
+ base.forEach(d=>{
+  (d.pendencias||[]).filter(x=>!x.resolvida).forEach(x=>
+   out.push(item(d,x.bloqueante?"bloqueio":"pendencia",x.texto||"(pendência sem texto)",x.responsavel,x.prazo)));
+  if(String(d.proximoPasso||"").trim())out.push(item(d,"passo",d.proximoPasso,d.responsavel,d.prazo));
+  else out.push(item(d,"definir","Definir o próximo passo deste negócio",d.responsavel,d.prazo));
+ });
+ const alvo=f.responsavel;
+ const vis=alvo?out.filter(x=>x.quem===alvo):out;
+ /* Ordem: bloqueio primeiro, depois o mais atrasado, depois o prazo mais
+    próximo, e sem prazo por último — sem prazo não é urgente, é indefinido. */
+ const peso={bloqueio:0,pendencia:1,passo:2,definir:3};
+ return vis.sort((a,b)=>{
+  if(peso[a.tipo]!==peso[b.tipo])return peso[a.tipo]-peso[b.tipo];
+  const aa=a.atraso==null?-1e9:a.atraso,bb=b.atraso==null?-1e9:b.atraso;
+  return bb-aa;
+ });
+}
+function telaTodo(){
+ const itens=itensTodo();
+ const nBloq=itens.filter(x=>x.tipo==="bloqueio").length;
+ const nVenc=itens.filter(x=>x.atraso>0).length;
+ const nSemPrazo=itens.filter(x=>!x.prazo).length;
+ const nSemQuem=itens.filter(x=>!x.quem).length;
+ let h='<div class="grid kpis">'+[
+  ["Bloqueios em aberto",nBloq,"impedem o negócio de avançar"],
+  ["Com prazo vencido",nVenc,"passou da data combinada"],
+  ["Sem prazo",nSemPrazo,"não é urgente: é indefinido"],
+  ["Sem responsável",nSemQuem,"parado com ninguém"]
+ ].map(([l,n,sub])=>'<div class="card kpi"><div class="lbl">'+esc(l)+"</div>"+
+  '<div class="val"><span class="num">'+n+"</span></div>"+
+  '<div class="qual">'+esc(sub)+"</div></div>").join("")+"</div>";
+ h+='<div class="tbar mt16"><div class="seg">'+
+  Object.keys(TEXTOS.todoVistas).map(k=>'<button data-todo="'+k+'" class="'+
+   (state.todo===k?"on":"")+'">'+esc(TEXTOS.todoVistas[k])+"</button>").join("")+"</div>"+
+  iconeHint("todo")+'<span class="soft">'+itens.length+(itens.length===1?" item":" itens")+"</span></div>";
+ if(!itens.length)return h+'<div class="card"><div class="empty" style="border:0">'+TEXTOS.vazio.todo+"</div></div>";
+ /* Agrupar por quem faz responde "com quem está parado". Por negócio responde
+    "o que falta neste negócio". A terceira é a fila de urgência, sem grupo. */
+ if(state.todo==="prazo")return h+'<div class="card">'+linhasTodo(itens)+"</div>";
+ const chave=x=>state.todo==="pessoa"?(x.quem||TEXTOS.semQuem):nomeNegocio(x.d);
+ const grupos={};
+ itens.forEach(x=>{const k=chave(x);(grupos[k]=grupos[k]||[]).push(x);});
+ /* Grupo com bloqueio na frente, e entre iguais o de mais itens primeiro. */
+ const ordem=Object.keys(grupos).sort((a,b)=>{
+  const ba=grupos[a].filter(x=>x.tipo==="bloqueio").length,bb=grupos[b].filter(x=>x.tipo==="bloqueio").length;
+  if(ba!==bb)return bb-ba;
+  if(grupos[a].length!==grupos[b].length)return grupos[b].length-grupos[a].length;
+  return a.localeCompare(b,"pt-BR");
+ });
+ return h+ordem.map(k=>{
+  const g=grupos[k],bl=g.filter(x=>x.tipo==="bloqueio").length;
+  return '<div class="card mt16"><h2>'+esc(k)+
+   '<span class="soft" style="font-weight:400;margin-left:auto;font-size:12px">'+
+   g.length+(g.length===1?" item":" itens")+(bl?SEP+bl+(bl===1?" bloqueio":" bloqueios"):"")+
+   "</span></h2>"+linhasTodo(g,state.todo==="pessoa")+"</div>";
+ }).join("");
+}
+function linhasTodo(itens,semQuem){
+ return '<div class="rowlist">'+itens.map(x=>{
+  const partes=[];
+  partes.push('<span class="mut">'+esc(nomeNegocio(x.d))+"</span>");
+  partes.push(esc(TEXTOS.frentesLbl[x.d.frente])+" · "+esc(etapaNome(x.d)));
+  if(!semQuem)partes.push(x.quem?"faz: "+esc(x.quem):'<span class="late">'+esc(TEXTOS.semQuem)+"</span>");
+  if(x.aprova&&x.aprova!==x.quem)partes.push('<span class="soft">responde: '+esc(x.aprova)+"</span>");
+  partes.push(x.prazo
+   ?'<span class="'+(x.atraso>0?"late":"soft")+'">'+dt(x.prazo)+
+    (x.atraso>0?" · vencido há "+x.atraso+(x.atraso===1?" dia":" dias"):"")+"</span>"
+   :'<span class="soft">sem prazo</span>');
+  const marca=x.tipo==="bloqueio"?'<span class="blk">BLOQUEIA</span> '
+   :x.tipo==="definir"?'<span class="badge">'+esc(TODO_TIPOS.definir)+"</span> ":"";
+  return itemLinha(marca+esc(x.texto),partes,' data-abre="'+x.d.id+'"');
+ }).join("")+"</div>";
+}
 function atencao(lista){
  const h=hoje(),out=[];
  lista.filter(emAberto).forEach(d=>{
@@ -2636,6 +2749,9 @@ const HINTS={
  motivoPerda:{t:"Motivo da perda",
   a:"Por que o negócio não seguiu.",
   b:"É pedido no momento de marcar como perdido, e fica editável depois."},
+ todo:{t:"To Do",
+  a:"Tudo o que está em aberto na plataforma, numa lista: as pendências de cada negócio e o próximo passo de cada um.",
+  b:"“Faz” é quem resolve — o responsável da pendência, ou o do negócio quando a tarefa é o próximo passo. “Responde” é quem responde pelo negócio, e só aparece quando é outra pessoa. Bloqueio vem primeiro, depois o mais atrasado; sem prazo fica no fim, porque sem prazo não é urgente, é indefinido. O filtro de responsável aqui vale para quem faz, não para o dono do negócio. Consultado sai dos Papéis do negócio, quando preenchidos; “informado” não existe no cadastro e não é inventado aqui."},
  origemNegocio:{t:"Veio do negócio",
   a:"O negócio B2B que trouxe este cliente. Vazio quer dizer cadastro direto.",
   b:"Serve para saber quanto de consumidor final cada credenciamento gerou. Guardamos o negócio, não o parceiro: dois negócios do mesmo parceiro são origens diferentes, e o parceiro se descobre pelo negócio."},
@@ -2840,6 +2956,7 @@ function render(){
  renderTopo();renderNav();renderMenu();renderPubSeg();renderChips();
  const c=$("#content");
  if(state.tela==="painel")c.innerHTML=telaPainel();
+ else if(state.tela==="todo")c.innerHTML=telaTodo();
  else if(state.tela==="negocios")c.innerHTML=telaNegocios();
  else c.innerHTML=telaContas();
  renderPainelLateral();renderImpressao();
@@ -2868,7 +2985,7 @@ function renderTopo(){
  else q.innerHTML="";
 }
 function renderNav(){
- const telas=["painel","negocios","contas"];
+ const telas=["painel","todo","negocios","contas"];
  /* Ícone, nome e o atalho aparecendo no hover: quem usa todo dia aprende o
     atalho sem ler manual. */
  $("#nav").innerHTML=telas.map(k=>
@@ -3579,6 +3696,7 @@ document.addEventListener("click",e=>{
  if(el=g("[data-per]")){state.filtros.periodo=el.dataset.per;render();return;}
  if(el=g("[data-limpa]")){state.filtros[el.dataset.limpa]="";render();return;}
  if(el=g("[data-vista]")){state.vista=el.dataset.vista;state.perdidos=false;render();return;}
+ if(el=g("[data-todo]")){state.todo=el.dataset.todo;render();return;}
  if(el=g("[data-perdidos]")){state.perdidos=!state.perdidos;render();return;}
  if(el=g("[data-aba]")){state.aba=el.dataset.aba;render();return;}
  if(el=g("[data-ord]")){const c=el.dataset.ord;
@@ -3712,6 +3830,7 @@ const ATALHOS=[
 function acoesCmd(){
  const a=[
   {g:"Ir para",ico:"→",t:TEXTOS.nav.painel,m:"G P",f:()=>irPara("painel")},
+  {g:"Ir para",ico:"→",t:TEXTOS.nav.todo,m:"G T",f:()=>irPara("todo")},
   {g:"Ir para",ico:"→",t:TEXTOS.nav.negocios,m:"G N",f:()=>irPara("negocios")},
   {g:"Ir para",ico:"→",t:TEXTOS.nav.contas,m:"G C",f:()=>irPara("contas")},
   {g:"Ação",ico:"+",t:"Cadastrar negócio",m:"C",f:()=>novoNegocio()},
@@ -3813,9 +3932,9 @@ document.addEventListener("keydown",e=>{
   if(k==="g"){teclaG=Date.now();return;}
   /* G seguido de letra, com um segundo de janela, como nas ferramentas de
      onde a ideia vem. */
-  if(Date.now()-teclaG<1000&&(k==="p"||k==="n"||k==="c")){
+  if(Date.now()-teclaG<1000&&(k==="p"||k==="n"||k==="c"||k==="t")){
    teclaG=0;e.preventDefault();
-   irPara(k==="p"?"painel":k==="n"?"negocios":"contas");return;}
+   irPara(k==="p"?"painel":k==="n"?"negocios":k==="t"?"todo":"contas");return;}
   if(e.key==="/"){e.preventDefault();$("#busca").focus();$("#busca").select();return;}
   if(e.key==="?"){e.preventDefault();abrirCmd("atalhos");return;}
   if(k==="c"&&!state.painel){e.preventDefault();novoNegocio();return;}
