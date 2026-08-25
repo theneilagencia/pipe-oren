@@ -200,3 +200,60 @@ select versao,
        (select count(*) from jsonb_array_elements(dados->'deals') d
          where d->>'responsavel' = 'Paulo')   as negocios_do_paulo
   from public.pipeline where id = 1;
+
+-- ====================================================== PARTE 3 · veredito
+-- Responde "deu certo?" numa linha. Testa as treze condições que decidem um
+-- login, inclusive a senha -- pelo mesmo teste que o GoTrue faz: comparar o
+-- hash guardado com o hash da senha usando o próprio hash como salt.
+--
+-- Troque <SENHA-PROVISORIA> pela senha antes de rodar. Se der erro dizendo que
+-- extensions.crypt não existe, troque "extensions." por "public." nas duas
+-- ocorrências.
+with alvo as (
+  select u.id, u.email, u.encrypted_password, u.email_confirmed_at, u.aud, u.role,
+         u.banned_until, u.deleted_at, u.last_sign_in_at,
+         to_jsonb(u) ->> 'is_sso_user'  as sso,
+         to_jsonb(u) ->> 'is_anonymous' as anon,
+         p.nome, p.papel, p.senha_provisoria,
+         (select i.identity_data->>'email' from auth.identities i
+           where i.user_id = u.id and i.provider = 'email') as ident_email
+    from auth.users u
+    left join public.perfil p on p.id = u.id
+   where lower(u.email) = lower('paulo.lopes@orencorp.com') or p.nome = 'Paulo'
+), avaliado as (
+  select a.*, array_remove(array[
+    case when lower(a.email) <> lower('paulo.lopes@orencorp.com')
+         then 'o e-mail da conta ainda é ' || a.email end,
+    case when a.email_confirmed_at is null            then 'e-mail não confirmado' end,
+    case when coalesce(a.encrypted_password,'') = ''  then 'conta sem senha' end,
+    case when left(coalesce(a.encrypted_password,''),3) not in ('$2a','$2b','$2y')
+         then 'o hash da senha não é bcrypt' end,
+    case when coalesce(a.encrypted_password,'') <> ''
+          and a.encrypted_password <> extensions.crypt('<SENHA-PROVISORIA>', a.encrypted_password)
+         then 'a senha informada não é a desta conta' end,
+    case when coalesce(a.aud,'') = '' or coalesce(a.role,'') = ''
+         then 'aud ou role vazios' end,
+    case when a.banned_until is not null              then 'conta banida' end,
+    case when a.deleted_at is not null                then 'conta excluída' end,
+    case when a.sso  = 'true'                         then 'conta marcada como SSO' end,
+    case when a.anon = 'true'                         then 'conta marcada como anônima' end,
+    case when a.nome is null                          then 'sem linha em public.perfil' end,
+    case when a.papel is not null and a.papel not in ('editor','leitor')
+         then 'papel inválido: ' || a.papel end,
+    case when a.ident_email is null                   then 'sem identidade de e-mail' end,
+    case when a.ident_email is not null
+          and lower(a.ident_email) <> lower('paulo.lopes@orencorp.com')
+         then 'a identidade ainda tem ' || a.ident_email end
+  ], null) as problemas from alvo a
+)
+select email,
+       nome,
+       papel,
+       senha_provisoria as vai_pedir_senha_nova,
+       (select count(*) from public.pipeline pl, jsonb_array_elements(pl.dados->'deals') d
+         where pl.id = 1 and d->>'responsavel' = avaliado.nome) as negocios_no_nome,
+       last_sign_in_at as ultimo_acesso,
+       case when cardinality(problemas) = 0
+            then 'OK -- o login deve passar com esta senha'
+            else 'AINDA FALTA: ' || array_to_string(problemas, ' | ') end as veredito
+  from avaliado;
