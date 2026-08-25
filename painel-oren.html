@@ -344,20 +344,29 @@ font-size:14px;font-weight:600;color:var(--tx2);letter-spacing:-.01em}
 border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
 .tabs button.on .n{background:var(--deep);color:#fff}
 .tabs button:disabled{opacity:.4}
-/* A frase que explica a tela antes de qualquer lista. */
-.tresumo{font-size:14px;line-height:1.5;color:var(--tx2);margin:0 0 14px;max-width:62ch}
-.tfil{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.tf{display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid transparent;
-padding:5px 10px;min-height:32px;border-radius:999px;color:var(--tx2);font-weight:500;font-size:13px}
-.tf:hover{background:var(--alt);color:var(--tx)}
-.tf .n{font-size:11px;font-weight:600;color:var(--tx3);background:var(--alt);
-border-radius:999px;padding:2px 7px;font-variant-numeric:tabular-nums}
-.tf .pt{width:7px;height:7px;border-radius:999px;flex:0 0 auto}
-.tf.crit .pt{background:var(--crit)}
-.tf.warn .pt{background:var(--warn)}
-.tf.neutro .pt{background:var(--neutro)}
-.tf.on{background:var(--deep);color:#fff;border-color:var(--deep)}
-.tf.on .n{background:rgba(255,255,255,.16);color:#fff}
+/* A área de destaque: quatro números, o que cada um conta e o que quer dizer.
+   Cada cartão é o próprio filtro. O fio de 1px entre eles é o fundo aparecendo
+   pelo gap do grid — moldura por cartão viraria caixa dentro de caixa. */
+.tdest{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);
+border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden;margin-bottom:14px}
+.tdc{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;
+background:var(--surf);border:0;border-radius:0;padding:11px 14px 12px;
+transition:background var(--fast) ease-out}
+.tdc:hover:not(:disabled){background:var(--alt)}
+.tdc:disabled{opacity:.45}
+/* Selecionado: fundo rebaixado e um fio de 2px no topo, na cor do estado. */
+.tdc.on{background:#eef4f0;box-shadow:inset 0 2px 0 var(--deep)}
+.tdc.crit.on{box-shadow:inset 0 2px 0 var(--crit)}
+.tdc.warn.on{box-shadow:inset 0 2px 0 var(--warn)}
+.tdc.neutro.on{box-shadow:inset 0 2px 0 var(--neutro)}
+/* Algarismo proporcional: número grande solto não precisa alinhar em coluna. */
+.tdn{font-size:23px;font-weight:600;line-height:1.15;letter-spacing:-.022em;
+font-variant-numeric:proportional-nums;color:var(--tx)}
+.tdc.crit .tdn{color:var(--crit)}
+.tdc.warn .tdn{color:var(--warn)}
+.tdc.neutro .tdn{color:var(--tx2)}
+.tdl{font-size:12px;font-weight:600;color:var(--tx2);letter-spacing:-.006em}
+.tdf{font-size:11px;line-height:1.35;color:var(--tx3)}
 /* Uma superfície por grupo, com o cabeçalho grudando no topo ao rolar. */
 .tgrupo{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);
 overflow:hidden;margin-bottom:12px}
@@ -588,8 +597,9 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
  /* No celular os quatro cartões empilhados enchiam a tela antes da primeira
     tarefa. Em 2×2 compacto eles cabem em um terço da altura. */
  /* Filtros numa faixa que rola, em vez de quebrar em quatro linhas. */
- .tfil{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px 12px;padding:0 16px 2px;scrollbar-width:none}
- .tfil::-webkit-scrollbar{display:none}
+ .tdest{grid-template-columns:1fr 1fr}
+ .tdc{padding:10px 12px 11px}
+ .tdn{font-size:20px}
  .tf{flex:0 0 auto}
  .ti .rt{flex:0 0 84px}
  .ti .qd{white-space:normal;line-height:1.3}
@@ -702,14 +712,13 @@ const TEXTOS={
  app:"Painel comercial",
  nav:{painel:"Painel",todo:"To Do",negocios:"Negócios",contas:"Contas"},
  todoMinhas:"Minhas tarefas",todoTodos:"De todo o time",
- todoResumo:(n,bl,vc,sp,eu)=>{
-  if(!n)return eu?"Nada no seu nome agora.":"Nada em aberto.";
-  const p=[(eu?"Você tem ":"O time tem ")+n+(n===1?" tarefa":" tarefas")+" em aberto"];
-  if(bl)p.push(bl+(bl===1?" está impedindo":" estão impedindo")+" um negócio de andar");
-  if(vc)p.push(vc+(vc===1?" passou":" passaram")+" da data");
-  if(sp)p.push(sp+(sp===1?" está":" estão")+" sem data marcada");
-  return p.join(". ")+".";
- },
+ /* Quatro números com a palavra que os explica embaixo. A frase corrida que
+    havia aqui dizia exatamente o mesmo que as pastilhas logo abaixo dela:
+    dois lugares para a mesma informação, e nenhum dos dois filtrava sozinho. */
+ todoDest:{aberto:"em aberto",meus:"no seu nome",time:"de todo o time",
+  bloq:"bloqueados",bloqF:"impedem o negócio de andar",
+  venc:"atrasados",vencF:"passaram da data",
+  sem:"sem data",semF:"não dá para cobrar"},
  semQuem:"sem responsável",
  todoExpandir:"Abrir todos",todoRecolher:"Fechar todos",
  todoAbrirSec:n=>"Abrir as "+n+(n===1?" tarefa":" tarefas")+" desta pessoa",
@@ -747,7 +756,7 @@ const TEXTOS={
   fechado:"Negócios que fecharam dentro do período selecionado.",
   conversao:"O denominador da taxa: tudo que teve desfecho no período, fechado ou perdido."},
  vazio:{todoMinhas:"Nada no seu nome agora. Para ver o que está com o resto do time:",
-  todoFiltro:"Nada neste estado. Toque na pastilha acesa para ver o resto.",
+  todoFiltro:"Nada neste estado. Toque no cartão aceso para ver o resto.",
   todo:"Nada em aberto com estes filtros. Se a base tem negócios, ou tudo tem próximo passo e nenhuma pendência, ou os filtros estão estreitos.",
   origem:"Nenhum cliente nasceu deste negócio ainda.",kpi:"Nenhum negócio compõe este número agora.",grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
   publico:"Nenhum negócio marcado com este público ainda. A aba fica aqui para quando o primeiro aparecer."},
@@ -2689,17 +2698,22 @@ function telaTodo(){
  /* Sem data é sem data: um bloqueio sem prazo também está sem prazo. O estado
     pinta a barra (bloqueio ganha), mas a contagem não pode mentir. */
  const nSem=base.filter(x=>!x.prazo).length;
- /* Uma frase em português antes de qualquer lista: quantos, e o que urge. */
- h+='<p class="tresumo">'+esc(TEXTOS.todoResumo(base.length,nBloq,nVenc,nSem,mostrandoMinhas?eu:""))+"</p>";
-
- const filtros=[["","Tudo",base.length,""],
-  ["bloqueio","Bloqueados",nBloq,"crit"],
-  ["vencido","Atrasados",nVenc,"warn"],
-  ["semPrazo","Sem data",nSem,"neutro"]];
- h+='<div class="tfil">'+filtros.map(([k,l,n,cls])=>
-  '<button data-todofiltro="'+k+'" class="tf'+(cls?" "+cls:"")+(state.todoFiltro===k?" on":"")+'"'+
-  ' aria-pressed="'+(state.todoFiltro===k?"true":"false")+'"'+(n?"":" disabled")+'>'+
-  (cls?'<span class="pt"></span>':"")+esc(l)+'<span class="n">'+n+"</span></button>").join("")+"</div>";
+ /* A área de destaque: número, o que ele conta, e o que isso quer dizer. Cada
+    cartão é o próprio filtro — clicar acende, clicar de novo apaga. O cartão
+    de "em aberto" nunca desabilita, porque é ele que zera o filtro. */
+ const D=TEXTOS.todoDest;
+ const destaques=[["",base.length,D.aberto,mostrandoMinhas?D.meus:D.time,""],
+  ["bloqueio",nBloq,D.bloq,D.bloqF,"crit"],
+  ["vencido",nVenc,D.venc,D.vencF,"warn"],
+  ["semPrazo",nSem,D.sem,D.semF,"neutro"]];
+ h+='<div class="tdest">'+destaques.map(([k,n,l,f,cls])=>{
+  const on=state.todoFiltro===k;
+  return '<button data-todofiltro="'+k+'" class="tdc'+(cls?" "+cls:"")+(on?" on":"")+'"'+
+   ' aria-pressed="'+(on?"true":"false")+'"'+((n||!k)?"":" disabled")+'>'+
+   '<span class="tdn">'+n+'</span>'+
+   '<span class="tdl">'+esc(l)+"</span>"+
+   '<span class="tdf">'+esc(f)+"</span></button>";
+ }).join("")+"</div>";
 
  const filtrados=state.todoFiltro
   ?base.filter(x=>state.todoFiltro==="vencido"?(x.estado==="vencido"||x.estado==="hoje")
