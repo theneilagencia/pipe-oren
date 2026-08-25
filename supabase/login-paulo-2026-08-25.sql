@@ -53,6 +53,8 @@ declare
   n        integer;
   sch      text;
   tem_pid  boolean;
+  v_pnome  text;
+  v_deals  integer;
 begin
   -- O teste é pelo formato <...>, não pelo texto do lugar-tenente: quem preenche
   -- com "substituir tudo" trocaria os dois lados e o guarda dispararia à toa.
@@ -126,10 +128,24 @@ begin
 
   -- 4. O perfil, que é o que o painel lê depois do login. Sem esta linha o
   --    login passa e a tela diz "sua conta entrou, mas não tem perfil".
-  if exists (select 1 from public.perfil where id = v_id) then
-    update public.perfil set nome = v_nome, papel = 'editor', senha_provisoria = true where id = v_id;
+  --
+  --    nome e papel NÃO são sobrescritos quando a linha já existe: o nome é o
+  --    que liga a pessoa aos negócios, e reescrevê-lo por conta própria é a
+  --    única coisa aqui que poderia desassociar dado. Se o nome divergir, este
+  --    bloco avisa e deixa a decisão para quem sabe.
+  select nome into v_pnome from public.perfil where id = v_id;
+  if v_pnome is null then
+    insert into public.perfil (id, nome, papel, senha_provisoria)
+    values (v_id, v_nome, 'editor', true);
+    raise notice 'Perfil criado como "%" (editor).', v_nome;
   else
-    insert into public.perfil (id, nome, papel, senha_provisoria) values (v_id, v_nome, 'editor', true);
+    update public.perfil
+       set senha_provisoria = true,
+           papel = case when papel in ('editor', 'leitor') then papel else 'editor' end
+     where id = v_id;
+    if v_pnome <> v_nome then
+      raise warning 'O perfil desta conta chama-se "%", e não "%". NÃO mudei o nome: é ele que liga a pessoa aos negócios. Se os negócios estão no nome "%", me diga antes de trocar.', v_pnome, v_nome, v_nome;
+    end if;
   end if;
 
   -- 5. A cópia do e-mail em perfil, quando a coluna existe.
@@ -138,7 +154,15 @@ begin
     execute 'update public.perfil set email = $1 where id = $2' using v_email, v_id;
   end if;
 
-  raise notice 'Conta % pronta: e-mail %, confirmada, senha regravada, identidade e perfil em ordem.', v_id, v_email;
+  -- Nada aqui escreve em public.pipeline, onde vivem os negócios, as
+  --    pendências e o histórico. A contagem abaixo é só leitura, para ficar
+  --    provado na mesma saída que nada foi perdido.
+  select count(*) into v_deals
+    from public.pipeline pl, jsonb_array_elements(pl.dados->'deals') d
+   where pl.id = 1 and d->>'responsavel' = coalesce(v_pnome, v_nome);
+
+  raise notice 'Conta % pronta: e-mail %, confirmada, senha regravada, identidade e perfil em ordem. Negócios no nome "%": % (intactos -- este bloco não escreve em public.pipeline).',
+    v_id, v_email, coalesce(v_pnome, v_nome), v_deals;
 end $$;
 
 -- ===================================================== conferência do reparo
