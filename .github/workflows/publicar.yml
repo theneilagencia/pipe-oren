@@ -33,24 +33,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # O mesmo script que o Vercel roda quando o deploy vem do Git. Um lugar só
+      # monta o site: antes esta lógica vivia aqui e lá, e duas cópias da mesma
+      # regra é como o selo de um destino acaba diferente do outro.
       - name: Montar a pasta que vai para o ar
         run: |
           set -e
-          mkdir -p site/admin
-          cp painel-oren.html site/index.html
-          cp admin-oren.html  site/admin/index.html
+          sh vercel-build.sh
           # Sem isto o Pages passa o conteúdo pelo Jekyll e ignora o que começa com _
           touch site/.nojekyll
-          # Mesmo selo de versão do publicar.sh, para os dois endereços dizerem
-          # o que está no ar.
-          SELO="$(git rev-parse --short HEAD) · $(date -u +%d/%m/%Y\ %H:%M) UTC"
-          for F in site/index.html site/admin/index.html; do
-            sed -i "s|const VERSAO=\"local\"|const VERSAO=\"$SELO\"|" "$F"
-            grep -q "const VERSAO=\"$SELO\"" "$F"
-          done
-          echo "Selo desta publicação: $SELO"
-          test -s site/index.html
-          test -s site/admin/index.html
 
       - name: Conferir que o painel está inteiro
         run: |
