@@ -1,0 +1,161 @@
+-- Diagnóstico e reparo do acesso do Paulo (paulo.lopes@orencorp.com).
+-- 25/08/2026
+--
+-- Rode a PARTE 1 e me mande o resultado. Se quiser resolver direto, a PARTE 2
+-- conserta as seis causas possíveis de uma vez -- ela é um comando só, atômico,
+-- e não toca em nada além da conta do Paulo.
+--
+-- ATENÇÃO: a PARTE 2 pede a senha provisória na primeira linha. Este arquivo
+-- fica num repositório público, então a senha NÃO mora aqui: troque
+-- <SENHA-PROVISORIA> antes de rodar. O bloco se recusa a rodar sem isso.
+
+-- =========================================================== PARTE 1 · olhar
+-- Tudo que decide se um login passa ou não, numa linha por conta. Traz a conta
+-- pelo e-mail novo E o perfil chamado Paulo, para o caso de serem contas
+-- diferentes -- que é uma das causas.
+select u.id,
+       u.email,
+       u.aud,
+       u.role,
+       u.email_confirmed_at is not null                          as confirmado,
+       coalesce(u.encrypted_password, '') <> ''                   as tem_senha,
+       left(coalesce(u.encrypted_password, ''), 4)                as hash,
+       u.banned_until,
+       u.deleted_at,
+       coalesce(u.email_change, '')                               as troca_pendente,
+       (select count(*) from auth.identities i where i.user_id = u.id)          as identidades,
+       (select i.identity_data->>'email' from auth.identities i
+         where i.user_id = u.id and i.provider = 'email')         as email_na_identidade,
+       p.nome, p.papel, p.senha_provisoria,
+       u.last_sign_in_at
+  from auth.users u
+  left join public.perfil p on p.id = u.id
+ where lower(u.email) = lower('paulo.lopes@orencorp.com')
+    or p.nome = 'Paulo';
+
+-- O que cada coluna acusa:
+--   nome vazio ................. login passa e o painel diz "sem perfil cadastrado"
+--   confirmado = false ......... o Supabase responde "Email not confirmed"
+--   tem_senha = false .......... a senha provisória não chegou nesta conta
+--   hash <> '$2a$' ou '$2b$' ... hash gravado em formato que o GoTrue não lê
+--   aud/role vazios ............ conta criada por INSERT direto; login recusa
+--   identidades = 0 ............ falta auth.identities; alguns fluxos recusam
+--   email_na_identidade antigo . troca de e-mail feita só em auth.users
+--   duas linhas ................ há duas contas, e o perfil está na errada
+
+-- ========================================================= PARTE 2 · reparo
+do $$
+declare
+  v_email  text := 'paulo.lopes@orencorp.com';
+  v_senha  text := '<SENHA-PROVISORIA>';
+  v_nome   text := 'Paulo';
+  v_id     uuid;
+  n        integer;
+  sch      text;
+  tem_pid  boolean;
+begin
+  -- O teste é pelo formato <...>, não pelo texto do lugar-tenente: quem preenche
+  -- com "substituir tudo" trocaria os dois lados e o guarda dispararia à toa.
+  if v_senha like '<%>' then
+    raise exception 'Preencha a senha provisória na primeira linha do bloco antes de rodar. Nada foi alterado.';
+  end if;
+  if length(v_senha) < 8 then
+    raise exception 'Senha provisória muito curta: o Supabase exige 6 e o painel pede 8. Nada foi alterado.';
+  end if;
+
+  -- A conta: pelo e-mail novo, ou pelo perfil chamado Paulo. Uma, e uma só.
+  select count(distinct u.id) into n
+    from auth.users u left join public.perfil p on p.id = u.id
+   where lower(u.email) = lower(v_email) or p.nome = v_nome;
+  if n <> 1 then
+    raise exception 'Esperava 1 conta (e-mail % ou perfil "%"), encontrei %. Rode a PARTE 1 e resolva a duplicidade primeiro. Nada foi alterado.', v_email, v_nome, n;
+  end if;
+  select distinct u.id into v_id
+    from auth.users u left join public.perfil p on p.id = u.id
+   where lower(u.email) = lower(v_email) or p.nome = v_nome;
+
+  -- Em que schema mora o pgcrypto deste projeto.
+  select n2.nspname into sch
+    from pg_proc pr join pg_namespace n2 on n2.oid = pr.pronamespace
+   where pr.proname = 'crypt' limit 1;
+  if sch is null then
+    raise exception 'pgcrypto não está instalado (função crypt ausente). Nada foi alterado.';
+  end if;
+
+  -- 1. E-mail, confirmação, e o que trava login: aud, role, banimento, exclusão.
+  --    A troca administrativa não deixa token de email_change pendente.
+  update auth.users
+     set email = v_email,
+         email_confirmed_at = coalesce(email_confirmed_at, now()),
+         aud  = coalesce(nullif(aud, ''),  'authenticated'),
+         role = coalesce(nullif(role, ''), 'authenticated'),
+         banned_until = null,
+         deleted_at = null,
+         email_change = '',
+         email_change_token_new = '',
+         email_change_token_current = '',
+         updated_at = now()
+   where id = v_id;
+
+  -- 2. A senha, em bcrypt, que é o formato que o GoTrue lê.
+  execute format(
+    'update auth.users set encrypted_password = %I.crypt($1, %I.gen_salt(''bf'')), updated_at = now() where id = $2',
+    sch, sch) using v_senha, v_id;
+
+  -- 3. A identidade do provedor e-mail: cria se faltar, sincroniza se existir.
+  select exists (select 1 from information_schema.columns
+    where table_schema='auth' and table_name='identities' and column_name='provider_id')
+    into tem_pid;
+
+  if exists (select 1 from auth.identities where user_id = v_id and provider = 'email') then
+    update auth.identities
+       set identity_data = jsonb_set(
+             jsonb_set(identity_data, '{email}', to_jsonb(v_email), true),
+             '{sub}', to_jsonb(v_id::text), true),
+           updated_at = now()
+     where user_id = v_id and provider = 'email';
+  elsif tem_pid then
+    insert into auth.identities (user_id, provider, provider_id, identity_data, created_at, updated_at)
+    values (v_id, 'email', v_id::text,
+            jsonb_build_object('sub', v_id::text, 'email', v_email, 'email_verified', true), now(), now());
+  else
+    insert into auth.identities (user_id, provider, identity_data, created_at, updated_at)
+    values (v_id, 'email',
+            jsonb_build_object('sub', v_id::text, 'email', v_email, 'email_verified', true), now(), now());
+  end if;
+
+  -- 4. O perfil, que é o que o painel lê depois do login. Sem esta linha o
+  --    login passa e a tela diz "sua conta entrou, mas não tem perfil".
+  if exists (select 1 from public.perfil where id = v_id) then
+    update public.perfil set nome = v_nome, papel = 'editor', senha_provisoria = true where id = v_id;
+  else
+    insert into public.perfil (id, nome, papel, senha_provisoria) values (v_id, v_nome, 'editor', true);
+  end if;
+
+  -- 5. A cópia do e-mail em perfil, quando a coluna existe.
+  if exists (select 1 from information_schema.columns
+    where table_schema='public' and table_name='perfil' and column_name='email') then
+    execute 'update public.perfil set email = $1 where id = $2' using v_email, v_id;
+  end if;
+
+  raise notice 'Conta % pronta: e-mail %, confirmada, senha regravada, identidade e perfil em ordem.', v_id, v_email;
+end $$;
+
+-- ===================================================== conferência do reparo
+select u.id, u.email, u.aud, u.role,
+       u.email_confirmed_at is not null            as confirmado,
+       left(u.encrypted_password, 4)               as hash,
+       (select i.identity_data->>'email' from auth.identities i
+         where i.user_id = u.id and i.provider='email') as email_na_identidade,
+       p.nome, p.papel, p.senha_provisoria
+  from auth.users u join public.perfil p on p.id = u.id
+ where p.nome = 'Paulo';
+
+-- E o pipeline, intocado.
+select versao,
+       jsonb_array_length(dados->'deals')     as negocios,
+       jsonb_array_length(dados->'customers') as clientes,
+       jsonb_array_length(dados->'partners')  as parceiros,
+       (select count(*) from jsonb_array_elements(dados->'deals') d
+         where d->>'responsavel' = 'Paulo')   as negocios_do_paulo
+  from public.pipeline where id = 1;
