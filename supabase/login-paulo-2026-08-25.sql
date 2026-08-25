@@ -22,6 +22,8 @@ select u.id,
        left(coalesce(u.encrypted_password, ''), 4)                as hash,
        u.banned_until,
        u.deleted_at,
+       to_jsonb(u) ->> 'is_sso_user'                               as sso,
+       to_jsonb(u) ->> 'is_anonymous'                              as anonima,
        coalesce(u.email_change, '')                               as troca_pendente,
        (select count(*) from auth.identities i where i.user_id = u.id)          as identidades,
        (select i.identity_data->>'email' from auth.identities i
@@ -39,6 +41,8 @@ select u.id,
 --   tem_senha = false .......... a senha provisória não chegou nesta conta
 --   hash <> '$2a$' ou '$2b$' ... hash gravado em formato que o GoTrue não lê
 --   aud/role vazios ............ conta criada por INSERT direto; login recusa
+--   sso = true ................. GoTrue recusa senha nesta conta
+--   anonima = true ............. idem
 --   identidades = 0 ............ falta auth.identities; alguns fluxos recusam
 --   email_na_identidade antigo . troca de e-mail feita só em auth.users
 --   duas linhas ................ há duas contas, e o perfil está na errada
@@ -98,6 +102,19 @@ begin
          email_change_token_current = '',
          updated_at = now()
    where id = v_id;
+
+  -- 1b. Duas bandeiras que fazem o GoTrue recusar senha sem nem olhar o hash,
+  --     e que respondem exatamente "Invalid login credentials": conta marcada
+  --     como de SSO, e conta anônima. As colunas não existem em projeto antigo,
+  --     então cada uma só é tocada se existir.
+  if exists (select 1 from information_schema.columns
+    where table_schema='auth' and table_name='users' and column_name='is_sso_user') then
+    execute 'update auth.users set is_sso_user = false where id = $1 and is_sso_user is distinct from false' using v_id;
+  end if;
+  if exists (select 1 from information_schema.columns
+    where table_schema='auth' and table_name='users' and column_name='is_anonymous') then
+    execute 'update auth.users set is_anonymous = false where id = $1 and is_anonymous is distinct from false' using v_id;
+  end if;
 
   -- 2. A senha, em bcrypt, que é o formato que o GoTrue lê.
   execute format(
