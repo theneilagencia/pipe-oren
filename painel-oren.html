@@ -804,7 +804,13 @@ const TEXTOS={
  buscaPh:"Buscar por código, cliente, negócio, próximo passo ou pendência",
  salvo:"Salvo",naoSalvo:"Não salvo",salvando:"Salvando…",semRede:"Sem conexão",
  conflitoAviso:"Outra pessoa salvou antes de você. Recarreguei os dados do servidor.",
- entrando:"Entrando…",erroLogin:"E-mail ou senha inválidos.",
+ entrando:"Entrando…",
+ erroLogin:"E-mail ou senha inválidos. Se a conta é nova, confira se a senha é exatamente a que foi definida e se tem 8 caracteres ou mais.",
+ erroNaoConfirmado:"A conta existe, mas o e-mail não foi confirmado. Quem administra confirma em /admin, ou no Supabase marcando Auto Confirm ao criar.",
+ erroBanido:"Esta conta está bloqueada por tentativas seguidas. Espere alguns minutos.",
+ erroSemSenha:"A conta existe mas não tem senha definida. Peça uma senha provisória em /admin.",
+ erroServidor:"O Supabase respondeu com erro no servidor. Não é a sua senha — tente de novo em alguns instantes.",
+ semPerfilLer:c=>"Sua conta entrou, mas não consegui ler o perfil (HTTP "+c+"). É permissão na tabela perfil, não senha.",
  recEnviado:e=>"Enviei um link para "+e+". Ele vale por uma hora e serve uma vez só. Se não chegar em alguns minutos, veja o spam.",
  recLimite:"O Supabase limita quantos e-mails envia por hora, e o limite estourou. Espere alguns minutos, ou configure um SMTP próprio no projeto.",
  recFalhou:"Não consegui enviar o e-mail.",
@@ -1150,27 +1156,50 @@ async function sb(caminho,opcoes,jaRenovou){
  if(r.status===401&&!jaRenovou&&await renovarSessao())return sb(caminho,opcoes,true);
  return r;
 }
+/* Três rodadas de "não loga" se passaram porque a tela dizia sempre a mesma
+   frase para causas diferentes. Agora cada resposta do GoTrue vira a frase que
+   corresponde, e o código técnico vai no fim entre parênteses: com ele, um
+   print da tela basta para saber onde mexer. */
+function erroDoLogin(status,e){
+ const t=String(e.error_description||e.msg||e.error||"");
+ const cod=String(e.error_code||e.error||"")||("HTTP "+status);
+ let msg=TEXTOS.erroLogin;
+ /* 5xx não é credencial: dizer "senha inválida" aqui manda a pessoa trocar uma
+    senha que estava certa. */
+ if(status>=500)msg=TEXTOS.erroServidor;
+ else if(/not confirmed/i.test(t))msg=TEXTOS.erroNaoConfirmado;
+ else if(/banned|too many|rate/i.test(t)||status===429)msg=TEXTOS.erroBanido;
+ else if(/password/i.test(t)&&/not set|missing/i.test(t))msg=TEXTOS.erroSemSenha;
+ else if(t&&!/invalid login/i.test(t))msg=t;
+ return msg+" ("+cod+")";
+}
 async function entrar(email,senha){
  const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",
   {method:"POST",headers:cabecalhos(false),body:JSON.stringify({email:email,password:senha})});
  if(!r.ok){
   const e=await r.json().catch(()=>({}));
-  throw new Error(/Invalid login/i.test(e.error_description||e.msg||"")?TEXTOS.erroLogin:(e.msg||e.error_description||TEXTOS.erroLogin));
+  throw new Error(erroDoLogin(r.status,e));
  }
  guardarSessao(await r.json());
  const ok=await carregarPerfil();
- if(!ok)throw new Error(TEXTOS.semPerfil);
+ if(!ok)throw new Error(ERRO_PERFIL||TEXTOS.semPerfil);
  if(state.usuario.senhaProvisoria)return exigirTroca();
  /* carregarEMigrar, não carregarDoServidor: quem entra pelo formulário precisa
     passar pela migração e pelas cargas igual a quem já tinha sessão. Com o
     caminho curto aqui, o dado novo só aparecia no recarregamento seguinte. */
  return carregarEMigrar();
 }
+/* Duas falhas diferentes moravam num "return false" só: pedido recusado (RLS,
+   coluna que não existe, projeto errado) e conta sem linha em perfil. A segunda
+   se resolve em /admin; a primeira, não -- e dizer a mesma coisa nas duas manda
+   quem lê para o lugar errado. */
+let ERRO_PERFIL="";
 async function carregarPerfil(){
+ ERRO_PERFIL="";
  const s=sessaoGuardada();
  if(!s||!s.user)return false;
  const r=await sb("/rest/v1/perfil?select=nome,papel,senha_provisoria&id=eq."+encodeURIComponent(s.user.id),{method:"GET"});
- if(!r.ok)return false;
+ if(!r.ok){ERRO_PERFIL=TEXTOS.semPerfilLer(r.status);return false;}
  const linhas=await r.json();
  if(!linhas.length)return false;
  state.usuario={nome:linhas[0].nome,papel:linhas[0].papel,email:s.user.email,
