@@ -857,6 +857,8 @@ const TEXTOS={
  senhaCurta:"Senha curta. Use 8 caracteres ou mais.",
  senhaSessao:"Sua sessão expirou antes de salvar. Entre de novo e refaça a troca.",
  senhaFalhou:"Não consegui trocar a senha.",
+ marcaFalhou:c=>"Senha trocada. Mas não consegui desligar a marca de senha provisória ("+c+
+  "), então o painel vai pedir a troca de novo no próximo acesso. Quem administra precisa rodar supabase/admin.sql no projeto — é a função senha_trocada que faz isso.",
  erroChave:p=>"O projeto recusou a chave deste painel. Ninguém entra até isto ser resolvido: a chave publicável foi trocada, ou este painel aponta para outro projeto. Ele fala com o projeto "+p+" — compare com Project Settings → API.",
  semPerfilLer:c=>"Sua conta entrou, mas não consegui ler o perfil (HTTP "+c+"). É permissão na tabela perfil, não senha.",
  recEnviado:e=>"Enviei um link para "+e+". Ele vale por uma hora e serve uma vez só. Se não chegar em alguns minutos, veja o spam.",
@@ -2600,9 +2602,19 @@ async function trocarSenha(nova){
 }
 /* Desliga a marca de senha provisoria. E uma funcao no banco, nao um update:
    politica de update aberta no perfil deixaria um leitor virar editor. */
+/* sb() devolve Response: 404 (função inexistente) e 403 (sem grant) NÃO lançam,
+   então o try/catch daqui não pegava nada e a marca continuava ligada no banco em
+   silêncio. Era isto que fazia o painel pedir a troca de senha a cada entrada,
+   mesmo depois de a pessoa trocar. Agora a falha aparece. */
 async function senhaTrocada(){
- try{await sb("/rest/v1/rpc/senha_trocada",{method:"POST",body:"{}"});}catch(e){}
+ let ok=false,cod="sem resposta";
+ try{
+  const r=await sb("/rest/v1/rpc/senha_trocada",{method:"POST",body:"{}"});
+  ok=r.ok;if(!ok)cod="HTTP "+r.status;
+ }catch(e){cod="sem rede";}
  if(state.usuario)state.usuario.senhaProvisoria=false;
+ if(!ok)console.warn("senha_trocada falhou:",cod,"— a marca senha_provisoria continua ligada no banco.");
+ return {ok:ok,cod:cod};
 }
 function exigirTroca(){
  state.trocaObrigatoria=true;
@@ -4932,11 +4944,15 @@ $("#senhaform").addEventListener("submit",async e=>{
  try{
   await trocarSenha($("#snova").value);
   if(state.trocaObrigatoria){
-   await senhaTrocada();
+   const marca=await senhaTrocada();
    state.trocaObrigatoria=false;
    fecharTrocaSenha();
    await carregarEMigrar();
-   toast("Senha definida. Bem-vindo.",true);
+   /* A senha foi trocada de verdade nos dois casos. O que muda é se a marca
+      caiu -- e se não caiu, quem trocou precisa saber por que vai ser
+      perguntado de novo amanhã. */
+   if(marca.ok)toast("Senha definida. Bem-vindo.",true);
+   else toast(TEXTOS.marcaFalhou(marca.cod),true);
   }else{fecharTrocaSenha();toast("Senha alterada.",true);}
  }catch(x){err.textContent=x.message;err.className="erro on";}
  finally{b.disabled=false;b.textContent="Salvar nova senha";}
