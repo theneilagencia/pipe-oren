@@ -809,7 +809,8 @@ const TEXTOS={
  erroNaoConfirmado:"A conta existe, mas o e-mail não foi confirmado. Quem administra confirma em /admin, ou no Supabase marcando Auto Confirm ao criar.",
  erroBanido:"Esta conta está bloqueada por tentativas seguidas. Espere alguns minutos.",
  erroSemSenha:"A conta existe mas não tem senha definida. Peça uma senha provisória em /admin.",
- erroServidor:"O Supabase respondeu com erro no servidor. Não é a sua senha — tente de novo em alguns instantes.",
+ erroServidor:"O Supabase respondeu com erro no servidor, ou o projeto está pausado. Não é a sua senha. Abra o painel do Supabase e veja se o projeto está ativo.",
+ erroChave:"O projeto recusou a chave do painel. Ninguém consegue entrar até isto ser resolvido: a chave publicável foi trocada, ou este painel aponta para outro projeto. Compare com Project Settings → API.",
  semPerfilLer:c=>"Sua conta entrou, mas não consegui ler o perfil (HTTP "+c+"). É permissão na tabela perfil, não senha.",
  recEnviado:e=>"Enviei um link para "+e+". Ele vale por uma hora e serve uma vez só. Se não chegar em alguns minutos, veja o spam.",
  recLimite:"O Supabase limita quantos e-mails envia por hora, e o limite estourou. Espere alguns minutos, ou configure um SMTP próprio no projeto.",
@@ -1161,12 +1162,16 @@ async function sb(caminho,opcoes,jaRenovou){
    corresponde, e o código técnico vai no fim entre parênteses: com ele, um
    print da tela basta para saber onde mexer. */
 function erroDoLogin(status,e){
- const t=String(e.error_description||e.msg||e.error||"");
+ /* e.message entra na lista: é onde o gateway põe "Invalid API key", e sem ele
+    um 401 de chave trocada saía como "senha inválida" -- a mensagem mais
+    enganosa possível quando o time inteiro está fora. */
+ const t=String(e.error_description||e.msg||e.message||e.error||"");
  const cod=String(e.error_code||e.error||"")||("HTTP "+status);
  let msg=TEXTOS.erroLogin;
  /* 5xx não é credencial: dizer "senha inválida" aqui manda a pessoa trocar uma
     senha que estava certa. */
- if(status>=500)msg=TEXTOS.erroServidor;
+ if(status===401||/api key/i.test(t))msg=TEXTOS.erroChave;
+ else if(status>=500||status===503)msg=TEXTOS.erroServidor;
  else if(/not confirmed/i.test(t))msg=TEXTOS.erroNaoConfirmado;
  else if(/banned|too many|rate/i.test(t)||status===429)msg=TEXTOS.erroBanido;
  else if(/password/i.test(t)&&/not set|missing/i.test(t))msg=TEXTOS.erroSemSenha;
