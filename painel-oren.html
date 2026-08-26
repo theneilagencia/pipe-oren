@@ -361,6 +361,17 @@ font-size:14px;font-weight:600;color:var(--tx2);letter-spacing:-.01em}
 border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums}
 .tabs button.on .n{background:var(--deep);color:#fff}
 .tabs button:disabled{opacity:.4}
+/* Próximos passos não é aba: é outro eixo. Fica no mesmo trilho, mas depois de
+   um fio, para não parecer que substitui a escolha de pessoa. */
+.tabs button.tsep{flex:0 0 auto;padding:0 14px;margin-left:5px;position:relative}
+.tabs button.tsep::before{content:"";position:absolute;left:-3px;top:8px;bottom:8px;
+width:1px;background:var(--bd)}
+@media (max-width:640px){
+ .tabs{flex-wrap:wrap;row-gap:3px}
+ .tabs button{flex:1 1 40%}
+ .tabs button.tsep{flex:1 1 100%;margin-left:0}
+ .tabs button.tsep::before{display:none}
+}
 /* A área de destaque: quatro números, o que cada um conta e o que quer dizer.
    Cada cartão é o próprio filtro. O fio de 1px entre eles é o fundo aparecendo
    pelo gap do grid — moldura por cartão viraria caixa dentro de caixa. */
@@ -729,10 +740,13 @@ const TEXTOS={
  app:"Painel comercial",
  nav:{painel:"Painel",todo:"To Do",negocios:"Negócios",contas:"Contas"},
  todoMinhas:"Minhas tarefas",todoTodos:"De todo o time",
+ todoPassos:"Próximos passos",
+ todoPassosDica:"Só o próximo movimento de cada negócio. Toque de novo para ver tudo.",
  /* Quatro números com a palavra que os explica embaixo. A frase corrida que
     havia aqui dizia exatamente o mesmo que as pastilhas logo abaixo dela:
     dois lugares para a mesma informação, e nenhum dos dois filtrava sozinho. */
  todoDest:{aberto:"em aberto",meus:"no seu nome",time:"de todo o time",
+  passos:"próximos passos",
   bloq:"bloqueados",bloqF:"impedem o negócio de andar",
   venc:"atrasados",vencF:"passaram da data",
   sem:"sem data",semF:"não dá para cobrar"},
@@ -900,7 +914,7 @@ const CHAVE="oren.pipeline.v1";
 
 /* ============================ ESTADO ============================ */
 const state={
- data:null,tela:"painel",todoQuem:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
+ data:null,tela:"painel",todoQuem:"",todoTipo:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
  painel:null,secoes:{},dirty:false,undo:null,undoTimer:null,dbTimer:null,
@@ -2744,13 +2758,26 @@ function telaTodo(){
  const meus=eu?todos.filter(x=>x.quem===eu):[];
  if(!state.todoQuem)state.todoQuem=(eu&&meus.length)?"minhas":"todos";
  const mostrandoMinhas=state.todoQuem==="minhas"&&!!eu;
- const base=mostrandoMinhas?meus:todos;
+ const doQuem=mostrandoMinhas?meus:todos;
+ /* Próximos passos é outro eixo: não é "de quem", é "que tipo de tarefa". Por
+    isso é um interruptor ao lado das abas, e não uma terceira aba — ele compõe
+    com a pessoa escolhida, com as pastilhas de estado e com o acordeão, em vez
+    de substituir a escolha anterior. Passo e "definir o próximo passo" contam
+    juntos: o negócio sem passo escrito é o caso mais urgente da lista. */
+ const soPasso=x=>x.tipo==="passo"||x.tipo==="definir";
+ const nPassos=doQuem.filter(soPasso).length;
+ const emPassos=state.todoTipo==="passo";
+ const base=emPassos?doQuem.filter(soPasso):doQuem;
 
  let h='<div class="tabs">'+
   '<button data-todoquem="minhas" class="'+(mostrandoMinhas?"on":"")+'"'+(eu?"":" disabled")+'>'+
    esc(TEXTOS.todoMinhas)+'<span class="n">'+meus.length+"</span></button>"+
   '<button data-todoquem="todos" class="'+(mostrandoMinhas?"":"on")+'">'+
-   esc(TEXTOS.todoTodos)+'<span class="n">'+todos.length+"</span></button></div>";
+   esc(TEXTOS.todoTodos)+'<span class="n">'+todos.length+"</span></button>"+
+  '<button class="tsep'+(emPassos?" on":"")+'" data-todotipo="passo"'+
+   ' aria-pressed="'+(emPassos?"true":"false")+'"'+(nPassos?"":" disabled")+
+   ' title="'+esc(TEXTOS.todoPassosDica)+'">'+
+   esc(TEXTOS.todoPassos)+'<span class="n">'+nPassos+"</span></button></div>";
 
  const nBloq=base.filter(x=>x.estado==="bloqueio").length;
  const nVenc=base.filter(x=>x.estado==="vencido"||x.estado==="hoje").length;
@@ -2761,7 +2788,7 @@ function telaTodo(){
     cartão é o próprio filtro — clicar acende, clicar de novo apaga. O cartão
     de "em aberto" nunca desabilita, porque é ele que zera o filtro. */
  const D=TEXTOS.todoDest;
- const destaques=[["",base.length,D.aberto,mostrandoMinhas?D.meus:D.time,""],
+ const destaques=[["",base.length,emPassos?D.passos:D.aberto,mostrandoMinhas?D.meus:D.time,""],
   ["bloqueio",nBloq,D.bloq,D.bloqF,"crit"],
   ["vencido",nVenc,D.venc,D.vencF,"warn"],
   ["semPrazo",nSem,D.sem,D.semF,"neutro"]];
@@ -4073,6 +4100,12 @@ document.addEventListener("click",e=>{
  if(el=g("[data-vista]")){state.vista=el.dataset.vista;state.perdidos=false;render();return;}
  if(el=g("[data-todoquem]")){
   state.todoQuem=el.dataset.todoquem;state.todoFiltro="";state.todoSel=-1;render();return;}
+ /* Mesmo gesto liga e desliga, como as pastilhas. O filtro de estado zera:
+    os números eram de outro conjunto e ficariam apontando para uma lista
+    vazia sem explicar por quê. */
+ if(el=g("[data-todotipo]")){
+  const v=el.dataset.todotipo;
+  state.todoTipo=state.todoTipo===v?"":v;state.todoFiltro="";state.todoSel=-1;render();return;}
  /* Clicar no cartão aceso apaga o filtro: o mesmo gesto liga e desliga. */
  if(el=g("[data-todofiltro]")){
   const v=el.dataset.todofiltro;
