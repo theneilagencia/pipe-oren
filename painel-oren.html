@@ -348,6 +348,21 @@ font-weight:600;color:var(--tx3)}
 .clinks a{font-size:12px;font-weight:500;color:var(--mid);text-decoration:none}
 .clinks a:hover{color:var(--deep);text-decoration:underline}
 .err{color:var(--neg);font-size:11px;margin-top:4px;display:block}
+/* ================= ENCAMINHAR ================= */
+.encres{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0 4px;font-size:13px;color:var(--tx2)}
+.encres b{font-weight:600;color:var(--tx);font-variant-numeric:proportional-nums}
+.encacs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 18px}
+.encacs .pri{background:var(--deep);color:#fff;border-color:var(--deep)}
+.encacs .pri:hover{background:var(--mid);border-color:var(--mid)}
+.btnl{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;
+border:1px solid var(--bd);border-radius:var(--r);background:var(--surf);
+font-size:13px;font-weight:500;color:var(--tx);text-decoration:none}
+.btnl:hover{border-color:var(--mid);background:var(--alt);color:var(--deep)}
+.enclink{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:8px 10px;
+font-size:12px;background:var(--alt);color:var(--tx2)}
+.encmsg{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;
+font-size:12px;line-height:1.5;background:var(--alt);color:var(--tx2);resize:vertical;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 /* ================= TO DO ================= */
 /* Duas abas grandes: o que é meu, e o que é do time. Nada mais para escolher. */
 .tabs{display:flex;gap:2px;background:var(--alt);border:1px solid var(--bd);border-radius:var(--r2);
@@ -398,19 +413,32 @@ font-variant-numeric:proportional-nums;color:var(--tx)}
 /* Uma superfície por grupo, com o cabeçalho grudando no topo ao rolar. */
 .tgrupo{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);
 overflow:hidden;margin-bottom:12px}
-.tgrupo .th{display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--surf);
-border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:2}
-/* Cabeçalho que abre e fecha: botão de largura inteira, com a seta na frente. */
-.tgrupo .th.ac{width:100%;border-left:0;border-right:0;border-top:0;border-radius:0;
-text-align:left;cursor:pointer;transition:background var(--fast) ease-out}
-.tgrupo .th.ac:hover{background:var(--alt)}
+.tgrupo .th{display:flex;align-items:center;background:var(--surf);
+border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:2;padding-right:8px}
+/* O que abre e fecha ocupa a faixa toda menos o botão de encaminhar. */
+.tgrupo .thb{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:9px;
+padding:10px 14px;background:none;border:0;border-radius:0;text-align:left}
+.tgrupo .thb.ac{cursor:pointer;transition:background var(--fast) ease-out}
+.tgrupo .thb.ac:hover{background:var(--alt)}
+/* Encaminhar por pessoa: discreto, e no celular vira só o verbo. */
+.tgrupo .thenc{flex:0 0 auto;font-size:11px;font-weight:600;padding:5px 9px;min-height:28px;
+border:1px solid transparent;border-radius:999px;color:var(--tx3);background:none}
+.tgrupo .thenc:hover{border-color:var(--bd);color:var(--deep);background:var(--surf)}
 .tgrupo.fechada .th{border-bottom:0}
 .chev{width:14px;height:14px;flex:0 0 auto;color:var(--tx3);display:flex;
 transition:transform var(--fast) ease-out}
 .chev svg{width:14px;height:14px}
 .chev.on{transform:rotate(90deg)}
 /* Abrir e fechar todas: discreto, à direita, encostado na primeira seção. */
-.tacc{display:flex;justify-content:flex-end;margin:-6px 0 8px}
+.tacc{display:flex;align-items:center;gap:6px;margin:-6px 0 8px}
+.tacc .sp{flex:1 1 auto}
+/* "Só de <pessoa>": a pastilha que o link liga, com o × que devolve a lista. */
+.tso{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;
+padding:5px 10px;min-height:30px;border-radius:999px;border:1px solid #cfe0d5;
+background:#eef4f0;color:var(--deep)}
+.tso .x{font-size:14px;line-height:1;opacity:.6}
+.tso:hover{border-color:var(--mid)}
+.tso:hover .x{opacity:1}
 .tacc button{display:inline-flex;align-items:center;gap:6px;background:none;border:0;
 padding:4px 6px;font-size:12px;font-weight:500;color:var(--tx3);border-radius:var(--r)}
 .tacc button:hover{background:var(--alt);color:var(--tx)}
@@ -587,7 +615,7 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
  .seg button{min-height:28px;padding:5px 12px}
  .chip{border-radius:999px;flex-wrap:nowrap}
  .ti .rt{flex:0 0 116px}
- .tgrupo .th{padding:11px 16px}
+ .tgrupo .thb{padding:11px 16px}
  .tvirada{padding:8px 16px}
  .ti>.ic{flex:0 0 38px}
  .chip>.cl{display:inline}
@@ -632,7 +660,7 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
  .ti .rt{flex:0 0 84px}
  .ti .qd{white-space:normal;line-height:1.3}
  .tgrupo .th .td{display:none}
- .tgrupo .th{flex-wrap:wrap;row-gap:7px}
+ .tgrupo .thb{flex-wrap:wrap;row-gap:7px}
  .tgrupo .th .tn{flex:1 1 auto}
  .tgrupo .th .tp{flex:1 0 100%}
 }
@@ -741,11 +769,21 @@ const TEXTOS={
  nav:{painel:"Painel",todo:"To Do",negocios:"Negócios",contas:"Contas"},
  todoMinhas:"Minhas tarefas",todoTodos:"De todo o time",
  todoPassos:"Próximos passos",
+ encT:"Encaminhar tarefas",encBtn:"Encaminhar",
+ encPara:"Encaminhar o quê",encTime:"Tudo, de todo o time",
+ encLink:"Link para abrir a lista",
+ encLinkNota:"Quem abrir precisa entrar com a conta dele. O link não mostra dado a quem não tem acesso — ele só leva à lista certa.",
+ encPrevia:"Mensagem",
+ encCopiarLink:"Copiar link",encCopiarMsg:"Copiar mensagem",
+ encWhats:"Abrir no WhatsApp",encMail:"Abrir no e-mail",
+ encCopiado:"Copiado.",encNaoCopiou:"Não consegui copiar. Selecione o texto e copie na mão.",
+ encAssunto:q=>"To Do — "+q,
+ soDe:n=>"Só de "+n,
  todoPassosDica:"Só o próximo movimento de cada negócio. Toque de novo para ver tudo.",
  /* Quatro números com a palavra que os explica embaixo. A frase corrida que
     havia aqui dizia exatamente o mesmo que as pastilhas logo abaixo dela:
     dois lugares para a mesma informação, e nenhum dos dois filtrava sozinho. */
- todoDest:{aberto:"em aberto",meus:"no seu nome",time:"de todo o time",
+ todoDest:{aberto:"em aberto",meus:"no seu nome",time:"de todo o time",de:n=>"de "+n,
   passos:"próximos passos",
   bloq:"bloqueados",bloqF:"impedem o negócio de andar",
   venc:"atrasados",vencF:"passaram da data",
@@ -914,7 +952,7 @@ const CHAVE="oren.pipeline.v1";
 
 /* ============================ ESTADO ============================ */
 const state={
- data:null,tela:"painel",todoQuem:"",todoTipo:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
+ data:null,tela:"painel",todoQuem:"",todoTipo:"",todoSo:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
  painel:null,secoes:{},dirty:false,undo:null,undoTimer:null,dbTimer:null,
@@ -2750,6 +2788,121 @@ function ordenarTodo(itens){
   return 0;
  });
 }
+/* ===================== ENCAMINHAR O TO DO ======================
+   O link leva à lista certa; ele não carrega dado nenhum. Quem abrir entra com
+   a conta dele e o banco decide o que pode ver — não existe atalho de acesso
+   aqui, e não deveria: seria um vazamento com aparência de comodidade. */
+const ENC_TETO=40;
+function baseLink(){return location.href.split("#")[0].split("?")[0];}
+function linkTodo(quem){
+ const p=[];
+ if(quem)p.push("quem="+encodeURIComponent(quem));
+ if(state.todoTipo==="passo")p.push("tipo=passo");
+ return baseLink()+"#todo"+(p.length?"?"+p.join("&"):"");
+}
+function itensDe(quem){
+ const todos=itensTodo();
+ return ordenarTodo(quem?todos.filter(x=>x.quem===quem):todos);
+}
+/* Uma linha por item, em texto puro: é o que se cola numa conversa. O texto
+   diz o estado por extenso, porque em WhatsApp não há cor nem ícone. */
+function textoTodo(quem){
+ const itens=itensDe(quem),h=hoje();
+ const n=itens.length;
+ const bl=itens.filter(x=>x.estado==="bloqueio").length;
+ const vc=itens.filter(x=>x.estado==="vencido"||x.estado==="hoje").length;
+ const sd=itens.filter(x=>!x.prazo).length;
+ const L=["To Do · "+(quem||TEXTOS.encTime)];
+ L.push(n+(n===1?" item":" itens")+" em aberto"+
+  (bl?" · "+bl+" bloqueado"+(bl===1?"":"s"):"")+
+  (vc?" · "+vc+" atrasado"+(vc===1?"":"s"):"")+
+  (sd?" · "+sd+" sem data":""));
+ L.push("");
+ itens.slice(0,ENC_TETO).forEach(x=>{
+  const quando=x.prazo
+   ?dt(x.prazo)+(x.atraso>0?" (vencido há "+x.atraso+(x.atraso===1?" dia":" dias")+")"
+     :x.atraso===0?" (hoje)":"")
+   :"sem data";
+  L.push("- ["+TODO_ESTADOS[x.estado].lbl.toLowerCase()+"] "+x.texto);
+  L.push("  "+nomeNegocio(x.d)+" · "+TEXTOS.frentesLbl[x.d.frente]+" · "+quando+
+   (quem?"":" · "+(x.quem||TEXTOS.semQuem)));
+ });
+ if(itens.length>ENC_TETO)L.push("… e mais "+(itens.length-ENC_TETO)+" na lista completa.");
+ L.push("");
+ L.push("Lista completa: "+linkTodo(quem));
+ return L.join("\n");
+}
+function painelEnc(quem){
+ const todos=itensTodo();
+ const nomes=[];
+ todos.forEach(x=>{if(x.quem&&nomes.indexOf(x.quem)<0)nomes.push(x.quem);});
+ nomes.sort((a,b)=>a.localeCompare(b,"pt-BR"));
+ const itens=itensDe(quem);
+ const bl=itens.filter(x=>x.estado==="bloqueio").length;
+ const vc=itens.filter(x=>x.estado==="vencido"||x.estado==="hoje").length;
+ const sd=itens.filter(x=>!x.prazo).length;
+ const link=linkTodo(quem),msg=textoTodo(quem);
+ const ops={"":TEXTOS.encTime+" · "+todos.length};
+ nomes.forEach(n=>{ops[n]=n+" · "+todos.filter(x=>x.quem===n).length;});
+ let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
+  '<div class="lbl">'+esc(TEXTOS.encT)+"</div>"+
+  '<div style="font-size:20px;margin-top:6px">'+esc(quem||TEXTOS.encTime)+"</div>"+
+  '<div style="font-size:13px;margin-top:4px;opacity:.85">'+itens.length+
+   (itens.length===1?" item":" itens")+" em aberto</div></div><div class=\"pb\">";
+ h+=fld(TEXTOS.encPara,'<select data-encquem>'+Object.keys(ops).map(k=>
+  '<option value="'+esc(k)+'"'+(k===quem?" selected":"")+">"+esc(ops[k])+"</option>").join("")+"</select>");
+ h+='<div class="encres">'+
+  '<span><b>'+bl+"</b> bloqueados</span><span><b>"+vc+"</b> atrasados</span>"+
+  "<span><b>"+sd+"</b> sem data</span></div>";
+ h+='<div class="encacs">'+
+  '<button class="pri" data-enccopia="msg">'+esc(TEXTOS.encCopiarMsg)+"</button>"+
+  '<button data-enccopia="link">'+esc(TEXTOS.encCopiarLink)+"</button>"+
+  '<a class="btnl" href="https://wa.me/?text='+encodeURIComponent(msg)+
+   '" target="_blank" rel="noopener">'+esc(TEXTOS.encWhats)+"</a>"+
+  '<a class="btnl" href="mailto:?subject='+encodeURIComponent(TEXTOS.encAssunto(quem||TEXTOS.encTime))+
+   "&body="+encodeURIComponent(msg)+'">'+esc(TEXTOS.encMail)+"</a></div>";
+ h+=fld(TEXTOS.encLink,'<input class="enclink" readonly value="'+esc(link)+'">'+
+  '<div class="soft" style="font-size:11px;margin-top:6px">'+esc(TEXTOS.encLinkNota)+"</div>");
+ h+='<div class="lbl" style="margin:18px 0 6px">'+esc(TEXTOS.encPrevia)+"</div>"+
+  '<textarea class="encmsg" readonly rows="14">'+esc(msg)+"</textarea>";
+ return h+"</div>";
+}
+async function copiar(texto){
+ try{
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(texto);}
+  else{
+   /* Sem clipboard API — file:// e navegador antigo — o caminho da textarea
+      escondida ainda funciona. */
+   const t=document.createElement("textarea");
+   t.value=texto;t.style.position="fixed";t.style.opacity="0";
+   document.body.appendChild(t);t.select();
+   const ok=document.execCommand("copy");document.body.removeChild(t);
+   if(!ok)throw new Error("execCommand");
+  }
+  toast(TEXTOS.encCopiado,true);
+ }catch(e){toast(TEXTOS.encNaoCopiou);}
+}
+/* O link é lido uma vez, na primeira renderização com dado em mão: assim vale
+   para quem já tinha sessão e para quem acabou de entrar pelo formulário. */
+let LINK_TODO=(function(){
+ const h=location.hash||"";
+ if(h.indexOf("#todo")!==0)return null;
+ const q=h.indexOf("?");
+ const p=new URLSearchParams(q>=0?h.slice(q+1):"");
+ return {quem:p.get("quem")||"",tipo:p.get("tipo")||""};
+})();
+function aplicarLinkTodo(){
+ if(!LINK_TODO||!state.data)return;
+ const l=LINK_TODO;LINK_TODO=null;
+ state.tela="todo";
+ state.todoQuem="todos";
+ state.todoSo=l.quem||"";
+ state.todoTipo=l.tipo==="passo"?"passo":"";
+ state.todoFiltro="";state.todoSel=-1;
+ /* Tira o endereço da barra depois de aplicar: sem isso, recarregar a página
+    no meio do trabalho jogaria a pessoa de volta para a lista do link. */
+ try{history.replaceState(null,"",baseLink());}catch(e){}
+}
 function telaTodo(){
  const todos=itensTodo();
  /* Quem está logado vem primeiro, sempre. A tela abre respondendo "o que eu
@@ -2765,9 +2918,14 @@ function telaTodo(){
     de substituir a escolha anterior. Passo e "definir o próximo passo" contam
     juntos: o negócio sem passo escrito é o caso mais urgente da lista. */
  const soPasso=x=>x.tipo==="passo"||x.tipo==="definir";
- const nPassos=doQuem.filter(soPasso).length;
+ /* "Só de <pessoa>" existe para o link de encaminhamento cair na lista certa.
+    Fica visível numa pastilha com saída: quem recebe tem de entender por que a
+    lista está curta, e poder ver o resto. */
+ if(state.todoSo&&!doQuem.some(x=>x.quem===state.todoSo))state.todoSo="";
+ const doSo=state.todoSo?doQuem.filter(x=>x.quem===state.todoSo):doQuem;
+ const nPassos=doSo.filter(soPasso).length;
  const emPassos=state.todoTipo==="passo";
- const base=emPassos?doQuem.filter(soPasso):doQuem;
+ const base=emPassos?doSo.filter(soPasso):doSo;
 
  let h='<div class="tabs">'+
   '<button data-todoquem="minhas" class="'+(mostrandoMinhas?"on":"")+'"'+(eu?"":" disabled")+'>'+
@@ -2788,7 +2946,10 @@ function telaTodo(){
     cartão é o próprio filtro — clicar acende, clicar de novo apaga. O cartão
     de "em aberto" nunca desabilita, porque é ele que zera o filtro. */
  const D=TEXTOS.todoDest;
- const destaques=[["",base.length,emPassos?D.passos:D.aberto,mostrandoMinhas?D.meus:D.time,""],
+ /* Com "só de <pessoa>" ligado, o rodapé tem de dizer de quem é o número:
+    "de todo o time" ali seria falso. */
+ const deQuem=state.todoSo?D.de(state.todoSo):(mostrandoMinhas?D.meus:D.time);
+ const destaques=[["",base.length,emPassos?D.passos:D.aberto,deQuem,""],
   ["bloqueio",nBloq,D.bloq,D.bloqF,"crit"],
   ["vencido",nVenc,D.venc,D.vencF,"warn"],
   ["semPrazo",nSem,D.sem,D.semF,"neutro"]];
@@ -2856,13 +3017,18 @@ function secaoAberta(k,padrao){
 /* Abrir e fechar todas de uma vez. Fica acima da primeira seção, à direita,
    e só aparece quando há mais de uma pessoa e nenhum filtro ligado. */
 function barraAcordeao(){
- if(state.todoFiltro||TODO_SECOES.length<2)return "";
- const padrao=secaoPadrao(TODO_SECOES);
- const fechadas=TODO_SECOES.filter(k=>!secaoAberta(k,padrao)).length;
- const abrir=fechadas>0;
- return '<div class="tacc"><button data-todoacc="'+(abrir?"abrir":"fechar")+'">'+
-  '<span class="chev'+(abrir?"":" on")+'">'+ICO_CHEV+"</span>"+
-  esc(abrir?TEXTOS.todoExpandir:TEXTOS.todoRecolher)+"</button></div>";
+ let esq="";
+ if(state.todoSo)esq='<button class="tso" data-todoso="">'+esc(TEXTOS.soDe(state.todoSo))+
+  '<span class="x">×</span></button>';
+ let dir='<button data-todoenc="'+esc(state.todoSo)+'">'+esc(TEXTOS.encBtn)+"</button>";
+ if(!state.todoFiltro&&TODO_SECOES.length>=2){
+  const padrao=secaoPadrao(TODO_SECOES);
+  const abrir=TODO_SECOES.filter(k=>!secaoAberta(k,padrao)).length>0;
+  dir='<button data-todoacc="'+(abrir?"abrir":"fechar")+'">'+
+   '<span class="chev'+(abrir?"":" on")+'">'+ICO_CHEV+"</span>"+
+   esc(abrir?TEXTOS.todoExpandir:TEXTOS.todoRecolher)+"</button>"+dir;
+ }
+ return '<div class="tacc">'+esq+'<span class="sp"></span>'+dir+"</div>";
 }
 function corpoTodo(itens){
  const chave=x=>(x.quem||TEXTOS.semQuem);
@@ -2897,11 +3063,16 @@ function corpoTodo(itens){
      (vc?'<span class="tw">'+vc+(vc===1?" atrasado":" atrasados")+"</span>":"")+
     "</span>":"")+
    (sd?'<span class="td">'+sd+" sem data</span>":"");
-  const cab=semAcordeao
-   ?'<header class="th">'+miolo+"</header>"
-   :'<button class="th ac" data-todosec="'+esc(k)+'" aria-expanded="'+(aberta?"true":"false")+
+  /* Botão dentro de botão é HTML inválido, então o cabeçalho é uma faixa com
+     dois botões: o que abre e fecha, e o que encaminha aquela pessoa. */
+  const enc='<button class="thenc" data-todoenc="'+esc(k===TEXTOS.semQuem?"":k)+
+   '" title="'+esc(TEXTOS.encBtn+": "+k)+'">'+esc(TEXTOS.encBtn)+"</button>";
+  const cab='<header class="th">'+(semAcordeao
+   ?'<span class="thb">'+miolo+"</span>"
+   :'<button class="thb ac" data-todosec="'+esc(k)+'" aria-expanded="'+(aberta?"true":"false")+
     '" title="'+esc(aberta?TEXTOS.todoFecharSec:TEXTOS.todoAbrirSec(g.length))+'">'+
-    '<span class="chev'+(aberta?" on":"")+'">'+ICO_CHEV+"</span>"+miolo+"</button>";
+    '<span class="chev'+(aberta?" on":"")+'">'+ICO_CHEV+"</span>"+miolo+"</button>")+
+   enc+"</header>";
   return '<section class="tgrupo'+(aberta?"":" fechada")+'">'+cab+
    (aberta?linhasTodo(g,true):"")+"</section>";
  }).join("");
@@ -3318,6 +3489,7 @@ function fecharHint(devolveFoco){
 
 /* ============================ TELAS ============================ */
 function render(){
+ aplicarLinkTodo();
  fecharHint(false);
  aplicarResponsaveis(state.data);   /* lista do Admin entra antes de qualquer select */
  renderTopo();renderNav();renderMenu();renderPubSeg();renderChips();
@@ -3717,6 +3889,7 @@ function renderPainelLateral(){
  el.innerHTML=p.tipo==="deal"?painelDeal(p.id)
   :p.tipo==="novo"?painelNovo()
   :p.tipo==="kpi"?painelKpi(p.id)
+  :p.tipo==="enc"?painelEnc(p.quem||"")
   :painelConta(p.kind,p.id);
  centralizarTrilha(el);
 }
@@ -4103,6 +4276,13 @@ document.addEventListener("click",e=>{
  /* Mesmo gesto liga e desliga, como as pastilhas. O filtro de estado zera:
     os números eram de outro conjunto e ficariam apontando para uma lista
     vazia sem explicar por quê. */
+ if(el=g("[data-todoenc]")){
+  abrirPainel({tipo:"enc",quem:el.dataset.todoenc||""});return;}
+ if(el=g("[data-todoso]")){
+  state.todoSo=el.dataset.todoso||"";state.todoFiltro="";state.todoSel=-1;render();return;}
+ if(el=g("[data-enccopia]")){
+  const q=state.painel&&state.painel.tipo==="enc"?(state.painel.quem||""):"";
+  copiar(el.dataset.enccopia==="link"?linkTodo(q):textoTodo(q));return;}
  if(el=g("[data-todotipo]")){
   const v=el.dataset.todotipo;
   state.todoTipo=state.todoTipo===v?"":v;state.todoFiltro="";state.todoSel=-1;render();return;}
@@ -4197,6 +4377,11 @@ document.addEventListener("click",e=>{
 document.addEventListener("change",e=>{
  const t=e.target;
  if(t.matches("[data-filtro]")){state.filtros[t.dataset.filtro]=t.value;render();return;}
+ /* Trocar de pessoa no painel de encaminhar não muda a tela de quem envia:
+    redesenha só o painel. */
+ if(t.matches("[data-encquem]")){
+  if(state.painel&&state.painel.tipo==="enc"){state.painel.quem=t.value;renderPainelLateral();}
+  return;}
  if(t.matches("[data-etapa]")){
   if(t.value==="perdido"&&!pedirMotivo(t.dataset.etapa)){render();return;}
   const err=moverEtapa(t.dataset.etapa,t.value);
