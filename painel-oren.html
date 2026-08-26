@@ -4559,35 +4559,43 @@ function irPara(tela){
 const digitando=el=>!!el&&(el.tagName==="INPUT"||el.tagName==="TEXTAREA"||el.tagName==="SELECT"||el.isContentEditable);
 let teclaG=0;
 document.addEventListener("keydown",e=>{
+ /* e.key vem indefinido em evento de teclado sintético -- extensão de navegador
+    e gerenciador de senha disparam isso, e o MetaMask instalado no navegador de
+    quem relatou dispara em toda página. Sem esta linha, a PRIMEIRA comparação do
+    handler estourava um TypeError, e com ela morriam todos os atalhos: ⌘K,
+    Escape, Enter na paleta, j e k no To Do. Normalizar uma vez, no topo, é o
+    único lugar em que isto não volta. */
+ const tecla=typeof e.key==="string"?e.key:"";
+ const k=tecla.toLowerCase();
  /* A paleta responde primeiro: ela é modal. */
- if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();
+ if((e.ctrlKey||e.metaKey)&&k==="k"){e.preventDefault();
   if(CMD.aberta)fecharCmd();else abrirCmd();return;}
  if(CMD.aberta){
-  if(e.key==="Escape"){e.preventDefault();fecharCmd();return;}
-  if(CMD.modo==="atalhos"){if(e.key==="Enter"){e.preventDefault();fecharCmd();}return;}
-  if(e.key==="ArrowDown"){e.preventDefault();CMD.sel++;renderCmd();return;}
-  if(e.key==="ArrowUp"){e.preventDefault();CMD.sel--;renderCmd();return;}
-  if(e.key==="Enter"){e.preventDefault();rodarCmd(CMD.sel);return;}
+  if(tecla==="Escape"){e.preventDefault();fecharCmd();return;}
+  if(CMD.modo==="atalhos"){if(tecla==="Enter"){e.preventDefault();fecharCmd();}return;}
+  if(tecla==="ArrowDown"){e.preventDefault();CMD.sel++;renderCmd();return;}
+  if(tecla==="ArrowUp"){e.preventDefault();CMD.sel--;renderCmd();return;}
+  if(tecla==="Enter"){e.preventDefault();rodarCmd(CMD.sel);return;}
   return;
  }
- if(e.key==="Escape"&&state.hintBtn){e.preventDefault();fecharHint(true);return;}
+ if(!tecla)return;
+ if(tecla==="Escape"&&state.hintBtn){e.preventDefault();fecharHint(true);return;}
  const cart=document.activeElement&&document.activeElement.closest?document.activeElement.closest("[data-kpi]"):null;
- if(cart&&(e.key==="Enter"||e.key===" ")){e.preventDefault();
+ if(cart&&(tecla==="Enter"||tecla===" ")){e.preventDefault();
   abrirPainel({tipo:"kpi",id:cart.dataset.kpi});return;}
  if(!digitando(document.activeElement)&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
-  const k=e.key.toLowerCase();
   if(k==="g"){teclaG=Date.now();return;}
   /* G seguido de letra, com um segundo de janela, como nas ferramentas de
      onde a ideia vem. */
   if(Date.now()-teclaG<1000&&(k==="p"||k==="n"||k==="c"||k==="t")){
    teclaG=0;e.preventDefault();
    irPara(k==="p"?"painel":k==="n"?"negocios":k==="t"?"todo":"contas");return;}
-  if(e.key==="/"){e.preventDefault();$("#busca").focus();$("#busca").select();return;}
-  if(e.key==="?"){e.preventDefault();abrirCmd("atalhos");return;}
+  if(tecla==="/"){e.preventDefault();$("#busca").focus();$("#busca").select();return;}
+  if(tecla==="?"){e.preventDefault();abrirCmd("atalhos");return;}
   /* j e k andam pela lista do To Do; Enter abre o negócio da linha. */
-  if(state.tela==="todo"&&!state.painel&&(k==="j"||k==="k"||e.key==="Enter")){
+  if(state.tela==="todo"&&!state.painel&&(k==="j"||k==="k"||tecla==="Enter")){
    if(!TODO_FOCO.length)return;
-   if(e.key==="Enter"){
+   if(tecla==="Enter"){
     if(state.todoSel>=0){e.preventDefault();abrirPainel({tipo:"deal",id:TODO_FOCO[state.todoSel]});}
     return;}
    e.preventDefault();
@@ -4602,10 +4610,10 @@ document.addEventListener("keydown",e=>{
  }
  /* Ctrl+S baixa um HTML com o dataset embutido, que no servidor está vazio.
     O arquivo baixado seria uma casca sem dados. */
- if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();
+ if((e.ctrlKey||e.metaKey)&&k==="s"){e.preventDefault();
   if(state.servidor)toast("No servidor os dados ficam no banco. Use Exportar.",true);
   else salvarArquivo();}
- else if(e.key==="Escape"&&state.painel)fecharPainel();
+ else if(tecla==="Escape"&&state.painel)fecharPainel();
 });
 /* arrastar */
 document.addEventListener("dragstart",e=>{
