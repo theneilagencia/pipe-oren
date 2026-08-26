@@ -330,6 +330,23 @@ opacity:1;transition:opacity var(--fast) ease-out}
 .pend .acs button.on{background:#fdf0f2;color:var(--neg)}
 .pend.done{color:var(--tx3)}
 .pend.done .corpo{text-decoration:line-through}
+/* Concluir: pastilha com o estado escrito, não só a cor. Concluída fica verde
+   de estado, e o hover indica que dá para reabrir. */
+.pdone{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;margin:1px 0 0;
+font-size:11px;font-weight:600;letter-spacing:.01em;padding:5px 9px;min-height:30px;
+border:1px solid var(--bd);border-radius:999px;color:var(--tx2);background:var(--surf)}
+.pdone:hover{border-color:var(--mid);color:var(--deep);background:var(--alt)}
+.pdone .ic{width:14px;height:14px;display:flex;flex:0 0 auto}
+.pdone .ic svg{width:14px;height:14px}
+.pdone.on{background:#eef4f0;border-color:#cfe0d5;color:var(--ok)}
+.pdone.on .ic{color:var(--ok)}
+/* A faixa que separa o que já foi feito. */
+.pfeitas{margin:14px 0 2px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+font-weight:600;color:var(--tx3)}
+/* Atalhos do contato: aparecem só quando há o que abrir. */
+.clinks{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.clinks a{font-size:12px;font-weight:500;color:var(--mid);text-decoration:none}
+.clinks a:hover{color:var(--deep);text-decoration:underline}
 .err{color:var(--neg);font-size:11px;margin-top:4px;display:block}
 /* ================= TO DO ================= */
 /* Duas abas grandes: o que é meu, e o que é do time. Nada mais para escolher. */
@@ -720,6 +737,12 @@ const TEXTOS={
   venc:"atrasados",vencF:"passaram da data",
   sem:"sem data",semF:"não dá para cobrar"},
  semQuem:"sem responsável",
+ contatoT:"Contato",contatoVazio:"vazio",
+ contatoCampos:[["nome","Nome"],["cargo","Cargo"],["telefone","Telefone / WhatsApp"],
+  ["email","E-mail"],["site","Site"],["obs","Observações"]],
+ pendConcluir:"Concluir",pendConcluida:"Concluído",
+ pendReabrir:"Concluída. Clique para reabrir.",
+ pendFeitas:n=>n+(n===1?" concluída":" concluídas"),
  todoExpandir:"Abrir todos",todoRecolher:"Fechar todos",
  todoAbrirSec:n=>"Abrir as "+n+(n===1?" tarefa":" tarefas")+" desta pessoa",
  todoFecharSec:"Fechar esta pessoa",
@@ -2569,14 +2592,50 @@ function dataDesfecho(d){
  return null;
 }
 const noDesfecho=(d,f)=>naFaixa(dataDesfecho(d),f);
+/* O contato é um objeto {nome,cargo,telefone,email,site,obs}. Parceiro tinha
+   antes um campo "contato" de texto livre; quando ele existe, o texto vai
+   inteiro para observações — não para "nome", porque não se sabe se o que
+   estava escrito ali era nome, telefone ou recado, e chutar seria inventar. */
+function contatoDe(o){
+ const c=o&&o.contato;
+ if(!c)return {};
+ if(typeof c==="string")return c.trim()?{obs:c}:{};
+ return c;
+}
+const contatoTexto=o=>{const c=contatoDe(o);
+ return [c.nome,c.cargo,c.telefone,c.email,c.site,c.obs].filter(Boolean).join(" ");};
+const soDigitos=v=>String(v||"").replace(/\D/g,"");
+/* Sempre https: assim um "javascript:" digitado no campo não vira link. */
+const urlDe=v=>{const t=String(v||"").trim();
+ return /^https?:\/\//i.test(t)?t:"https://"+t.replace(/^\/+/,"");};
+function linksContato(c){
+ const L=[],tel=soDigitos(c.telefone);
+ /* 10 ou 11 dígitos é número brasileiro sem país: o 55 entra para o wa.me
+    funcionar. Acima disso já veio com código de país e não se mexe. */
+ if(tel.length>=10)L.push('<a href="https://wa.me/'+(tel.length<=11?"55":"")+tel+
+  '" target="_blank" rel="noopener">WhatsApp</a>');
+ if(String(c.email||"").indexOf("@")>0)L.push('<a href="mailto:'+esc(c.email)+'">E-mail</a>');
+ if(String(c.site||"").trim())L.push('<a href="'+esc(urlDe(c.site))+
+  '" target="_blank" rel="noopener">Site</a>');
+ return L.length?'<div class="clinks">'+L.join("")+"</div>":"";
+}
+/* Uma seção só, igual nos três tipos de registro. tipo entra na chave porque
+   data-edit não sabe se o id é de negócio, cliente ou parceiro. */
+function blocoContato(tipo,o){
+ const c=contatoDe(o),chave=tipo+"|"+o.id;
+ const corpo=TEXTOS.contatoCampos.map(([k,lbl])=>
+  fld(lbl,ed("contato",chave,k,c[k]||"",k==="obs"?"textarea":"text"))).join("")+linksContato(c);
+ return sec("contato",TEXTOS.contatoT,esc(c.nome||TEXTOS.contatoVazio),corpo);
+}
 function textoBusca(d){
  const c=cliente(d.clienteId),p=parceiro(d.parceiroId);
  /* O codigo entra na busca: e como as pessoas se referem ao registro entre si
     ("o N-048"), e digitar isso nao achava nada. */
  return [d.id,d.titulo,d.proximoPasso,c&&c.id,c&&c.nome,p&&p.id,p&&p.nome,
+  contatoTexto(d),c&&contatoTexto(c),p&&contatoTexto(p),
   (d.pendencias||[]).map(x=>x.texto).join(" ")].filter(Boolean).join(" ").toLowerCase();
 }
-const achaConta=(o,q)=>!q||(o.nome+" "+o.id).toLowerCase().indexOf(q)>=0;
+const achaConta=(o,q)=>!q||(o.nome+" "+o.id+" "+contatoTexto(o)).toLowerCase().indexOf(q)>=0;
 function negocios(){
  const q=state.filtros.busca.trim().toLowerCase();
  return state.data.deals.filter(d=>{
@@ -3660,17 +3719,27 @@ function sec(k,titulo,cnt,body,hk){
 /* Texto, responsável e prazo editáveis no mesmo lugar em que se lê, como o
    resto da gaveta. Bloqueia e excluir são botões: são decisão, não digitação.
    A chave junta os dois códigos com "|" porque data-edit separa por ":". */
+/* Concluir é botão, não caixinha: é a ação mais usada da linha e precisa dizer
+   em que estado está. Concluída, a pendência sai da contagem, sai do To Do e
+   deixa de bloquear o negócio — e o botão vira o caminho de volta. */
+const ICO_CIRC="<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='6' fill='none' stroke='currentColor' stroke-width='1.6'/></svg>";
+const ICO_CHECK="<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='7' fill='currentColor'/><path d='M4.6 8.3l2.2 2.2 4.6-4.6' fill='none' stroke='#fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>";
 function linhaPendencia(d,p){
  const chave=d.id+"|"+p.id;
  return '<div class="pend'+(p.resolvida?" done":"")+'">'+
-  '<input type="checkbox" data-pend="'+d.id+":"+p.id+'"'+(p.resolvida?" checked":"")+
-   ' aria-label="Marcar como resolvida">'+
+  '<button class="pdone'+(p.resolvida?" on":"")+'" data-pend="'+chave+'"'+
+   ' aria-pressed="'+(p.resolvida?"true":"false")+'"'+
+   ' title="'+esc(p.resolvida?TEXTOS.pendReabrir:TEXTOS.pendConcluir)+'">'+
+   '<span class="ic">'+(p.resolvida?ICO_CHECK:ICO_CIRC)+"</span>"+
+   esc(p.resolvida?TEXTOS.pendConcluida:TEXTOS.pendConcluir)+"</button>"+
   '<span class="corpo">'+ed("pend",chave,"texto",p.texto,"textarea")+
    '<span class="meta">'+ed("pend",chave,"responsavel",p.responsavel,"select",opcoesResp(p.responsavel,"—"))+
    "<span>·</span>"+ed("pend",chave,"prazo",p.prazo,"date")+"</span></span>"+
   '<span class="acs">'+
-   '<button data-bloq="'+chave+'" class="'+(p.bloqueante?"on":"")+'" aria-pressed="'+(p.bloqueante?"true":"false")+'">'+
-    (p.bloqueante?"BLOQUEIA":"não bloqueia")+"</button>"+
+   /* Concluída não bloqueia nada, então o botão de bloqueio sai de cena em vez
+      de ficar ligado dizendo algo que não vale mais. */
+   (p.resolvida?"":'<button data-bloq="'+chave+'" class="'+(p.bloqueante?"on":"")+'" aria-pressed="'+(p.bloqueante?"true":"false")+'">'+
+    (p.bloqueante?"BLOQUEIA":"não bloqueia")+"</button>")+
    '<button data-delpend="'+chave+'" aria-label="Excluir pendência">Excluir</button>'+
   "</span></div>";
 }
@@ -3714,6 +3783,7 @@ function painelDeal(id){
  h+=fld("Chance de fechar",ed("deal",d.id,"chance",d.chance,"pct"),"chance");
  h+=fld(TEXTOS.col.passo,ed("deal",d.id,"proximoPasso",d.proximoPasso,"text"),"passo");
  h+=fld(TEXTOS.col.prazo,ed("deal",d.id,"prazo",d.prazo,"date"),"prazo");
+ h+=blocoContato("deal",d);
  const pend=(d.pendencias||[]);
  /* Clientes que nasceram deste negócio. Fica antes das pendências porque é
     leitura de rotina de quem trabalha o canal. */
@@ -3726,8 +3796,15 @@ function painelDeal(id){
     :'<div class="soft">'+TEXTOS.vazio.origem+"</div>")+
    '<button data-novofilho="'+d.id+'" style="margin-top:12px">'+TEXTOS.novoOriundo+"</button>","origem");
  }
- h+=sec("pend",TEXTOS.secoes.pend,pend.filter(p=>!p.resolvida).length+" abertas",
-  (pend.length?pend.map(p=>linhaPendencia(d,p)).join(""):'<div class="soft">Sem pendências.</div>')+
+ /* Abertas primeiro, concluídas depois de uma faixa: o que foi feito não
+    disputa atenção com o que falta, e continua à mão para reabrir. */
+ const abertas=pend.filter(p=>!p.resolvida),feitas=pend.filter(p=>p.resolvida);
+ h+=sec("pend",TEXTOS.secoes.pend,abertas.length+" abertas",
+  (pend.length
+   ?abertas.map(p=>linhaPendencia(d,p)).join("")+
+    (feitas.length?'<div class="pfeitas">'+esc(TEXTOS.pendFeitas(feitas.length))+"</div>"+
+      feitas.map(p=>linhaPendencia(d,p)).join(""):"")
+   :'<div class="soft">Sem pendências.</div>')+
   '<button data-novapend="'+d.id+'" style="margin-top:12px">Adicionar pendência</button>',"pend");
  /* Compliance e KYC como checklist, não como etapa. Aparece só nas etapas em
     que o assunto está na mesa, e em Payments muda de conteúdo para pessoa
@@ -3811,8 +3888,9 @@ function painelConta(kind,id){
  h+=fld("Situação",ed(kind,o.id,"status",o.status,"select",{Ativo:"Ativo",Prospect:"Prospect",Pausado:"Pausado",Encerrado:"Encerrado"}));
  h+=fld("Porte",ed(kind,o.id,"porte",o.porte,"select",{Pequeno:"Pequeno",Medio:"Médio",Grande:"Grande"}));
  if(isC){h+=fld("UF",ed(kind,o.id,"uf",o.uf,"text"));h+=fld("Receita recorrente",ed(kind,o.id,"receitaRecorrente",o.receitaRecorrente,"money"));}
- else{h+=fld("Potencial",ed(kind,o.id,"potencial",o.potencial,"money"));h+=fld("Contato",ed(kind,o.id,"contato",o.contato,"text"));}
+ else h+=fld("Potencial",ed(kind,o.id,"potencial",o.potencial,"money"));
  h+=fld("Anotações",ed(kind,o.id,"notas",o.notas,"textarea"),"notas");
+ h+=blocoContato(kind,o);
  h+='<h2 style="font-size:15px;font-weight:500;margin:24px 0 8px">Negócios desta conta</h2>';
  h+=ds.length?'<div class="rowlist">'+ds.map(d=>itemLinha(esc(d.titulo),
   ['<span class="soft">'+esc(etapaNome(d))+"</span>",'<span class="mut">'+esc(brlD(d.valor))+"</span>"],
@@ -3926,6 +4004,16 @@ function setCampo(kind,id,campo,valor){
   const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
   snapshot();pd[campo]=valor;d.atualizadoEm=agora();marcar();return;
  }
+ if(kind==="contato"){
+  const [tp,rid]=id.split("|");
+  const alvo=tp==="deal"?state.data.deals.find(x=>x.id===rid)
+   :tp==="cliente"?cliente(rid):parceiro(rid);
+  if(!alvo)return;
+  /* contatoDe converte o texto livre antigo do parceiro na primeira gravação,
+     sem perder o que estava escrito. */
+  const c=contatoDe(alvo);c[campo]=valor;alvo.contato=c;
+  alvo.atualizadoEm=agora();marcar();return;
+ }
  if(kind==="papeis"){
   const d=state.data.deals.find(x=>x.id===id);d.papeis=d.papeis||novoPapeis();
   d.papeis[campo]=valor;d.atualizadoEm=agora();marcar();return;
@@ -4012,6 +4100,11 @@ document.addEventListener("click",e=>{
   if(et==="perdido"&&!pedirMotivo(id)){render();return;}
   const err=moverEtapa(id,et);state.erroCard=err?{id:id,msg:err}:null;if(err)render();return;}
  if(el=g("[data-novaconta]")){criarConta(el.dataset.novaconta);return;}
+ if(el=g("[data-pend]")){
+  const [did,pid]=el.dataset.pend.split("|");
+  const d=state.data.deals.find(x=>x.id===did);if(!d)return;
+  const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
+  snapshot();pd.resolvida=!pd.resolvida;d.atualizadoEm=agora();marcar();return;}
  if(el=g("[data-bloq]")){
   const [did,pid]=el.dataset.bloq.split("|");
   const d=state.data.deals.find(x=>x.id===did);if(!d)return;
@@ -4075,10 +4168,6 @@ document.addEventListener("change",e=>{
   if(t.value==="perdido"&&!pedirMotivo(t.dataset.etapa)){render();return;}
   const err=moverEtapa(t.dataset.etapa,t.value);
   state.erroCard=err?{id:t.dataset.etapa,msg:err}:null;render();return;}
- if(t.matches("[data-pend]")){
-  const [id,pid]=t.dataset.pend.split(":");
-  const d=state.data.deals.find(x=>x.id===id),p=d.pendencias.find(x=>x.id===pid);
-  snapshot();p.resolvida=t.checked;d.atualizadoEm=agora();marcar();return;}
  /* Marcar salva na hora, como as pendências. */
  if(t.matches("[data-check]")){
   const [id,chave]=t.dataset.check.split(":");
