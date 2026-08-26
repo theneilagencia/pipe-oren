@@ -340,6 +340,25 @@ border:1px solid var(--bd);border-radius:999px;color:var(--tx2);background:var(-
 .pdone .ic svg{width:14px;height:14px}
 .pdone.on{background:#eef4f0;border-color:#cfe0d5;color:var(--ok)}
 .pdone.on .ic{color:var(--ok)}
+/* A evidência gravada, embaixo da pendência concluída. */
+.pevidok{flex:1 0 100%;margin:6px 0 0 0;padding:8px 10px;background:var(--alt);
+border-radius:var(--r);font-size:12px;line-height:1.45;color:var(--tx2)}
+.pevidok .tx{overflow-wrap:anywhere}
+.pevidok a{color:var(--mid);font-weight:500;margin-left:4px}
+.pevidok .qd{display:block;margin-top:3px;font-size:11px;color:var(--tx3)}
+/* O formulário que pede a evidência, aberto dentro da própria linha. */
+.pend.pedindo{background:#f7faf8}
+.pevid{flex:1 0 100%;margin-top:10px;padding:12px;background:var(--surf);
+border:1px solid var(--bd);border-radius:var(--r2)}
+.pevid label{display:block;font-size:11px;font-weight:600;color:var(--tx2);
+margin:0 0 4px;letter-spacing:0}
+.pevid label+input,.pevid label+textarea{width:100%;border:1px solid var(--bd);
+border-radius:var(--r);padding:8px 10px;font-size:13px;background:var(--surf);
+color:var(--tx);margin-bottom:10px;resize:vertical}
+.pevid label+input:focus,.pevid label+textarea:focus{border-color:var(--mid);outline:0}
+.pevidacs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pevidacs .pri{background:var(--deep);color:#fff;border-color:var(--deep)}
+.pevidacs .pri:hover{background:var(--mid);border-color:var(--mid)}
 /* A faixa que separa o que já foi feito. */
 .pfeitas{margin:14px 0 2px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
 font-weight:600;color:var(--tx3)}
@@ -742,6 +761,11 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
     <div class="erro" id="serro"></div>
     <button type="submit" id="sbtn">Salvar nova senha</button>
     <button type="button" id="scancel" style="background:none;border:1px solid var(--bdf);color:var(--tx2);margin-top:8px">Cancelar</button>
+    <!-- Troca obrigatória sem saída é armadilha: quem entra na conta de outra
+         pessoa para testar fica preso, sem trocar a senha e sem voltar. Sair
+         não altera senha nenhuma -- só descarta a sessão deste navegador. -->
+    <button type="button" id="ssair" style="background:none;border:0;color:var(--mid);
+      text-decoration:underline;margin-top:12px;padding:8px 0;display:none">Sair sem trocar a senha</button>
   </form>
 </div>
 <div id="cmdshade"></div>
@@ -802,6 +826,14 @@ const TEXTOS={
  contatoCampos:[["nome","Nome"],["cargo","Cargo"],["telefone","Telefone / WhatsApp"],
   ["email","E-mail"],["site","Site"],["obs","Observações"]],
  pendConcluir:"Concluir",pendConcluida:"Concluído",
+ evidT:"O que foi feito",
+ evidPh:"ex.: contrato assinado e enviado ao jurídico; retorno confirmado por e-mail",
+ evidLink:"Link que comprova (opcional)",
+ evidLinkPh:"cartão no Linear, e-mail, contrato, pasta do documento",
+ evidOk:"Concluir com esta evidência",evidCancel:"Cancelar",
+ evidFalta:"Descreva o que foi feito, ou cole um link que comprove. Sem isso, ninguém sabe depois com base em quê a pendência foi fechada.",
+ evidPor:(q,d)=>"por "+q+" em "+d,
+ evidNota:"Texto, link, ou os dois. O painel guarda o endereço, não o arquivo.",
  pendReabrir:"Concluída. Clique para reabrir.",
  pendFeitas:n=>n+(n===1?" concluída":" concluídas"),
  todoExpandir:"Abrir todos",todoRecolher:"Fechar todos",
@@ -976,7 +1008,7 @@ const state={
  data:null,tela:"painel",todoQuem:"",todoTipo:"",todoSo:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
- painel:null,secoes:{},dirty:false,undo:null,undoTimer:null,dbTimer:null,
+ painel:null,secoes:{},pendEvid:null,pendEvidTxt:"",pendEvidLink:"",pendEvidErro:"",dirty:false,undo:null,undoTimer:null,dbTimer:null,
  usuario:null,servidor:false,versao:0,salvando:false,semRede:false
 };
 const $=s=>document.querySelector(s);
@@ -2617,6 +2649,7 @@ function abrirTrocaSenha(){
  $("#squem").textContent=(state.usuario?state.usuario.email:"")+
   (state.trocaObrigatoria?" · defina uma senha sua para continuar":"");
  $("#scancel").style.display=state.trocaObrigatoria?"none":"";
+ $("#ssair").style.display=state.trocaObrigatoria?"":"none";
  $("#loginform").style.display="none";$("#senhaform").style.display="";
  $("#serro").className="erro";$("#snova").value="";
  $("#login").className="on";setTimeout(()=>$("#snova").focus(),50);
@@ -3342,6 +3375,9 @@ function rosca(itens){
 /* Cada verbete tem título, o que o número significa e como é calculado.
    Sem fórmula com símbolos, sem jargão, no máximo 45 palavras. */
 const HINTS={
+ evidencia:{t:"Evidência",
+  a:"O rastro do que foi feito. Escreva em uma frase o que resolveu a pendência — quem respondeu, o que foi enviado, o que ficou decidido — e, se houver, cole um link que comprove: o cartão no Linear onde a tarefa é acompanhada, o e-mail, o contrato, a pasta do documento.",
+  b:"Texto ou link, um dos dois basta, e os dois juntos são melhores. Fica gravado com o seu nome e a data, e continua ali se a pendência for reaberta — é o que responde, semanas depois, com base em quê isto foi fechado. O painel guarda o endereço, não o arquivo: aponte para onde o documento mora."},
  situacao:{t:"Situação",
   a:"Se a operação é venda com locação de volta (SLB) ou construção sob medida (BTS).",
   b:"A partir da etapa 4 o negócio não avança sem isto preenchido."},
@@ -4003,9 +4039,33 @@ function sec(k,titulo,cnt,body,hk){
    deixa de bloquear o negócio — e o botão vira o caminho de volta. */
 const ICO_CIRC="<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='6' fill='none' stroke='currentColor' stroke-width='1.6'/></svg>";
 const ICO_CHECK="<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='7' fill='currentColor'/><path d='M4.6 8.3l2.2 2.2 4.6-4.6' fill='none' stroke='#fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>";
+/* Evidência: lista, não campo único. Concluir empilha um registro; reabrir não
+   apaga nada. Quem olha depois vê com base em quê a pendência foi fechada, e
+   quantas vezes isso aconteceu. */
+function blocoEvidencia(d,p,chave){
+ const ev=(p.evidencias||[]);
+ let h="";
+ if(p.resolvida&&ev.length)h+=ev.map(x=>'<div class="pevidok">'+
+   '<span class="tx">'+esc(x.texto||"")+"</span>"+
+   (x.link?' <a href="'+esc(urlDe(x.link))+'" target="_blank" rel="noopener">abrir</a>':"")+
+   '<span class="qd">'+esc(TEXTOS.evidPor(x.por||"—",dt(x.em)))+"</span></div>").join("");
+ if(state.pendEvid!==chave)return h;
+ h+='<div class="pevid">'+
+  '<label>'+esc(TEXTOS.evidT)+iconeHint("evidencia")+"</label>"+
+  '<textarea data-pevid="texto" rows="3" placeholder="'+esc(TEXTOS.evidPh)+'">'+
+   esc(state.pendEvidTxt)+"</textarea>"+
+  '<label>'+esc(TEXTOS.evidLink)+"</label>"+
+  '<input data-pevid="link" value="'+esc(state.pendEvidLink)+
+   '" placeholder="'+esc(TEXTOS.evidLinkPh)+'">'+
+  '<div class="soft" style="font-size:11px;margin-top:6px">'+esc(TEXTOS.evidNota)+"</div>"+
+  (state.pendEvidErro?'<span class="err">'+esc(state.pendEvidErro)+"</span>":"")+
+  '<div class="pevidacs"><button class="pri" data-pendok="'+chave+'">'+esc(TEXTOS.evidOk)+"</button>"+
+  '<button data-pendcancel="1">'+esc(TEXTOS.evidCancel)+"</button></div></div>";
+ return h;
+}
 function linhaPendencia(d,p){
  const chave=d.id+"|"+p.id;
- return '<div class="pend'+(p.resolvida?" done":"")+'">'+
+ return '<div class="pend'+(p.resolvida?" done":"")+(state.pendEvid===chave?" pedindo":"")+'">'+
   '<button class="pdone'+(p.resolvida?" on":"")+'" data-pend="'+chave+'"'+
    ' aria-pressed="'+(p.resolvida?"true":"false")+'"'+
    ' title="'+esc(p.resolvida?TEXTOS.pendReabrir:TEXTOS.pendConcluir)+'">'+
@@ -4020,7 +4080,7 @@ function linhaPendencia(d,p){
    (p.resolvida?"":'<button data-bloq="'+chave+'" class="'+(p.bloqueante?"on":"")+'" aria-pressed="'+(p.bloqueante?"true":"false")+'">'+
     (p.bloqueante?"BLOQUEIA":"não bloqueia")+"</button>")+
    '<button data-delpend="'+chave+'" aria-label="Excluir pendência">Excluir</button>'+
-  "</span></div>";
+  "</span>"+blocoEvidencia(d,p,chave)+"</div>";
 }
 function painelDeal(id){
  const d=state.data.deals.find(x=>x.id===id);
@@ -4393,10 +4453,37 @@ document.addEventListener("click",e=>{
   const err=moverEtapa(id,et);state.erroCard=err?{id:id,msg:err}:null;if(err)render();return;}
  if(el=g("[data-novaconta]")){criarConta(el.dataset.novaconta);return;}
  if(el=g("[data-pend]")){
-  const [did,pid]=el.dataset.pend.split("|");
+  const chave=el.dataset.pend;
+  const [did,pid]=chave.split("|");
   const d=state.data.deals.find(x=>x.id===did);if(!d)return;
   const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
-  snapshot();pd.resolvida=!pd.resolvida;d.atualizadoEm=agora();marcar();return;}
+  /* Reabrir é imediato e não apaga a evidência de antes: o registro do que já
+     tinha sido fechado continua ali. Concluir é que pede a evidência. */
+  if(pd.resolvida){snapshot();pd.resolvida=false;d.atualizadoEm=agora();marcar();return;}
+  state.pendEvid=chave;state.pendEvidTxt="";state.pendEvidLink="";state.pendEvidErro="";
+  render();
+  const t=document.querySelector('[data-pevid="texto"]');if(t)t.focus();
+  return;}
+ if(el=g("[data-pendcancel]")){
+  state.pendEvid=null;state.pendEvidTxt="";state.pendEvidLink="";state.pendEvidErro="";
+  render();return;}
+ if(el=g("[data-pendok]")){
+  const [did,pid]=el.dataset.pendok.split("|");
+  const d=state.data.deals.find(x=>x.id===did);if(!d)return;
+  const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
+  const txt=state.pendEvidTxt.trim(),lnk=state.pendEvidLink.trim();
+  /* Um dos dois basta -- é o que a tela promete. Link sozinho é evidência
+     legítima: o cartão do Linear já conta a história. */
+  if(txt.length<3&&lnk.length<4){state.pendEvidErro=TEXTOS.evidFalta;render();
+   const t=document.querySelector('[data-pevid="texto"]');if(t)t.focus();return;}
+  snapshot();
+  pd.evidencias=pd.evidencias||[];
+  pd.evidencias.push({texto:txt,link:lnk,
+   por:(state.usuario&&state.usuario.nome)||"—",em:agora()});
+  pd.resolvida=true;
+  d.atualizadoEm=agora();
+  state.pendEvid=null;state.pendEvidTxt="";state.pendEvidLink="";state.pendEvidErro="";
+  marcar();return;}
  if(el=g("[data-bloq]")){
   const [did,pid]=el.dataset.bloq.split("|");
   const d=state.data.deals.find(x=>x.id===did);if(!d)return;
@@ -4488,6 +4575,11 @@ document.addEventListener("change",e=>{
 document.addEventListener("input",e=>{
  const t=e.target;
  if(t.id==="cmdinput"){CMD.q=t.value;CMD.sel=0;CMD.modo="tudo";renderCmd();return;}
+ /* Sem render a cada tecla: o texto vive no state e a tela só se redesenha ao
+    concluir, cancelar ou errar. Redesenhar aqui tiraria o foco do campo. */
+ if(t.matches&&t.matches("[data-pevid]")){
+  if(t.dataset.pevid==="texto")state.pendEvidTxt=t.value;else state.pendEvidLink=t.value;
+  return;}
  if(t.id==="busca"){
   const antes=state.filtros.busca.trim(),agora=t.value.trim();
   state.filtros.busca=t.value;
@@ -4826,6 +4918,14 @@ $("#senhaform").addEventListener("submit",async e=>{
  finally{b.disabled=false;b.textContent="Salvar nova senha";}
 });
 $("#scancel").addEventListener("click",fecharTrocaSenha);
+/* Sair da troca obrigatória: descarta a sessão e volta para a entrada. Nada é
+   gravado, e a marca de senha provisória continua na conta -- ela é da conta,
+   não deste navegador. */
+$("#ssair").addEventListener("click",()=>{
+ state.trocaObrigatoria=false;
+ $("#senhaform").style.display="none";$("#loginform").style.display="";
+ sair();
+});
 $("#lesqueci").addEventListener("click",async()=>{
  const err=$("#lerro"),email=$("#lemail").value.trim();
  if(!email){err.textContent="Escreva seu e-mail primeiro.";err.className="erro on";return;}
