@@ -804,7 +804,12 @@ const TEXTOS={
  buscaPh:"Buscar por código, cliente, negócio, próximo passo ou pendência",
  salvo:"Salvo",naoSalvo:"Não salvo",salvando:"Salvando…",semRede:"Sem conexão",
  conflitoAviso:"Outra pessoa salvou antes de você. Recarreguei os dados do servidor.",
- entrando:"Entrando…",erroLogin:"E-mail ou senha inválidos.",erroRede:"Não consegui falar com o servidor.",
+ entrando:"Entrando…",erroLogin:"E-mail ou senha inválidos.",
+ recEnviado:e=>"Enviei um link para "+e+". Ele vale por uma hora e serve uma vez só. Se não chegar em alguns minutos, veja o spam.",
+ recLimite:"O Supabase limita quantos e-mails envia por hora, e o limite estourou. Espere alguns minutos, ou configure um SMTP próprio no projeto.",
+ recFalhou:"Não consegui enviar o e-mail.",
+ linkErro:d=>"O link não funcionou: "+d+". Peça outro em \u201cEsqueci minha senha\u201d — cada link vale uma hora e serve uma vez só.",
+ linkCode:"Este link veio num formato que o painel não completa. No Supabase, em Authentication → Emails, o modelo de Reset Password precisa usar {{ .ConfirmationURL }}.",erroRede:"Não consegui falar com o servidor.",
  sair:"Sair",somenteLeitura:"Seu acesso é somente leitura.",
  semPerfil:"Sua conta entrou, mas não tem perfil cadastrado. Peça para criarem o seu.",
  novo:"Novo negócio",
@@ -2523,10 +2528,39 @@ async function completarSessao(s){
  if(!r.ok)return false;
  s.user=await r.json();guardarSessao(s);return true;
 }
+/* redirect_to é o que faltava: sem ele, o link do e-mail volta para o Site URL
+   do projeto -- que nasce como http://localhost:3000 e é onde a pessoa cai
+   quando "o reset não funciona". Com ele, o link volta para o endereço de onde
+   o pedido saiu. O endereço precisa estar na lista de Redirect URLs do projeto,
+   senão o Supabase ignora e usa o Site URL de novo. */
 async function pedirRecuperacao(email){
  const r=await fetch(SUPABASE_URL+"/auth/v1/recover",
-  {method:"POST",headers:cabecalhos(false),body:JSON.stringify({email:email})});
- if(!r.ok)throw new Error("Não consegui enviar o e-mail.");
+  {method:"POST",headers:cabecalhos(false),
+   body:JSON.stringify({email:email,redirect_to:baseLink()})});
+ if(r.ok)return;
+ if(r.status===429)throw new Error(TEXTOS.recLimite);
+ throw new Error(TEXTOS.recFalhou);
+}
+/* O Supabase devolve link expirado, já usado ou inválido como #error=... Sem
+   ler isso, a pessoa cai na tela de entrada sem explicação nenhuma e conclui,
+   com razão, que a redefinição não funciona. */
+function erroDaUrl(){
+ const h=location.hash||"";
+ if(h.indexOf("error")<0)return null;
+ const p=new URLSearchParams(h.replace(/^#/,""));
+ const d=p.get("error_description")||p.get("error");
+ if(!d)return null;
+ history.replaceState(null,"",location.pathname+location.search);
+ return TEXTOS.linkErro(d);
+}
+/* Fluxo PKCE: o código só se troca com o verificador que a biblioteca guardou
+   ao pedir, e este painel não usa biblioteca. Em vez de silêncio, diz o que
+   ajustar no projeto. */
+function codigoNaUrl(){
+ const p=new URLSearchParams(location.search||"");
+ if(!p.get("code"))return null;
+ history.replaceState(null,"",location.pathname);
+ return TEXTOS.linkCode;
 }
 function mostrarLogin(){
  state.usuario=null;state.data={partners:[],customers:[],deals:[]};
@@ -4706,6 +4740,9 @@ $("#fileimp").addEventListener("change",e=>{
 (async function iniciar(){
  state.servidor=true;
  state.data={partners:[],customers:[],deals:[]};
+ /* Antes de qualquer coisa: se o link trouxe erro, a tela de entrada tem de
+    dizer isso, não abrir calada. */
+ const avisoLink=erroDaUrl()||codigoNaUrl();
  const daUrl=sessaoDaUrl();
  if(daUrl&&await completarSessao(daUrl.sessao)&&await carregarPerfil()){
   render();
@@ -4717,6 +4754,7 @@ $("#fileimp").addEventListener("change",e=>{
   if(await carregarEMigrar())return;
  }
  render();mostrarLogin();
+ if(avisoLink){const e=$("#lerro");if(e){e.textContent=avisoLink;e.className="erro on";}}
 })();
 $("#senhaform").addEventListener("submit",async e=>{
  e.preventDefault();
@@ -4738,7 +4776,7 @@ $("#scancel").addEventListener("click",fecharTrocaSenha);
 $("#lesqueci").addEventListener("click",async()=>{
  const err=$("#lerro"),email=$("#lemail").value.trim();
  if(!email){err.textContent="Escreva seu e-mail primeiro.";err.className="erro on";return;}
- try{await pedirRecuperacao(email);err.textContent="Enviei um link para "+email+".";err.className="erro on";
+ try{await pedirRecuperacao(email);err.textContent=TEXTOS.recEnviado(email);err.className="erro on";
   err.style.color="var(--pos)";}
  catch(x){err.textContent=x.message;err.className="erro on";err.style.color="";}
 });

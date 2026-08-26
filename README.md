@@ -173,9 +173,35 @@ a tela de **responsáveis** também, porque ela fala direto com o Supabase. **Cr
 pessoa e definir senha** passam pela função com a chave `service_role` e só
 funcionam no endereço do Vercel — a tela avisa quando você tenta no lugar errado.
 
-Em **Authentication → URL Configuration**, o **Site URL** precisa ser
-`https://crm-oren.vercel.app/`, senão o link de "esqueci minha senha" volta para o
-lugar errado.
+### Redefinição de senha
+
+Três coisas do lado do Supabase, e as três já derrubaram o fluxo:
+
+1. **Authentication → URL Configuration → Site URL** = `https://crm-oren.vercel.app/`.
+   Ele nasce como `http://localhost:3000`, e é onde a pessoa cai quando "o reset
+   não funciona".
+2. **Redirect URLs**, na mesma tela, precisam listar os endereços de onde o
+   pedido pode sair: `https://crm-oren.vercel.app/**` e, se o time usa o espelho,
+   `https://theneilagencia.github.io/pipe-oren/**`. O painel manda `redirect_to`
+   com o endereço de onde a pessoa clicou; endereço fora da lista é ignorado, e o
+   Supabase volta a usar o Site URL.
+3. **Limite de e-mail.** O SMTP embutido do Supabase envia poucos e-mails por
+   hora. Estourado o limite, `/auth/v1/recover` responde 429 e ninguém recebe
+   nada — o painel mostra isso em vez de um erro genérico. Para uso de verdade,
+   configure um SMTP próprio em **Project Settings → Auth → SMTP**.
+
+O modelo de e-mail de **Reset Password** precisa continuar usando
+`{{ .ConfirmationURL }}`. Modelo com `?code=` é fluxo PKCE, que só se completa com
+a biblioteca que iniciou o pedido — este painel não usa biblioteca, e avisa em
+vez de falhar calado.
+
+Cada link vale uma hora e serve uma vez só. Link vencido volta com `#error=` e a
+tela de entrada mostra o motivo.
+
+Quando alguém não consegue entrar, `supabase/acesso-usuario.sql` diagnostica e
+conserta: e-mail confirmado, `aud`/`role`, bandeiras de SSO e anonimato, senha em
+bcrypt, identidade e a linha em `public.perfil`. Ele não cria conta -- criar é
+pela tela `/admin`, que passa pela API e monta identidade e perfil sozinha.
 
 À mão, quando quiser:
 
