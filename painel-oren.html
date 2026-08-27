@@ -346,6 +346,16 @@ border-radius:var(--r);font-size:12px;line-height:1.45;color:var(--tx2)}
 .pevidok .tx{overflow-wrap:anywhere}
 .pevidok a{color:var(--mid);font-weight:500;margin-left:4px}
 .pevidok .qd{display:block;margin-top:3px;font-size:11px;color:var(--tx3)}
+/* A marca do que aconteceu, antes do texto: verde para conclusão, âmbar para
+   reabertura. A palavra vai escrita -- cor sozinha não informa. */
+.pevidok .mk{display:inline-block;margin-right:7px;font-size:10px;font-weight:700;
+letter-spacing:.06em;text-transform:uppercase;color:var(--ok)}
+.pevidok.reab{background:#fdf6ea}
+.pevidok.reab .mk{color:var(--warn)}
+.pevidok.vazio{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+color:var(--tx3);font-style:italic}
+.pevidok.vazio button{font-size:11px;padding:4px 9px;min-height:28px;font-style:normal}
+.pevid.reab label:first-child{color:var(--warn)}
 /* O formulário que pede a evidência, aberto dentro da própria linha. */
 .pend.pedindo{background:#f7faf8}
 .pevid{flex:1 0 100%;margin-top:10px;padding:12px;background:var(--surf);
@@ -646,6 +656,9 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
  .dc select{padding:4px 6px;font-size:11px}
  .pend .acs{opacity:0}
  .pend:hover .acs,.pend:focus-within .acs{opacity:1}
+ /* Na concluída as ações ficam sempre visíveis: Reabrir escondido atrás do
+    hover é o mesmo que não existir, e é a única saída daquele estado. */
+ .pend.done .acs{opacity:1}
  #panel{top:0;left:auto;right:0;width:540px;height:100vh;padding-bottom:0;
   border-left:1px solid var(--bdf);transform:translateX(100%);box-shadow:var(--sh3)}
  #panel.open{transform:translateX(0)}
@@ -831,8 +844,19 @@ const TEXTOS={
  evidLink:"Link que comprova (opcional)",
  evidLinkPh:"cartão no Linear, e-mail, contrato, pasta do documento",
  evidOk:"Concluir com esta evidência",evidCancel:"Cancelar",
+ evidSem:"Concluída antes de o painel pedir evidência — nada registrado.",
+ evidRegistrar:"Registrar evidência",
+ evidReabrir:"Reabrir",
+ reabT:"Por que está reabrindo",
+ reabPh:"ex.: o jurídico devolveu com ressalva; a contraparte não confirmou",
+ reabOk:"Reabrir com este motivo",
+ reabFalta:"Escreva por que está reabrindo. Uma pendência fechada que volta a abrir precisa dizer o que mudou.",
+ regT:"O que foi feito, para o registro",
+ regOk:"Registrar",
+ marcaConcluiu:"Concluído",marcaReabriu:"Reaberto",
  evidFalta:"Descreva o que foi feito, ou cole um link que comprove. Sem isso, ninguém sabe depois com base em quê a pendência foi fechada.",
  evidPor:(q,d)=>"por "+q+" em "+d,
+ evidTitulo:{concluir:"O que foi feito",reabrir:"Por que está reabrindo",registrar:"O que foi feito, para o registro"},
  evidNota:"Texto, link, ou os dois. O painel guarda o endereço, não o arquivo.",
  pendReabrir:"Concluída. Clique para reabrir.",
  pendFeitas:n=>n+(n===1?" concluída":" concluídas"),
@@ -1016,7 +1040,7 @@ const state={
  data:null,tela:"painel",todoQuem:"",todoTipo:"",todoSo:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
- painel:null,secoes:{},pendEvid:null,pendEvidTxt:"",pendEvidLink:"",pendEvidErro:"",dirty:false,undo:null,undoTimer:null,dbTimer:null,
+ painel:null,secoes:{},pendEvid:null,pendEvidModo:"concluir",pendEvidTxt:"",pendEvidLink:"",pendEvidErro:"",dirty:false,undo:null,undoTimer:null,dbTimer:null,
  usuario:null,servidor:false,versao:0,salvando:false,semRede:false
 };
 const $=s=>document.querySelector(s);
@@ -3411,9 +3435,9 @@ function rosca(itens){
 /* Cada verbete tem título, o que o número significa e como é calculado.
    Sem fórmula com símbolos, sem jargão, no máximo 45 palavras. */
 const HINTS={
- evidencia:{t:"Evidência",
+ evidencia:{t:"Evidência e reabertura",
   a:"O rastro do que foi feito. Escreva em uma frase o que resolveu a pendência — quem respondeu, o que foi enviado, o que ficou decidido — e, se houver, cole um link que comprove: o cartão no Linear onde a tarefa é acompanhada, o e-mail, o contrato, a pasta do documento.",
-  b:"Texto ou link, um dos dois basta, e os dois juntos são melhores. Fica gravado com o seu nome e a data, e continua ali se a pendência for reaberta — é o que responde, semanas depois, com base em quê isto foi fechado. O painel guarda o endereço, não o arquivo: aponte para onde o documento mora."},
+  b:"Texto ou link, um dos dois basta, e os dois juntos são melhores. Fica gravado com o seu nome e a data. Reabrir é ação separada e pede motivo escrito — link não explica o que mudou — e o motivo entra na mesma linha do tempo, sem apagar a evidência de antes. O painel guarda o endereço, não o arquivo: aponte para onde o documento mora."},
  situacao:{t:"Situação",
   a:"Se a operação é venda com locação de volta (SLB) ou construção sob medida (BTS).",
   b:"A partir da etapa 4 o negócio não avança sem isto preenchido."},
@@ -4078,43 +4102,63 @@ const ICO_CHECK="<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='
 /* Evidência: lista, não campo único. Concluir empilha um registro; reabrir não
    apaga nada. Quem olha depois vê com base em quê a pendência foi fechada, e
    quantas vezes isso aconteceu. */
+/* A linha do tempo da pendência: conclusão e reabertura no mesmo fio, cada uma
+   com o que foi dito, quem disse e quando. Aparece também na pendência aberta,
+   porque é ali que o motivo da reabertura precisa ser lido. */
 function blocoEvidencia(d,p,chave){
  const ev=(p.evidencias||[]);
  let h="";
- if(p.resolvida&&ev.length)h+=ev.map(x=>'<div class="pevidok">'+
+ if(ev.length)h+=ev.map(x=>{
+  const reab=x.tipo==="reabertura";
+  return '<div class="pevidok'+(reab?" reab":"")+'">'+
+   '<span class="mk">'+esc(reab?TEXTOS.marcaReabriu:TEXTOS.marcaConcluiu)+"</span>"+
    '<span class="tx">'+esc(x.texto||"")+"</span>"+
    (x.link?' <a href="'+esc(urlDe(x.link))+'" target="_blank" rel="noopener">abrir</a>':"")+
-   '<span class="qd">'+esc(TEXTOS.evidPor(x.por||"—",dt(x.em)))+"</span></div>").join("");
+   '<span class="qd">'+esc(TEXTOS.evidPor(x.por||"—",dt(x.em)))+"</span></div>";
+ }).join("");
+ /* Concluída sem nenhum registro é o que veio de antes deste recurso. Dizer isso
+    é melhor que espaço em branco, e o botão ao lado deixa documentar sem
+    precisar reabrir e fechar de novo. */
+ if(p.resolvida&&!ev.length&&state.pendEvid!==chave)
+  h+='<div class="pevidok vazio"><span class="tx">'+esc(TEXTOS.evidSem)+"</span>"+
+   '<button data-pendregistrar="'+chave+'">'+esc(TEXTOS.evidRegistrar)+"</button></div>";
  if(state.pendEvid!==chave)return h;
- h+='<div class="pevid">'+
-  '<label>'+esc(TEXTOS.evidT)+iconeHint("evidencia")+"</label>"+
-  '<textarea data-pevid="texto" rows="3" placeholder="'+esc(TEXTOS.evidPh)+'">'+
-   esc(state.pendEvidTxt)+"</textarea>"+
+ const modo=state.pendEvidModo,reab=modo==="reabrir";
+ h+='<div class="pevid'+(reab?" reab":"")+'">'+
+  '<label>'+esc(TEXTOS.evidTitulo[modo])+iconeHint("evidencia")+"</label>"+
+  '<textarea data-pevid="texto" rows="3" placeholder="'+
+   esc(reab?TEXTOS.reabPh:TEXTOS.evidPh)+'">'+esc(state.pendEvidTxt)+"</textarea>"+
   '<label>'+esc(TEXTOS.evidLink)+"</label>"+
   '<input data-pevid="link" value="'+esc(state.pendEvidLink)+
    '" placeholder="'+esc(TEXTOS.evidLinkPh)+'">'+
   '<div class="soft" style="font-size:11px;margin-top:6px">'+esc(TEXTOS.evidNota)+"</div>"+
   (state.pendEvidErro?'<span class="err">'+esc(state.pendEvidErro)+"</span>":"")+
-  '<div class="pevidacs"><button class="pri" data-pendok="'+chave+'">'+esc(TEXTOS.evidOk)+"</button>"+
+  '<div class="pevidacs"><button class="pri" data-pendok="'+chave+'">'+
+   esc(reab?TEXTOS.reabOk:modo==="registrar"?TEXTOS.regOk:TEXTOS.evidOk)+"</button>"+
   '<button data-pendcancel="1">'+esc(TEXTOS.evidCancel)+"</button></div></div>";
  return h;
 }
 function linhaPendencia(d,p){
  const chave=d.id+"|"+p.id;
  return '<div class="pend'+(p.resolvida?" done":"")+(state.pendEvid===chave?" pedindo":"")+'">'+
-  '<button class="pdone'+(p.resolvida?" on":"")+'" data-pend="'+chave+'"'+
-   ' aria-pressed="'+(p.resolvida?"true":"false")+'"'+
-   ' title="'+esc(p.resolvida?TEXTOS.pendReabrir:TEXTOS.pendConcluir)+'">'+
-   '<span class="ic">'+(p.resolvida?ICO_CHECK:ICO_CIRC)+"</span>"+
-   esc(p.resolvida?TEXTOS.pendConcluida:TEXTOS.pendConcluir)+"</button>"+
+  /* Concluída, a pastilha é estado, não botão: clique solto não pode desfazer
+     uma conclusão. Reabrir é ação separada, e pede motivo. */
+  (p.resolvida
+   ?'<span class="pdone on"><span class="ic">'+ICO_CHECK+"</span>"+
+     esc(TEXTOS.pendConcluida)+"</span>"
+   :'<button class="pdone" data-pend="'+chave+'" aria-pressed="false"'+
+     ' title="'+esc(TEXTOS.pendConcluir)+'">'+
+     '<span class="ic">'+ICO_CIRC+"</span>"+esc(TEXTOS.pendConcluir)+"</button>")+
   '<span class="corpo">'+ed("pend",chave,"texto",p.texto,"textarea")+
    '<span class="meta">'+ed("pend",chave,"responsavel",p.responsavel,"select",opcoesResp(p.responsavel,"—"))+
    "<span>·</span>"+ed("pend",chave,"prazo",p.prazo,"date")+"</span></span>"+
   '<span class="acs">'+
    /* Concluída não bloqueia nada, então o botão de bloqueio sai de cena em vez
       de ficar ligado dizendo algo que não vale mais. */
-   (p.resolvida?"":'<button data-bloq="'+chave+'" class="'+(p.bloqueante?"on":"")+'" aria-pressed="'+(p.bloqueante?"true":"false")+'">'+
-    (p.bloqueante?"BLOQUEIA":"não bloqueia")+"</button>")+
+   (p.resolvida
+    ?'<button data-pendreabrir="'+chave+'">'+esc(TEXTOS.evidReabrir)+"</button>"
+    :'<button data-bloq="'+chave+'" class="'+(p.bloqueante?"on":"")+'" aria-pressed="'+(p.bloqueante?"true":"false")+'">'+
+     (p.bloqueante?"BLOQUEIA":"não bloqueia")+"</button>")+
    '<button data-delpend="'+chave+'" aria-label="Excluir pendência">Excluir</button>'+
   "</span>"+blocoEvidencia(d,p,chave)+"</div>";
 }
@@ -4488,15 +4532,13 @@ document.addEventListener("click",e=>{
   if(et==="perdido"&&!pedirMotivo(id)){render();return;}
   const err=moverEtapa(id,et);state.erroCard=err?{id:id,msg:err}:null;if(err)render();return;}
  if(el=g("[data-novaconta]")){criarConta(el.dataset.novaconta);return;}
- if(el=g("[data-pend]")){
-  const chave=el.dataset.pend;
-  const [did,pid]=chave.split("|");
-  const d=state.data.deals.find(x=>x.id===did);if(!d)return;
-  const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
-  /* Reabrir é imediato e não apaga a evidência de antes: o registro do que já
-     tinha sido fechado continua ali. Concluir é que pede a evidência. */
-  if(pd.resolvida){snapshot();pd.resolvida=false;d.atualizadoEm=agora();marcar();return;}
-  state.pendEvid=chave;state.pendEvidTxt="";state.pendEvidLink="";state.pendEvidErro="";
+ /* Concluir, reabrir e registrar abrem o mesmo formulário em modos diferentes.
+    Nenhum dos três muda nada sozinho: tudo passa por data-pendok. */
+ if((el=g("[data-pend]"))||(el=g("[data-pendreabrir]"))||(el=g("[data-pendregistrar]"))){
+  const modo=el.dataset.pend?"concluir":el.dataset.pendreabrir?"reabrir":"registrar";
+  state.pendEvid=el.dataset.pend||el.dataset.pendreabrir||el.dataset.pendregistrar;
+  state.pendEvidModo=modo;
+  state.pendEvidTxt="";state.pendEvidLink="";state.pendEvidErro="";
   render();
   const t=document.querySelector('[data-pevid="texto"]');if(t)t.focus();
   return;}
@@ -4507,16 +4549,20 @@ document.addEventListener("click",e=>{
   const [did,pid]=el.dataset.pendok.split("|");
   const d=state.data.deals.find(x=>x.id===did);if(!d)return;
   const pd=(d.pendencias||[]).find(x=>x.id===pid);if(!pd)return;
+  const modo=state.pendEvidModo||"concluir",reab=modo==="reabrir";
   const txt=state.pendEvidTxt.trim(),lnk=state.pendEvidLink.trim();
-  /* Um dos dois basta -- é o que a tela promete. Link sozinho é evidência
-     legítima: o cartão do Linear já conta a história. */
-  if(txt.length<3&&lnk.length<4){state.pendEvidErro=TEXTOS.evidFalta;render();
+  /* Concluir aceita texto ou link -- o cartão do Linear já conta a história.
+     Reabrir exige texto: link não explica o que mudou. */
+  const falta=reab?txt.length<3:(txt.length<3&&lnk.length<4);
+  if(falta){state.pendEvidErro=reab?TEXTOS.reabFalta:TEXTOS.evidFalta;render();
    const t=document.querySelector('[data-pevid="texto"]');if(t)t.focus();return;}
   snapshot();
   pd.evidencias=pd.evidencias||[];
-  pd.evidencias.push({texto:txt,link:lnk,
+  pd.evidencias.push({tipo:reab?"reabertura":"conclusao",texto:txt,link:lnk,
    por:(state.usuario&&state.usuario.nome)||"—",em:agora()});
-  pd.resolvida=true;
+  /* "registrar" documenta uma conclusão antiga e não mexe no estado. */
+  if(modo==="concluir")pd.resolvida=true;
+  else if(reab)pd.resolvida=false;
   d.atualizadoEm=agora();
   state.pendEvid=null;state.pendEvidTxt="";state.pendEvidLink="";state.pendEvidErro="";
   marcar();return;}
