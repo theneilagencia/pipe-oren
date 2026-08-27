@@ -840,6 +840,7 @@ const TEXTOS={
   sem:"sem data",semF:"não dá para cobrar"},
  semQuem:"sem responsável",
  frentePrinc:"Frente principal",frenteMais:"Também nestas frentes",
+ frentesConta:"Frentes",frenteNenhumaConta:"nenhuma marcada",
  frenteNenhuma:"nenhuma — só a principal",
  contatoT:"Contato",contatoVazio:"vazio",
  contatoCampos:[["nome","Nome"],["cargo","Cargo"],["telefone","Telefone / WhatsApp"],
@@ -1087,6 +1088,21 @@ function frentesDe(d){
  return FRENTES_ORDEM.filter(f=>set[f]);
 }
 const conjugado=d=>frentesDe(d).length>1;
+/* Conta -- cliente ou parceiro -- também pode servir a mais de uma frente, e
+   aqui não existe "principal": conta não tem funil nem etapa, então é conjunto
+   puro. o.frentes é a verdade; o.frente fica sendo o primeiro do conjunto, para
+   nada que já lê o.frente parar de funcionar. Parceiro já guardava frentes em
+   lista -- e não havia onde editar. */
+function frentesDeConta(o){
+ const set={};
+ ((o&&o.frentes)||[]).forEach(fr=>{if(FUNIS[fr])set[fr]=1;});
+ if(!Object.keys(set).length&&o&&FUNIS[o.frente])set[o.frente]=1;
+ return FRENTES_ORDEM.filter(fr=>set[fr]);
+}
+function frenteRotuloConta(o){
+ const fs=frentesDeConta(o);
+ return fs.length?fs.map(fr=>TEXTOS.frentesLbl[fr]).join(" + "):"—";
+}
 /* "Capital" ou "Capital + Payments". A principal vem primeiro, sempre: é a que
    manda no funil, e quem lê precisa saber qual é. */
 function frenteRotulo(d){
@@ -3466,6 +3482,9 @@ const HINTS={
  frenteConj:{t:"Frente conjugada",
   a:"Um negócio pode envolver mais de uma frente na mesma operação — Capital e Payments juntos, por exemplo. Marque aqui as outras, e ele passa a aparecer no filtro de cada uma delas.",
   b:"A frente PRINCIPAL continua mandando no funil: as etapas, a coluna do quadro e a regra de fechamento são as dela, porque etapa só existe dentro de um funil e a operação comercial é uma só. No quadro, o negócio aparece na faixa da principal mesmo quando você filtra por outra frente dele. E a soma: sem filtro ele conta uma vez; filtrando cada frente ele aparece nas duas, então somar os filtros passa do total. Dividir o valor entre frentes exigiria uma regra que não existe."},
+ frentesConta:{t:"Frentes da conta",
+  a:"As frentes em que esta conta é atendida. Marque quantas valerem — uma conta pode ser Payments e Governance ao mesmo tempo.",
+  b:"Aqui não existe frente principal, porque conta não tem funil nem etapa: é só o conjunto. Nenhuma marcada é estado legítimo, para conta nova cujo assunto ainda não se sabe, e a lista mostra \u201c—\u201d em vez de chutar uma. Os negócios desta conta têm as frentes deles, com principal — são coisas separadas: a conta diz o que a Oren atende ali, o negócio diz o que está sendo negociado."},
  evidencia:{t:"Evidência e reabertura",
   a:"O rastro do que foi feito. Escreva em uma frase o que resolveu a pendência — quem respondeu, o que foi enviado, o que ficou decidido — e, se houver, cole um link que comprove: o cartão no Linear onde a tarefa é acompanhada, o e-mail, o contrato, a pasta do documento.",
   b:"Texto ou link, um dos dois basta, e os dois juntos são melhores. Fica gravado com o seu nome e a data. Reabrir é ação separada e pede motivo escrito — link não explica o que mudou — e o motivo entra na mesma linha do tempo, sem apagar a evidência de antes. O painel guarda o endereço, não o arquivo: aponte para onde o documento mora."},
@@ -4003,7 +4022,7 @@ function telaContas(){
    (!state.publico||publicoDe(c)===state.publico));
   if(ehCel()){
    h+=cs.length?'<div class="clist">'+cs.map(c=>'<div class="ci" data-conta="cliente:'+c.id+'">'+
-    '<span class="t">'+esc(c.nome||"—")+'</span><span class="s">'+esc(TEXTOS.frentesLbl[c.frente]||c.frente)+SEP+
+    '<span class="t">'+esc(c.nome||"—")+'</span><span class="s">'+esc(frenteRotuloConta(c))+SEP+
     esc(c.tipo)+SEP+esc(publicoDe(c))+(origemDe(c)?SEP+"via "+esc(nomeNegocio(origemDe(c))):"")+
     SEP+esc(c.responsavel)+SEP+resumo(negs(c))+"</span></div>").join("")+"</div>"
     :'<div class="card"><div class="empty" style="border:0">Nenhuma conta.</div></div>';
@@ -4016,13 +4035,13 @@ function telaContas(){
     return '<tr class="clk" data-conta="cliente:'+c.id+'"><td>'+esc(c.nome||"—")+"</td><td>"+esc(c.tipo)+"</td>"+
     "<td>"+esc(publicoDe(c))+"</td>"+
     "<td>"+(og?esc(nomeNegocio(og)):'<span class="soft">direto</span>')+"</td><td>"+
-    esc(TEXTOS.frentesLbl[c.frente]||c.frente)+"</td><td>"+esc(c.uf)+"</td><td>"+esc(c.responsavel)+
+    esc(frenteRotuloConta(c))+"</td><td>"+esc(c.uf)+"</td><td>"+esc(c.responsavel)+
     '</td><td>'+ds.length+" · "+esc(brlV(ds.reduce((s,d)=>s+(+d.valor||0),0)))+"</td></tr>";}).join("")+"</tbody></table></div>";
  }else{
   const ps=state.data.partners.filter(p=>achaConta(p,q));
   if(ehCel()){
    h+=ps.length?'<div class="clist">'+ps.map(p=>'<div class="ci" data-conta="parceiro:'+p.id+'">'+
-    '<span class="t">'+esc(p.nome)+'</span><span class="s">'+esc((p.frentes||[]).map(f=>TEXTOS.frentesLbl[f]).join(" · "))+SEP+
+    '<span class="t">'+esc(p.nome)+'</span><span class="s">'+esc(frenteRotuloConta(p))+SEP+
     esc(p.tier)+SEP+esc(p.status)+SEP+esc(p.responsavel)+SEP+resumo(negs(p))+"</span></div>").join("")+"</div>"
     :'<div class="card"><div class="empty" style="border:0">Nenhuma conta.</div></div>';
    return h;
@@ -4030,7 +4049,7 @@ function telaContas(){
   h+='<div class="card tbl" style="padding:0"><table><thead><tr><th>Parceiro</th><th>Frentes</th><th>Nível'+iconeHint("tier")+'</th><th>Situação</th><th>Responsável</th><th>Negócios</th></tr></thead><tbody>'+
    ps.map(p=>{const ds=negs(p);
     return '<tr class="clk" data-conta="parceiro:'+p.id+'"><td>'+esc(p.nome)+"</td><td>"+
-    esc((p.frentes||[]).map(f=>TEXTOS.frentesLbl[f]).join(" · "))+"</td><td>"+esc(p.tier)+"</td><td>"+esc(p.status)+
+    esc(frenteRotuloConta(p))+"</td><td>"+esc(p.tier)+"</td><td>"+esc(p.status)+
     "</td><td>"+esc(p.responsavel)+'</td><td>'+ds.length+" · "+esc(brlV(ds.reduce((s,d)=>s+(+d.valor||0),0)))+"</td></tr>";}).join("")+"</tbody></table></div>";
  }
  return h;
@@ -4348,8 +4367,15 @@ function painelConta(kind,id){
   if(o.origemNegocioId&&orOps[o.origemNegocioId]===undefined)
    orOps[o.origemNegocioId]=o.origemNegocioId+" (negócio não encontrado)";
   h+=fld(TEXTOS.origemLbl,ed(kind,o.id,"origemNegocioId",o.origemNegocioId||"","select",orOps),"origemNegocio");
-  const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
-  h+=fld(TEXTOS.col.frente,ed(kind,o.id,"frente",o.frente,"select",frenteOps),"frente");}
+ }
+ /* Cliente e parceiro usam o mesmo bloco: conta não tem principal. Zero frente
+    marcada é estado legítimo -- conta nova cujo assunto ainda não se sabe -- e a
+    lista mostra "—" em vez de chutar uma. */
+ {const fs=frentesDeConta(o);
+  h+=fld(TEXTOS.frentesConta,'<div class="frconj">'+FRENTES_ORDEM.map(fr=>
+   '<label><input type="checkbox" data-frconta="'+kind+":"+o.id+":"+fr+'"'+
+   (fs.indexOf(fr)>=0?" checked":"")+"><span>"+esc(TEXTOS.frentesLbl[fr])+"</span></label>").join("")+
+   (fs.length?"":'<span class="soft">'+esc(TEXTOS.frenteNenhumaConta)+"</span>")+"</div>","frentesConta");}
  h+=fld("Setor",ed(kind,o.id,"setor",o.setor,"text"));
  h+=fld("Nível",ed(kind,o.id,"tier",o.tier,"select",{T1:"T1",T2:"T2",T3:"T3"}),"tier");
  h+=fld("Situação",ed(kind,o.id,"status",o.status,"select",{Ativo:"Ativo",Prospect:"Prospect",Pausado:"Pausado",Encerrado:"Encerrado"}));
@@ -4702,6 +4728,19 @@ document.addEventListener("change",e=>{
   const err=moverEtapa(t.dataset.etapa,t.value);
   state.erroCard=err?{id:t.dataset.etapa,msg:err}:null;render();return;}
  /* Marcar salva na hora, como as pendências. */
+ /* Frentes da conta. Sem principal: o.frentes é a verdade, e o.frente passa a
+    ser o primeiro do conjunto -- ou vazio -- para quem lê o.frente continuar
+    lendo algo coerente em vez de um valor que ninguém mais atualiza. */
+ if(t.matches("[data-frconta]")){
+  const [kind,id,fr]=t.dataset.frconta.split(":");
+  const o=kind==="cliente"?cliente(id):parceiro(id);
+  if(!o)return;
+  snapshot();
+  const atual=frentesDeConta(o);
+  const nova=t.checked?atual.concat([fr]):atual.filter(x=>x!==fr);
+  o.frentes=FRENTES_ORDEM.filter(x=>nova.indexOf(x)>=0);
+  o.frente=o.frentes[0]||"";
+  o.atualizadoEm=agora();marcar();return;}
  /* Marcar frente conjugada. A principal nunca entra na lista gravada: ela vive
     em d.frente, e duplicá-la deixaria os dois lugares divergindo. */
  if(t.matches("[data-frconj]")){
