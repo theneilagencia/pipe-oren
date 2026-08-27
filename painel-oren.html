@@ -373,6 +373,10 @@ color:var(--tx);margin-bottom:10px;resize:vertical}
 .pfeitas{margin:14px 0 2px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
 font-weight:600;color:var(--tx3)}
 /* Atalhos do contato: aparecem só quando há o que abrir. */
+.frconj{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.frconj label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--tx)}
+.frconj input{width:16px;height:16px;accent-color:var(--mid)}
+.frconj .soft{font-size:12px}
 .clinks{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
 .clinks a{font-size:12px;font-weight:500;color:var(--mid);text-decoration:none}
 .clinks a:hover{color:var(--deep);text-decoration:underline}
@@ -835,6 +839,8 @@ const TEXTOS={
   venc:"atrasados",vencF:"passaram da data",
   sem:"sem data",semF:"não dá para cobrar"},
  semQuem:"sem responsável",
+ frentePrinc:"Frente principal",frenteMais:"Também nestas frentes",
+ frenteNenhuma:"nenhuma — só a principal",
  contatoT:"Contato",contatoVazio:"vazio",
  contatoCampos:[["nome","Nome"],["cargo","Cargo"],["telefone","Telefone / WhatsApp"],
   ["email","E-mail"],["site","Site"],["obs","Observações"]],
@@ -1067,6 +1073,25 @@ function frenteDe(d){
  if(!frentesAvisadas[k]){frentesAvisadas[k]=1;
   console.warn("Frente desconhecida ("+k+") em "+((d&&d.id)||"registro sem id")+". Tratando como governance.");}
  return "governance";
+}
+/* Um negócio pode ser conjugado: Capital e Payments na mesma operação. d.frentes
+   é o conjunto; d.frente continua sendo a PRINCIPAL, e é ela que decide o funil,
+   a etapa, a coluna do quadro e a regra de fechamento -- porque etapa só existe
+   dentro de um funil, e a operação comercial é uma só. Ausente, o conjunto é a
+   principal sozinha: nada precisa de migração. */
+const FRENTES_ORDEM=["payments","capital","governance"];
+function frentesDe(d){
+ const p=frenteDe(d);
+ const set={};set[p]=1;
+ ((d&&d.frentes)||[]).forEach(f=>{if(FUNIS[f])set[f]=1;});
+ return FRENTES_ORDEM.filter(f=>set[f]);
+}
+const conjugado=d=>frentesDe(d).length>1;
+/* "Capital" ou "Capital + Payments". A principal vem primeiro, sempre: é a que
+   manda no funil, e quem lê precisa saber qual é. */
+function frenteRotulo(d){
+ const fs=frentesDe(d),p=frenteDe(d);
+ return [p].concat(fs.filter(f=>f!==p)).map(f=>TEXTOS.frentesLbl[f]).join(" + ");
 }
 const funilDe=d=>FUNIS[frenteDe(d)];
 const corteDe=d=>CORTE[frenteDe(d)];
@@ -2863,7 +2888,10 @@ const achaConta=(o,q)=>!q||(o.nome+" "+o.id+" "+contatoTexto(o)).toLowerCase().i
 function negocios(){
  const q=state.filtros.busca.trim().toLowerCase();
  return state.data.deals.filter(d=>{
-  if(state.filtros.frente&&d.frente!==state.filtros.frente)return false;
+  /* Conjugado aparece no filtro de cada frente que ele tem. O total sem filtro
+     conta uma vez; a soma dos filtros passa do total, e isso é honesto: dividir
+     o valor entre frentes exigiria uma regra que não existe. */
+  if(state.filtros.frente&&frentesDe(d).indexOf(state.filtros.frente)<0)return false;
   if(state.filtros.responsavel&&d.responsavel!==state.filtros.responsavel)return false;
   if(state.filtros.tipoVenda&&d.tipoVenda!==state.filtros.tipoVenda)return false;
   if(state.publico&&publicoDe(d)!==state.publico)return false;
@@ -2929,7 +2957,7 @@ function itensTodo(){
     negócio do Paulo, que é justamente o que se quer ver. */
  const f=state.filtros;
  const base=state.data.deals.filter(d=>{
-  if(f.frente&&d.frente!==f.frente)return false;
+  if(f.frente&&frentesDe(d).indexOf(f.frente)<0)return false;
   if(f.tipoVenda&&d.tipoVenda!==f.tipoVenda)return false;
   if(state.publico&&publicoDe(d)!==state.publico)return false;
   if(f.busca.trim()&&textoBusca(d).indexOf(f.busca.trim().toLowerCase())<0)return false;
@@ -2996,7 +3024,7 @@ function textoTodo(quem){
      :x.atraso===0?" (hoje)":"")
    :"sem data";
   L.push("- ["+TODO_ESTADOS[x.estado].lbl.toLowerCase()+"] "+x.texto);
-  L.push("  "+nomeNegocio(x.d)+" · "+TEXTOS.frentesLbl[x.d.frente]+" · "+quando+
+  L.push("  "+nomeNegocio(x.d)+" · "+frenteRotulo(x.d)+" · "+quando+
    (quem?"":" · "+(x.quem||TEXTOS.semQuem)));
  });
  if(itens.length>ENC_TETO)L.push("… e mais "+(itens.length-ENC_TETO)+" na lista completa.");
@@ -3272,7 +3300,7 @@ function linhasTodo(itens,dentroDoGrupo){
    ?(x.atraso>0?"vencido há "+x.atraso+(x.atraso===1?" dia":" dias")
      :x.atraso===0?"hoje":"em "+(-x.atraso)+(x.atraso===-1?" dia":" dias"))
    :"";
-  const meta=[esc(nomeNegocio(x.d)),esc(TEXTOS.frentesLbl[x.d.frente])+" · "+esc(etapaNome(x.d))];
+  const meta=[esc(nomeNegocio(x.d)),esc(frenteRotulo(x.d))+" · "+esc(etapaNome(x.d))];
   if(!dentroDoGrupo)meta.push(x.quem?esc(x.quem):'<span class="late">'+esc(TEXTOS.semQuem)+"</span>");
   if(x.aprova&&x.aprova!==x.quem)meta.push("responde: "+esc(x.aprova));
   h+='<div class="ti '+x.estado+(state.todoSel===i?" sel":"")+'" data-abre="'+x.d.id+
@@ -3435,6 +3463,9 @@ function rosca(itens){
 /* Cada verbete tem título, o que o número significa e como é calculado.
    Sem fórmula com símbolos, sem jargão, no máximo 45 palavras. */
 const HINTS={
+ frenteConj:{t:"Frente conjugada",
+  a:"Um negócio pode envolver mais de uma frente na mesma operação — Capital e Payments juntos, por exemplo. Marque aqui as outras, e ele passa a aparecer no filtro de cada uma delas.",
+  b:"A frente PRINCIPAL continua mandando no funil: as etapas, a coluna do quadro e a regra de fechamento são as dela, porque etapa só existe dentro de um funil e a operação comercial é uma só. No quadro, o negócio aparece na faixa da principal mesmo quando você filtra por outra frente dele. E a soma: sem filtro ele conta uma vez; filtrando cada frente ele aparece nas duas, então somar os filtros passa do total. Dividir o valor entre frentes exigiria uma regra que não existe."},
  evidencia:{t:"Evidência e reabertura",
   a:"O rastro do que foi feito. Escreva em uma frase o que resolveu a pendência — quem respondeu, o que foi enviado, o que ficou decidido — e, se houver, cole um link que comprove: o cartão no Linear onde a tarefa é acompanhada, o e-mail, o contrato, a pasta do documento.",
   b:"Texto ou link, um dos dois basta, e os dois juntos são melhores. Fica gravado com o seu nome e a data. Reabrir é ação separada e pede motivo escrito — link não explica o que mudou — e o motivo entra na mesma linha do tempo, sem apagar a evidência de antes. O painel guarda o endereço, não o arquivo: aponte para onde o documento mora."},
@@ -3870,8 +3901,16 @@ function telaNegocios(){
  if(state.vista==="lista")return h+tabela(lista.filter(d=>d.etapa!=="perdido"));
  /* Um quadro por frente, porque as colunas são as etapas e cada frente tem
     as suas. Com uma frente escolhida no filtro, aparece só ela. */
- const frs=state.filtros.frente?[state.filtros.frente]:["payments","capital","governance"];
  const vivos=lista.filter(d=>d.etapa!=="perdido");
+ /* A coluna é do funil da frente principal: etapa 7 de Capital não significa
+    nada na régua de Payments. Então com filtro ligado as faixas saem das
+    principais que o filtro trouxe, não da frente filtrada -- senão um
+    conjugado com principal Capital desapareceria do quadro ao filtrar
+    Payments, embora a lista o mostrasse. */
+ const frs=state.filtros.frente
+  ?(function(){const p=FRENTES_ORDEM.filter(fr=>vivos.some(d=>frenteDe(d)===fr));
+    return p.length?p:[state.filtros.frente];})()
+  :FRENTES_ORDEM;
  if(!vivos.length)return h+'<div class="card"><div class="empty" style="border:0">'+
   esc(state.publico?TEXTOS.vazio.publico:TEXTOS.vazio.lista)+"</div></div>";
  frs.forEach(fr=>{
@@ -3899,7 +3938,7 @@ function cardHTML(d){
   '<div class="cl">'+esc(nomeNegocio(d))+"</div>"+
   (contaDetalhe(d)?'<div class="soft" style="font-size:11px;margin-bottom:4px">'+esc(contaDetalhe(d))+"</div>":"")+
   '<div class="rw"><span class="vl">'+esc(brlD(d.valor))+'</span><span class="badge"><span class="dot" style="background:'+
-  CORF[d.frente]+'"></span>'+esc(TEXTOS.frentesLbl[d.frente])+"</span>"+marcaPublico(d)+
+  CORF[frenteDe(d)]+'"></span>'+esc(frenteRotulo(d))+"</span>"+marcaPublico(d)+
   '<span class="ini" style="margin-left:auto" title="'+esc(d.responsavel)+'">'+esc(iniciais(d.responsavel))+"</span></div>"+
   '<div class="np">'+(d.proximoPasso?esc(d.proximoPasso):'<span class="soft">'+TEXTOS.motivos.passo+"</span>")+"</div>"+
   '<div class="rw"><span class="'+(late?"late":"soft")+'" style="font-size:11px">'+TEXTOS.col.prazo+": "+dt(d.prazo)+"</span></div>"+
@@ -3942,7 +3981,7 @@ function tabela(lista,paraImpressao){
   ds.map(d=>{const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
    return '<tr class="clk" data-abre="'+d.id+'"><td>'+esc(nomeNegocio(d))+
    (contaDetalhe(d)?'<div class="soft" style="font-size:11px">'+esc(contaDetalhe(d))+"</div>":"")+"</td>"+
-   '<td><span class="dot" style="background:'+CORF[d.frente]+'"></span>'+esc(TEXTOS.frentesLbl[d.frente])+"</td>"+
+   '<td><span class="dot" style="background:'+CORF[frenteDe(d)]+'"></span>'+esc(frenteRotulo(d))+"</td>"+
    "<td>"+esc(etapaNome(d))+marcaPublico(d)+"</td><td>"+esc(d.responsavel)+'</td><td style="font-variant-numeric:tabular-nums">'+esc(brlD(d.valor))+"</td>"+
    '<td class="mut">'+(d.proximoPasso?esc(d.proximoPasso):'<span class="soft">—</span>')+"</td>"+
    '<td class="'+(late?"late":"")+'">'+dt(d.prazo)+"</td></tr>";}).join("")+"</tbody></table></div>";
@@ -4031,7 +4070,7 @@ function painelKpi(id){
   if(id==="conversao")partes.push('<span class="'+(perdido(d)?"late":"mut")+'">'+
    (perdido(d)?"Perdido":"Fechado")+"</span>");
   else partes.push('<span class="mut">'+esc(etapaNome(d))+"</span>");
-  partes.push(esc(TEXTOS.frentesLbl[d.frente]));
+  partes.push(esc(frenteRotulo(d)));
   partes.push(esc(d.responsavel));
   if(id==="ponderada")partes.push('<span class="mut">'+esc(brlD(d.valor))+" × "+
    esc(String(Number(d.chance)||0))+"% = "+esc(brlD(ponderado(d)))+"</span>");
@@ -4170,7 +4209,7 @@ function painelDeal(id){
  const frenteOps={};["payments","capital","governance"].forEach(k=>frenteOps[k]=TEXTOS.frentesLbl[k]);
  let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
   '<div class="lbl"><span class="dot" style="background:'+CORF[d.frente]+'"></span>'+
-   esc(TEXTOS.frentesLbl[d.frente])+" · "+esc(TEXTOS.tipoVenda[d.tipoVenda])+"</div>"+
+   esc(frenteRotulo(d))+" · "+esc(TEXTOS.tipoVenda[d.tipoVenda])+"</div>"+
   '<div style="font-size:20px;margin-top:6px">'+esc(nomeNegocio(d))+"</div>"+
   (contaDetalhe(d)?'<div style="font-size:13px;margin-top:2px;opacity:.85">'+esc(contaDetalhe(d))+"</div>":"")+
   '<div style="font-size:15px;font-weight:600;margin-top:6px;color:var(--tx2)">'+esc(brlD(d.valor))+"</div></div>";
@@ -4185,7 +4224,16 @@ function painelDeal(id){
  h+=fld(TEXTOS.col.etapa,esc(etapaNome(d))+(d.etapa==="perdido"?" · "+esc(d.motivoPerda||""):""),"etapa");
  h+=fld(TEXTOS.publicoLbl,ed("deal",d.id,"publico",publicoDe(d),"select",{B2B:"B2B",B2C:"B2C",B2B2C:"B2B2C"}),"publico");
  if(d.etapa==="perdido")h+=fld("Motivo da perda",ed("deal",d.id,"motivoPerda",d.motivoPerda,"text"),"motivoPerda");
- h+=fld(TEXTOS.col.frente,ed("deal",d.id,"frente",d.frente,"select",frenteOps),"frente");
+ h+=fld(TEXTOS.frentePrinc,ed("deal",d.id,"frente",d.frente,"select",frenteOps),"frente");
+ /* As outras frentes são caixas, não select: é conjunto, não escolha única. A
+    principal não aparece aqui -- ela já está escolhida acima, e desmarcar a
+    própria principal não é uma operação que exista. */
+ {const fs=frentesDe(d),p=frenteDe(d);
+  const outras=FRENTES_ORDEM.filter(fr=>fr!==p);
+  h+=fld(TEXTOS.frenteMais,'<div class="frconj">'+outras.map(fr=>
+   '<label><input type="checkbox" data-frconj="'+d.id+":"+fr+'"'+
+   (fs.indexOf(fr)>=0?" checked":"")+"><span>"+esc(TEXTOS.frentesLbl[fr])+"</span></label>").join("")+
+   (fs.length<2?'<span class="soft">'+esc(TEXTOS.frenteNenhuma)+"</span>":"")+"</div>","frenteConj");}
  h+=fld("Tipo de venda",ed("deal",d.id,"tipoVenda",d.tipoVenda,"select",
   {direta:TEXTOS.tipoVenda.direta,parceiro:TEXTOS.tipoVenda.parceiro}),"tipoVenda");
  /* Conta vinculada: a lista muda com o tipo de venda, nas mesmas regras que
@@ -4445,6 +4493,25 @@ function setCampo(kind,id,campo,valor){
  /* Venda direta nao pode ter parceiro: sem isto a troca de tipo deixa o
     negocio num estado que validarEtapa recusa, sem explicar por que. */
  if(kind==="deal"&&campo==="tipoVenda"&&valor==="direta")alvo.parceiroId=null;
+ /* Trocar a frente principal de um conjugado: a antiga entra no conjunto e a
+    nova sai dele, senão a antiga desapareceria em silêncio -- perda de dado por
+    clique. E o funil muda com ela: etapa fora da régua nova é grampeada na
+    última, com aviso, porque etapa 9 num funil de 7 fazia o negócio contar como
+    fechado sem ninguém decidir isso. */
+ if(kind==="deal"&&campo==="frente"&&FUNIS[valor]&&valor!==frenteDe(alvo)){
+  const antiga=frenteDe(alvo);
+  const set=(alvo.frentes||[]).filter(x=>FUNIS[x]);
+  if(set.length||true){
+   alvo.frentes=FRENTES_ORDEM.filter(fr=>
+    fr!==valor&&(fr===antiga||set.indexOf(fr)>=0));
+  }
+  const n=FUNIS[valor].length;
+  if(alvo.etapa!=="perdido"&&Number(alvo.etapa)>n){
+   const de=alvo.etapa;alvo.etapa=n;
+   toast("Etapa "+de+" não existe no funil de "+TEXTOS.frentesLbl[valor]+
+    ". O negócio ficou na etapa "+n+" ("+FUNIS[valor][n-1]+").",true);
+  }
+ }
  if(["valor","chance","receitaRecorrente","potencial"].indexOf(campo)>=0){
   let v=Number(String(valor).replace(/[^\d,-]/g,"").replace(",","."))||0;
   if(campo==="chance")v=Math.max(0,Math.min(100,v));
@@ -4635,6 +4702,16 @@ document.addEventListener("change",e=>{
   const err=moverEtapa(t.dataset.etapa,t.value);
   state.erroCard=err?{id:t.dataset.etapa,msg:err}:null;render();return;}
  /* Marcar salva na hora, como as pendências. */
+ /* Marcar frente conjugada. A principal nunca entra na lista gravada: ela vive
+    em d.frente, e duplicá-la deixaria os dois lugares divergindo. */
+ if(t.matches("[data-frconj]")){
+  const [id,fr]=t.dataset.frconj.split(":");
+  const d=state.data.deals.find(x=>x.id===id);if(!d)return;
+  snapshot();
+  const atual=(d.frentes||[]).filter(x=>FUNIS[x]&&x!==frenteDe(d));
+  d.frentes=t.checked?atual.concat([fr]).filter((x,i,a)=>a.indexOf(x)===i)
+   :atual.filter(x=>x!==fr);
+  d.atualizadoEm=agora();marcar();return;}
  if(t.matches("[data-check]")){
   const [id,chave]=t.dataset.check.split(":");
   const d=state.data.deals.find(x=>x.id===id);if(!d)return;
