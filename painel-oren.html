@@ -1071,7 +1071,17 @@ const brlC=v=>{const n=Math.round(Number(v)||0);
  if(Math.abs(n)>=1e3)return "R$ "+nfN.format(Math.round(n/1e3))+" mil";
  return brl(n);};
 const dt=v=>v?String(v).slice(0,10).split("-").reverse().join("/"):"—";
-const hoje=()=>new Date();
+/* Prazo é dia de calendário, não instante -- e essa distinção estava errada em
+   todo lugar. new Date("2026-08-27") é meia-noite UTC; hoje() era o agora local,
+   com hora. Às 11h de Brasília a subtração dava 0,6 dia, o Math.round levava
+   para 1, e tarefa DE HOJE aparecia como "vencido há 1 dia" -- a de amanhã,
+   como "hoje", e todo atraso saía com um dia a mais. Agora os dois lados são
+   meia-noite local, e a diferença é contagem de dias de calendário. */
+const diaLocal=v=>{
+ const p=String(v||"").slice(0,10).split("-").map(Number);
+ return (p.length===3&&p[0])?new Date(p[0],p[1]-1,p[2]):new Date(NaN);
+};
+const hoje=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());};
 const dias=(a,b)=>Math.round((b-a)/864e5);
 const iniciais=n=>String(n||"").trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();
 /* Frente ausente ou desconhecida cai em governance, com aviso no console.
@@ -2992,7 +3002,7 @@ function itensTodo(){
  const consultados=d=>PAPEIS.map(([k,l])=>{const v=(d.papeis||{})[k];return v?l+": "+v:"";}).filter(Boolean);
  const item=(d,tipo,texto,quem,prazo)=>{
   const o={tipo:tipo,texto:texto,d:d,quem:(quem||"").trim(),aprova:d.responsavel||"",
-   consultados:consultados(d),prazo:prazo||"",atraso:prazo?dias(new Date(prazo),h):null};
+   consultados:consultados(d),prazo:prazo||"",atraso:prazo?dias(diaLocal(prazo),h):null};
   o.estado=estadoTodo(o);return o;
  };
  base.forEach(d=>{
@@ -3398,10 +3408,10 @@ function atencao(lista){
  const h=hoje(),out=[];
  lista.filter(emAberto).forEach(d=>{
   let m=null;
-  if(d.prazo&&new Date(d.prazo)<h&&!fechado(d))m=TEXTOS.motivos.prazo;
+  if(d.prazo&&diaLocal(d.prazo)<h&&!fechado(d))m=TEXTOS.motivos.prazo;
   else if((d.pendencias||[]).some(p=>p.bloqueante&&!p.resolvida))m=TEXTOS.motivos.pend;
   else if(!d.proximoPasso||!String(d.proximoPasso).trim())m=TEXTOS.motivos.passo;
-  else if(d.atualizadoEm&&dias(new Date(d.atualizadoEm),h)>30)m=TEXTOS.motivos.parado;
+  else if(d.atualizadoEm&&dias(diaLocal(d.atualizadoEm),h)>30)m=TEXTOS.motivos.parado;
   if(m)out.push({d:d,motivo:m});
  });
  return out.sort((a,b)=>(Number(b.d.valor)||0)-(Number(a.d.valor)||0)).slice(0,15);
@@ -4015,7 +4025,7 @@ function telaNegocios(){
  return h;
 }
 function cardHTML(d){
- const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
+ const late=d.prazo&&diaLocal(d.prazo)<hoje()&&!fechado(d);
  const err=state.erroCard&&state.erroCard.id===d.id?'<div class="err">'+esc(state.erroCard.msg)+"</div>":"";
  return '<div class="dc" draggable="'+(ehMobile()?"false":"true")+'" data-id="'+d.id+'">'+
   '<div class="cl">'+esc(nomeNegocio(d))+"</div>"+
@@ -4045,7 +4055,7 @@ function cartoesNegocios(lista){
  const ds=ordenarLista(lista);
  if(!ds.length)return '<div class="card"><div class="empty" style="border:0">'+TEXTOS.vazio.lista+"</div></div>";
  return '<div class="clist">'+ds.map(d=>{
-  const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
+  const late=d.prazo&&diaLocal(d.prazo)<hoje()&&!fechado(d);
   const conta=contaDetalhe(d);
   return '<div class="ci" data-abre="'+d.id+'"><span class="t">'+esc(nomeNegocio(d))+"</span>"+
    '<span class="s">'+(conta?esc(conta)+SEP:"")+esc(etapaNome(d))+(!state.publico&&publicoDe(d)!=="B2B"?SEP+publicoDe(d):"")+SEP+esc(d.responsavel)+SEP+esc(brlD(d.valor))+
@@ -4061,7 +4071,7 @@ function tabela(lista,paraImpressao){
  if(!ds.length)return '<div class="card"><div class="empty" style="border:0">'+TEXTOS.vazio.lista+"</div></div>";
  return '<div class="card tbl" style="padding:0"><table><thead><tr>'+cols.map(([c,l])=>
   '<th class="s" data-ord="'+c+'">'+esc(l)+(o.campo===c?(o.dir>0?" ↑":" ↓"):"")+"</th>").join("")+"</tr></thead><tbody>"+
-  ds.map(d=>{const late=d.prazo&&new Date(d.prazo)<hoje()&&!fechado(d);
+  ds.map(d=>{const late=d.prazo&&diaLocal(d.prazo)<hoje()&&!fechado(d);
    return '<tr class="clk" data-abre="'+d.id+'"><td>'+esc(nomeNegocio(d))+
    (contaDetalhe(d)?'<div class="soft" style="font-size:11px">'+esc(contaDetalhe(d))+"</div>":"")+"</td>"+
    '<td><span class="dot" style="background:'+CORF[frenteDe(d)]+'"></span>'+esc(frenteRotulo(d))+"</td>"+
