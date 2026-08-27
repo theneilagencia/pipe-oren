@@ -382,6 +382,10 @@ font-weight:600;color:var(--tx3)}
 .clinks a:hover{color:var(--deep);text-decoration:underline}
 .err{color:var(--neg);font-size:11px;margin-top:4px;display:block}
 /* ================= ENCAMINHAR ================= */
+/* O atalho de compartilhar, no cabeçalho da gaveta do negócio. */
+.phcomp{margin-top:12px;font-size:12px;font-weight:600;padding:5px 11px;min-height:30px;
+border:1px solid var(--bd);border-radius:999px;background:var(--surf);color:var(--tx2)}
+.phcomp:hover{border-color:var(--mid);color:var(--deep);background:var(--alt)}
 .encres{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0 4px;font-size:13px;color:var(--tx2)}
 .encres b{font-weight:600;color:var(--tx);font-variant-numeric:proportional-nums}
 .encacs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 18px}
@@ -820,6 +824,12 @@ const TEXTOS={
  todoMinhas:"Minhas tarefas",todoTodos:"De todo o time",
  todoPassos:"Próximos passos",
  encT:"Encaminhar tarefas",encBtn:"Encaminhar",
+ compT:"Compartilhar",
+ compLink:"Link para abrir este negócio",
+ compResumo:"Resumo para colar",
+ compCopiarLink:"Copiar link",compCopiarResumo:"Copiar resumo",
+ compNota:"Quem abrir entra com a conta dele. O link leva ao negócio; ele não mostra dado a quem não tem acesso ao painel.",
+ compNaoAchou:i=>"O link aponta para "+i+", que não existe nesta base.",
  encPara:"Encaminhar o quê",encTime:"Tudo, de todo o time",
  encLink:"Link para abrir a lista",
  encLinkNota:"Quem abrir precisa entrar com a conta dele. O link não mostra dado a quem não tem acesso — ele só leva à lista certa.",
@@ -3048,6 +3058,49 @@ function textoTodo(quem){
  L.push("Lista completa: "+linkTodo(quem));
  return L.join("\n");
 }
+/* Link e resumo de um negócio. O link é endereço, não dado: quem abre entra com
+   a conta dele e o banco decide o que pode ver. Compartilhar para fora do painel
+   -- alguém sem conta -- seria outra coisa: exigiria página pública, e isso é
+   decisão de quem responde pelo dado, não efeito colateral de um botão. */
+function linkNegocio(id){return baseLink()+"#negocio?id="+encodeURIComponent(id);}
+function textoNegocio(d){
+ const c=cliente(d.clienteId),p=parceiro(d.parceiroId);
+ const abertas=(d.pendencias||[]).filter(x=>!x.resolvida);
+ const L=[d.id+" · "+nomeNegocio(d)];
+ if(c&&c.nome&&c.nome!==nomeNegocio(d))L.push("Cliente: "+c.nome);
+ if(p&&p.nome)L.push("Parceiro: "+p.nome);
+ L.push("Valor: "+brlD(d.valor));
+ L.push("Frente: "+frenteRotulo(d));
+ L.push("Etapa: "+d.etapa+" · "+etapaNome(d));
+ L.push("Responsável: "+(d.responsavel||"—"));
+ L.push("Próximo passo: "+(String(d.proximoPasso||"").trim()||"— a definir"));
+ L.push("Prazo: "+(d.prazo?dt(d.prazo):"sem data"));
+ if(abertas.length){
+  L.push("");
+  L.push("Pendências abertas ("+abertas.length+"):");
+  abertas.slice(0,ENC_TETO).forEach(x=>L.push("- "+(x.bloqueante?"[bloqueio] ":"")+
+   (x.texto||"(sem texto)")+(x.responsavel?" — "+x.responsavel:"")+
+   (x.prazo?" — "+dt(x.prazo):"")));
+ }
+ L.push("");
+ L.push("Abrir no painel: "+linkNegocio(d.id));
+ return L.join("\n");
+}
+function blocoCompartilhar(d){
+ const link=linkNegocio(d.id),msg=textoNegocio(d);
+ const corpo='<div class="encacs">'+
+  '<button class="pri" data-negcopia="link:'+d.id+'">'+esc(TEXTOS.compCopiarLink)+"</button>"+
+  '<button data-negcopia="msg:'+d.id+'">'+esc(TEXTOS.compCopiarResumo)+"</button>"+
+  '<a class="btnl" href="https://wa.me/?text='+encodeURIComponent(msg)+
+   '" target="_blank" rel="noopener">'+esc(TEXTOS.encWhats)+"</a>"+
+  '<a class="btnl" href="mailto:?subject='+encodeURIComponent(d.id+" · "+nomeNegocio(d))+
+   "&body="+encodeURIComponent(msg)+'">'+esc(TEXTOS.encMail)+"</a></div>"+
+  fld(TEXTOS.compLink,'<input class="enclink" readonly value="'+esc(link)+'">'+
+   '<div class="soft" style="font-size:11px;margin-top:6px">'+esc(TEXTOS.compNota)+"</div>")+
+  '<div class="lbl" style="margin:14px 0 6px">'+esc(TEXTOS.compResumo)+"</div>"+
+  '<textarea class="encmsg" readonly rows="12">'+esc(msg)+"</textarea>";
+ return sec("compartilhar",TEXTOS.compT,"",corpo);
+}
 function painelEnc(quem){
  const todos=itensTodo();
  const nomes=[];
@@ -3102,22 +3155,33 @@ async function copiar(texto){
    para quem já tinha sessão e para quem acabou de entrar pelo formulário. */
 let LINK_TODO=(function(){
  const h=location.hash||"";
- if(h.indexOf("#todo")!==0)return null;
  const q=h.indexOf("?");
  const p=new URLSearchParams(q>=0?h.slice(q+1):"");
- return {quem:p.get("quem")||"",tipo:p.get("tipo")||""};
+ if(h.indexOf("#negocio")===0)return {alvo:"negocio",id:p.get("id")||""};
+ if(h.indexOf("#todo")===0)return {alvo:"todo",quem:p.get("quem")||"",tipo:p.get("tipo")||""};
+ return null;
 })();
 function aplicarLinkTodo(){
  if(!LINK_TODO||!state.data)return;
  const l=LINK_TODO;LINK_TODO=null;
+ /* Tira o endereço da barra em qualquer caminho: recarregar no meio do trabalho
+    não pode jogar a pessoa de volta para o que o link pedia. */
+ try{history.replaceState(null,"",baseLink());}catch(e){}
+ if(l.alvo==="negocio"){
+  const d=state.data.deals.find(x=>x.id===l.id);
+  if(!d){toast(TEXTOS.compNaoAchou(l.id||"—"),true);state.tela="negocios";return;}
+  state.tela="negocios";state.vista="lista";
+  /* A seção de compartilhar aberta seria a primeira coisa que quem recebe veria,
+     e não é o que ele veio ver. */
+  state.secoes.compartilhar=false;
+  state.painel={tipo:"deal",id:d.id};
+  return;
+ }
  state.tela="todo";
  state.todoQuem="todos";
  state.todoSo=l.quem||"";
  state.todoTipo=l.tipo==="passo"?"passo":"";
  state.todoFiltro="";state.todoSel=-1;
- /* Tira o endereço da barra depois de aplicar: sem isso, recarregar a página
-    no meio do trabalho jogaria a pessoa de volta para a lista do link. */
- try{history.replaceState(null,"",baseLink());}catch(e){}
 }
 function telaTodo(){
  const todos=itensTodo();
@@ -4231,7 +4295,10 @@ function painelDeal(id){
    esc(frenteRotulo(d))+" · "+esc(TEXTOS.tipoVenda[d.tipoVenda])+"</div>"+
   '<div style="font-size:20px;margin-top:6px">'+esc(nomeNegocio(d))+"</div>"+
   (contaDetalhe(d)?'<div style="font-size:13px;margin-top:2px;opacity:.85">'+esc(contaDetalhe(d))+"</div>":"")+
-  '<div style="font-size:15px;font-weight:600;margin-top:6px;color:var(--tx2)">'+esc(brlD(d.valor))+"</div></div>";
+  '<div style="font-size:15px;font-weight:600;margin-top:6px;color:var(--tx2)">'+esc(brlD(d.valor))+"</div>"+
+  /* Atalho no cabeçalho: compartilhar é ação, e ação não mora no fundo da
+     gaveta atrás de uma seção fechada. */
+  '<button class="phcomp" data-compabre="'+d.id+'">'+esc(TEXTOS.compT)+"</button></div>";
  h+='<div class="pb">';
  h+='<div class="lbl" style="margin-top:16px">'+esc(HINTS.trilha.t)+iconeHint("trilha")+"</div>";
  h+='<div class="trk">'+funilDe(d).map((nome,i)=>{const et=i+1;
@@ -4269,6 +4336,7 @@ function painelDeal(id){
  h+=fld("Chance de fechar",ed("deal",d.id,"chance",d.chance,"pct"),"chance");
  h+=fld(TEXTOS.col.passo,ed("deal",d.id,"proximoPasso",d.proximoPasso,"text"),"passo");
  h+=fld(TEXTOS.col.prazo,ed("deal",d.id,"prazo",d.prazo,"date"),"prazo");
+ h+=blocoCompartilhar(d);
  h+=blocoContato("deal",d);
  const pend=(d.pendencias||[]);
  /* Clientes que nasceram deste negócio. Fica antes das pendências porque é
@@ -4592,6 +4660,15 @@ document.addEventListener("click",e=>{
   abrirPainel({tipo:"enc",quem:el.dataset.todoenc||""});return;}
  if(el=g("[data-todoso]")){
   state.todoSo=el.dataset.todoso||"";state.todoFiltro="";state.todoSel=-1;render();return;}
+ if(el=g("[data-compabre]")){
+  state.secoes.compartilhar=true;render();
+  const sec=document.querySelector('[data-sec="compartilhar"]');
+  if(sec&&sec.scrollIntoView)sec.scrollIntoView({block:"start",behavior:"smooth"});
+  return;}
+ if(el=g("[data-negcopia]")){
+  const [o,id]=el.dataset.negcopia.split(":");
+  const d=state.data.deals.find(x=>x.id===id);if(!d)return;
+  copiar(o==="link"?linkNegocio(d.id):textoNegocio(d));return;}
  if(el=g("[data-enccopia]")){
   const q=state.painel&&state.painel.tipo==="enc"?(state.painel.quem||""):"";
   copiar(el.dataset.enccopia==="link"?linkTodo(q):textoTodo(q));return;}
