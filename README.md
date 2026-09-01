@@ -242,8 +242,28 @@ outro em silêncio.
 Cada pessoa troca a própria senha no rodapé da lateral esquerda. Quem esqueceu usa
 **Esqueci minha senha** na tela de entrada, e o Supabase manda o link.
 
+### Atividades de comercial e marketing
+
+A tela **Atividades** (atalho `G` `A`) guarda o trabalho que não pende de negócio
+nenhum: uma campanha, um material, uma lista para prospectar, uma apresentação a
+refazer. Quatro campos e nada mais — o que precisa ser feito, o status, o
+responsável e a data. Clicar em qualquer valor da linha edita no lugar.
+
+A lista é agrupada por status (**A fazer**, **Em andamento**, **Concluída**),
+porque a pergunta desta tela é "em que pé está". A área — Comercial ou
+Marketing — é a aba de cima. Concluídas saem da fila e ficam atrás do próprio
+cartão, com quem concluiu e quando; o número continua à vista.
+
+Tudo o que está em aberto aqui também aparece no **To Do** da pessoa
+responsável, marcado como atividade: cadastrar e mover status é na tela de
+Atividades, cobrar é no To Do. Data em branco é estado legítimo para atividade
+nova — é o cartão "sem data" que lembra de marcar, e o painel não inventa prazo.
+
+Atividade não tem frente, tipo de venda nem público: são atributos de negócio.
+Por isso, na tela de Atividades, o único filtro que sobra é o de responsável.
+
 **Exportar** baixa o documento do pipeline inteiro: parceiros, clientes,
-negócios, pendências, histórico de etapas e a lista de responsáveis. O arquivo é
+negócios, pendências, atividades, histórico de etapas e a lista de responsáveis. O arquivo é
 idêntico ao que está no banco — dá para reimportar e voltar ao mesmo estado.
 
 Antes de gerar, o painel relê o banco, para o backup não sair de uma aba aberta
