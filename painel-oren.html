@@ -311,6 +311,9 @@ padding:12px 0;font-size:13px;font-weight:600;display:flex;gap:8px;color:var(--t
 [data-edit]{cursor:text;border-radius:4px;padding:4px 6px;margin:-4px -6px;display:inline-block;
 max-width:100%;min-width:0;transition:background var(--fast) ease-out}
 [data-edit]:hover{background:var(--alt)}
+/* Campo vazio com rótulo próprio ("definir", "sem descrição"): é convite, não
+   valor -- então não se lê como se fosse o conteúdo. */
+[data-edit].vaz{color:var(--tx3);font-style:italic}
 [data-edit]::after{content:"editar";font-size:11px;color:var(--mid);margin-left:8px;opacity:0}
 [data-edit]:hover::after{opacity:1}
 [data-edit] input,[data-edit] select,[data-edit] textarea{width:100%;border:1px solid var(--mid);
@@ -532,60 +535,146 @@ padding:2px 7px;letter-spacing:0}
 .tvirada .td{margin-left:auto;font-size:11px;color:var(--tx3);text-transform:none;
 letter-spacing:0;font-weight:400}
 /* ============ ATIVIDADES DE COMERCIAL E MARKETING ============
-   A linha é editável no lugar, como a pendência do negócio: clicar num valor
-   abre o campo. O gutter colorido da esquerda é o mesmo do To Do, porque a
-   régua de prazo é a mesma -- quem já leu uma tela lê a outra sem aprender
-   nada novo. */
-.atbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-2px 0 14px}
+   Densidade de lista de tarefas de verdade: uma linha por atividade, 38px de
+   altura, texto numa linha só, e tudo o mais encostado à direita. A versão
+   anterior era um empilhado de cartões com um grupo de três botões por linha
+   -- a primeira atividade caía abaixo da dobra e a tela parecia formulário,
+   não lista. Aqui a lista é uma superfície só, os cabeçalhos de status grudam
+   no topo ao rolar, e as ações aparecem no hover.
+
+   O glifo da esquerda é STATUS, não prazo: a urgência vive na cor da data.
+   Antes os dois diziam a mesma coisa em lugares diferentes. */
+/* A barra fina no topo, no lugar dos quatro cartões grandes. */
+.atbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px}
 .atbar .sp{flex:1 1 auto}
-.atnova{background:#0e5351;color:#fff;border-color:#0e5351;font-weight:500;padding:8px 14px}
-.atv{display:flex;align-items:flex-start;gap:9px;padding:11px 14px 11px 17px;
-border-bottom:1px solid var(--bd);position:relative;flex-wrap:wrap;min-width:0}
-.atv:last-child{border-bottom:0}
-.atv::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tkc)}
-.atv.foco{background:#eef4f0}
-.atv>.ic{flex:0 0 16px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--tkc)}
-.atv>.ic svg{width:13px;height:13px;fill:var(--tkc)}
-.atv.prazo>.ic svg,.atv.semPrazo>.ic svg{fill:none}
-.atv .corpo{flex:1 1 15em;min-width:0;overflow-wrap:anywhere}
-.atv .corpo>[data-edit]{font-size:13px;font-weight:500;line-height:1.35;letter-spacing:-.005em}
-.atv .meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11px;
-color:var(--tx3);margin-top:3px}
-.atv .meta [data-edit]{font-size:11px;padding:2px 4px;margin:-2px -4px}
-/* A dica "editar" reserva espaço mesmo invisível, e numa linha de quatro
-   campos isso abre buracos. No texto principal ela fica; aqui, o fundo do
-   hover já diz que dá para clicar. */
-.atv .meta [data-edit]::after{content:none}
-.atv .meta [data-edit].vaz{color:var(--tx3);font-style:italic}
-.atv .qd{font-weight:500}
-.atv.vencido .qd,.atv.hoje .qd{color:var(--warn)}
-.atv .fp{color:var(--ok);font-weight:500}
-/* Concluída fica com o texto riscado e a linha rebaixada: é registro, não fila. */
-.atv.feita{color:var(--tx3)}
-.atv.feita .corpo>[data-edit]{text-decoration:line-through}
-.atv .st{flex:0 0 auto;margin-top:1px}
-.atv .acs{flex:0 0 auto;display:flex;align-items:center;gap:4px;margin-top:1px}
-.atv .acs button{font-size:11px;padding:5px 8px;min-height:30px;color:var(--tx3);
-border-color:transparent;background:none}
-.atv .acs button:hover{border-color:var(--bd);background:var(--surf);color:var(--neg)}
-/* Mover de status é um clique, e o estado atual fica escrito -- não só marcado
-   por cor. Três botões porque são três estados: menu esconderia o caminho. */
-.atseg{display:inline-flex;background:var(--alt);border:1px solid var(--bd);
-border-radius:999px;padding:2px;gap:2px}
-.atseg button{border:0;background:none;border-radius:999px;padding:3px 9px;min-height:26px;
-font-size:11px;font-weight:600;color:var(--tx3);letter-spacing:.01em}
-.atseg button:hover{background:rgba(255,255,255,.7);color:var(--tx)}
-.atseg button.on{background:var(--surf);color:var(--deep);box-shadow:var(--sh1)}
-@media (max-width:640px){
- /* No celular o texto fica com a linha toda e o controle de status desce para
-    a linha de baixo, alinhado com ele; o excluir vai para a direita. Sem o
-    flex-basis forçado, o status era espremido ao lado do texto e virava duas
-    palavras empilhadas parecendo rótulo, não botão. */
- .atv{padding:11px 12px 11px 15px}
- .atv .corpo{flex:1 1 calc(100% - 26px)}
- .atv .st{margin-left:25px}
- .atv .acs{margin-left:auto}
- .atseg button{padding:3px 8px}
+.atseg2{display:inline-flex;background:var(--alt);border:1px solid var(--bd);
+border-radius:999px;padding:2px;max-width:100%;min-width:0}
+.atseg2 button{border:0;background:none;border-radius:999px;padding:4px 11px;min-height:28px;
+font-size:12px;font-weight:600;color:var(--tx3);display:inline-flex;align-items:center;gap:6px;
+min-width:0;white-space:nowrap}
+.atseg2 button .n{font-size:10px;font-weight:600;font-variant-numeric:tabular-nums;opacity:.8}
+.atseg2 button:hover{color:var(--tx)}
+.atseg2 button.on{background:var(--surf);color:var(--deep);box-shadow:var(--sh1)}
+/* Pastilha de estado: o número fica dentro dela, e o mesmo gesto liga e desliga. */
+.atchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;
+padding:4px 10px;min-height:28px;border:1px solid var(--bd);border-radius:999px;
+background:var(--surf);color:var(--tx2);white-space:nowrap}
+.atchip .n{font-variant-numeric:tabular-nums;font-weight:600;color:var(--tx3)}
+.atchip .pt{width:7px;height:7px;border-radius:999px;flex:0 0 auto}
+.atchip:hover:not(:disabled){border-color:var(--mid);color:var(--deep)}
+.atchip.on{background:var(--deep);border-color:var(--deep);color:#fff}
+.atchip.on .n{color:rgba(255,255,255,.72)}
+.atchip:disabled{opacity:.4}
+.atnova{display:inline-flex;align-items:center;gap:6px;background:var(--deep);color:#fff;
+border-color:var(--deep);font-weight:500;padding:5px 12px;min-height:30px;font-size:12px}
+.atnova:hover{background:var(--mid);border-color:var(--mid)}
+.atnova .p{font-size:14px;line-height:1;opacity:.85}
+/* A lista inteira numa superfície. Sem overflow:hidden, porque o menu de
+   status é um elemento fixo por cima -- e clipping cortaria o menu. */
+.atlista{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2)}
+.atlista>section:first-child .atgh{border-radius:calc(var(--r2) - 1px) calc(var(--r2) - 1px) 0 0}
+.atlista>section:last-child .atr:last-child{border-bottom:0;
+border-radius:0 0 calc(var(--r2) - 1px) calc(var(--r2) - 1px)}
+/* Cabeçalho de grupo: 30px, grudando no topo, com o "+" que cria já naquele status. */
+.atgh{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--alt);
+border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:3}
+.atgh .g{width:14px;height:14px;flex:0 0 auto;display:flex}
+.atgh .g svg{width:14px;height:14px}
+.atgh .t{font-size:12px;font-weight:600;color:var(--tx);letter-spacing:-.006em}
+.atgh .c{font-size:11px;font-weight:600;color:var(--tx3);font-variant-numeric:tabular-nums}
+.atgh .w{font-size:11px;font-weight:600;color:var(--warn)}
+.atgh .sp{flex:1 1 auto}
+.atgh .add{width:24px;height:24px;min-height:24px;padding:0;border:0;background:none;
+color:var(--tx3);border-radius:var(--r);font-size:15px;line-height:1;opacity:0;
+transition:opacity var(--fast) ease-out}
+.atgh:hover .add,.atgh .add:focus-visible{opacity:1}
+.atgh .add:hover{background:var(--surf);color:var(--deep)}
+/* A linha. */
+.atr{display:flex;align-items:center;gap:9px;padding:0 10px 0 8px;min-height:38px;
+border-bottom:1px solid var(--bd);position:relative;transition:background var(--fast) ease-out}
+.atr:last-child{border-bottom:0}
+.atr:hover{background:var(--alt)}
+.atr.sel{background:#eef4f0}
+.atr.sel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--mid)}
+/* O glifo é botão: abre o menu com os três status. */
+.atg{width:24px;height:24px;min-height:24px;padding:0;border:0;background:none;border-radius:999px;
+display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;color:var(--atc)}
+.atg svg{width:15px;height:15px}
+.atg:hover{background:rgba(14,83,81,.1)}
+.atr .tt{flex:1 1 auto;min-width:0;font-size:13px;font-weight:500;letter-spacing:-.005em;
+color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+background:none;border:0;border-radius:0;padding:9px 0;text-align:left;min-height:0}
+.atr .tt:hover{background:none;border:0}
+.atr.feita .tt{color:var(--tx3);text-decoration:line-through}
+.atr .tt .vz{color:var(--tx3);font-style:italic;font-weight:400}
+/* Indicador de descrição: quem tem contexto escrito mostra o traço duplo. */
+.atr .dsc{width:13px;height:13px;flex:0 0 auto;color:var(--tx3);display:flex}
+.atr .dsc svg{width:13px;height:13px}
+/* Etiqueta de área, com o ponto da cor. */
+.atlb{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;font-size:11px;font-weight:500;
+color:var(--tx2);background:var(--surf);border:1px solid var(--bd);border-radius:999px;padding:2px 8px;
+white-space:nowrap}
+.atr:hover .atlb{background:var(--surf)}
+.atlb .pt{width:6px;height:6px;border-radius:999px;flex:0 0 auto}
+/* A data de fim: a urgência mora aqui, em cor E em palavra no title. */
+.atr .dta{font-size:12px;color:var(--tx3);font-variant-numeric:tabular-nums;
+white-space:nowrap;flex:0 0 auto;display:inline-flex;align-items:center;gap:5px}
+.atr .dta .pt{width:6px;height:6px;border-radius:999px;flex:0 0 auto;background:currentColor}
+.atr.vencido .dta,.atr.hoje .dta{color:var(--warn);font-weight:600}
+.atr .dta.vazia{font-style:italic;font-variant-numeric:normal}
+.atr .dta.vazia .pt{display:none}
+.atr>.av{width:21px;height:21px;font-size:9px;border:1px solid var(--bd)}
+.atr .mais{width:24px;height:24px;min-height:24px;padding:0;border:0;background:none;
+color:var(--tx3);border-radius:var(--r);font-size:15px;line-height:1;flex:0 0 auto;
+opacity:0;transition:opacity var(--fast) ease-out}
+.atr:hover .mais,.atr.sel .mais,.atr .mais:focus-visible{opacity:1}
+.atr .mais:hover{background:var(--surf);color:var(--deep)}
+/* O menu de status e o de ações: camada fixa, posicionada a partir do botão. */
+#atmenu{position:fixed;z-index:46;min-width:196px;background:var(--surf);
+border:1px solid var(--bd);border-radius:var(--r2);box-shadow:var(--sh2);padding:4px;display:none}
+#atmenu.on{display:block}
+#atmenu .mt{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);
+font-weight:600;padding:6px 9px 4px}
+#atmenu button{display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;
+padding:7px 9px;min-height:34px;border-radius:var(--r);font-size:12.5px;font-weight:500;
+color:var(--tx2);text-align:left}
+#atmenu button:hover{background:var(--alt);color:var(--tx)}
+#atmenu button .g{width:15px;height:15px;flex:0 0 auto;display:flex}
+#atmenu button .g svg{width:15px;height:15px}
+#atmenu button .k{margin-left:auto;font-size:11px;color:var(--tx3);font-weight:600}
+#atmenu button.on{color:var(--deep);font-weight:600}
+#atmenu button.neg{color:var(--neg)}
+#atmenu button.neg:hover{background:#fdf0f2}
+#atmenu hr{border:0;border-top:1px solid var(--bd);margin:4px 0}
+/* Vazio: uma frase e o caminho, centralizados, sem moldura dentro de moldura. */
+.atvazio{padding:44px 20px;text-align:center;color:var(--tx3);font-size:13px;line-height:1.5}
+.atvazio b{display:block;font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:4px}
+.atvazio .atnova{margin-top:14px}
+/* A gaveta da atividade: o título é o campo grande do cabeçalho. */
+.pativ{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pativ .g{width:15px;height:15px;flex:0 0 auto;display:flex;color:var(--atc)}
+.pativ .g svg{width:15px;height:15px}
+.pativ .s{font-size:12px;font-weight:600;color:var(--tx2)}
+@media (max-width:767px){
+ /* No celular a etiqueta de área e o avatar saem: nome, data e o glifo de
+    status são o que importa numa linha de 360px, e o resto está na gaveta. */
+ .atr{gap:7px;padding:0 6px 0 4px}
+ .atr .atlb,.atr>.av,.atr .dsc{display:none}
+ .atr .mais{opacity:1}
+ .atbar{gap:5px}
+ .atseg2{order:1;width:100%}
+ .atseg2 button{flex:1 1 0;justify-content:center}
+ .atbar .atchip{order:2}
+ /* O "?" fica no fim da própria linha, encostado à direita: solto no meio
+    parecia elemento perdido. */
+ .atbar .hint{order:3;margin-left:auto}
+ /* Criar no celular é o botão flutuante do canto, que já existe em toda tela:
+    repetir o botão na barra empurrava as pastilhas para uma terceira linha. */
+ .atbar .atnova{display:none}
+ .atbar .sp{display:none}
+ /* Sem hover no toque, o "+" do grupo tem de estar visível -- é o caminho para
+    criar já no status certo. */
+ .atgh .add{opacity:1}
 }
 /* ================= PALETA DE COMANDOS ================= */
 #cmdshade{position:fixed;inset:0;background:rgba(9,45,41,.32);z-index:48;display:none}
@@ -867,6 +956,7 @@ font-size:13px;line-height:1.5;color:var(--tx);box-shadow:var(--sh3)}
   </div>
 </div>
 <div id="hint" role="dialog" aria-modal="true" aria-label="Explicação" hidden></div>
+<div id="atmenu" role="menu" aria-label="Atividade" hidden></div>
 <div id="print"></div>
 <input id="fileimp" type="file" accept="application/json" style="display:none">
 
@@ -921,22 +1011,59 @@ const TEXTOS={
  ativ:{
   abaTodas:"Todas",
   nova:"Nova atividade",
-  novaVazia:"(atividade sem descrição)",
-  textoPh:"o que precisa ser feito",
+  novaAqui:s=>"Nova atividade em "+s.toLowerCase(),
+  semTitulo:"(sem nome)",
   rotulo:"Atividade",
-  dAberto:"em aberto",dasDuas:"comercial e marketing",daArea:a=>"em "+a.toLowerCase(),
-  dVenc:"atrasadas",dVencF:"passaram da data",
-  dSem:"sem data",dSemF:"não dá para cobrar",
-  dFeita:"concluídas",dFeitaF:"já entregues",
+  detalhe:"Atividade",
+  /* Os sete campos, com o nome que a equipe usa. */
+  fTitulo:"Nome da atividade",
+  fTituloPh:"o que precisa ser feito, em uma linha",
+  fDesc:"Breve descrição",
+  fDescPh:"o contexto que quem for executar precisa saber",
+  fArea:"Área",
+  fResp:"Responsável",fRespAjuda:"quem faz",
+  fDemandante:"Demandante",fDemandanteAjuda:"quem pediu",
+  fStatus:"Status",
+  fInicio:"Data de início",
+  fFim:"Data de fim",
+  semData:"definir",
+  semDesc:"sem descrição",
+  semDemandante:"sem demandante",
+  statusT:"Mudar status",
+  acoesT:"Atividade",
+  verDetalhe:"Abrir detalhe",
+  criadaPor:(q,d)=>"criada por "+q+" em "+d,
+  mexeuPor:(q,d)=>"última alteração de "+q+" em "+d,
   feitaPor:(q,d)=>"concluída por "+q+" em "+d,
-  criou:"Atividade criada. Escreva o que precisa ser feito.",
+  dAbertas:"em aberto",dVenc:"atrasadas",dSem:"sem data de fim",dFeitas:"concluídas",
+  emArea:a=>"em "+a.toLowerCase(),
+  venc:t=>"atrasada há "+t+(t===1?" dia":" dias"),
+  hoje:"termina hoje",
+  emDias:t=>"em "+t+(t===1?" dia":" dias"),
+  comecaEm:d=>"começa em "+d,
+  comecou:d=>"começou em "+d,
+  fimAntes:"A data de fim é anterior à de início. Deixei gravado como você digitou — confira qual das duas está errada.",
   concluiu:"Atividade concluída.",
   reabriu:"Atividade reaberta.",
   excluiu:"Atividade excluída.",
   confirmaExcluir:"Excluir esta atividade? A ação pode ser desfeita por 8 segundos.",
-  vazio:"Nenhuma atividade cadastrada ainda. Use “Nova atividade” para registrar o que o comercial e o marketing precisam fazer.",
-  vazioBusca:"Nenhuma atividade com esta busca ou este responsável.",
-  vazioFiltro:"Nenhuma atividade neste estado. Toque no cartão aceso para ver o resto."},
+  /* A conclusão pede evidência, como a pendência do negócio: sem isso, ninguém
+     sabe depois com base em quê a atividade foi fechada. */
+  evidT:"O que foi entregue",
+  evidPh:"ex.: deck novo aprovado e publicado na pasta do time",
+  evidOk:"Concluir com esta evidência",
+  evidFalta:"Descreva o que foi entregue, ou cole um link que comprove. Sem isso, ninguém sabe depois com base em quê a atividade foi concluída.",
+  evidSem:"Concluída antes de o painel pedir evidência — nada registrado.",
+  reabT:"Por que está reabrindo",
+  reabPh:"ex.: o material voltou com ajuste pedido pela liderança",
+  reabOk:"Reabrir com este motivo",
+  reabFalta:"Escreva por que está reabrindo. Uma atividade concluída que volta a abrir precisa dizer o que mudou.",
+  vazioTit:"Nenhuma atividade ainda",
+  vazio:"É aqui que fica o trabalho de comercial e marketing que não pende de negócio nenhum: campanhas, materiais, listas para prospectar.",
+  vazioBuscaTit:"Nada com estes filtros",
+  vazioBusca:"Nenhuma atividade bate com a busca, a área ou o responsável escolhidos.",
+  vazioFiltroTit:"Nada neste estado",
+  vazioFiltro:"Toque na pastilha acesa para ver o resto da lista."},
  frentePrinc:"Frente principal",frenteMais:"Também nestas frentes",
  frentesConta:"Frentes",frenteNenhumaConta:"nenhuma marcada",
  frenteNenhuma:"nenhuma — só a principal",
@@ -1145,7 +1272,8 @@ const state={
  data:null,tela:"painel",todoQuem:"",todoTipo:"",todoSo:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
- atAba:"",atFiltro:"",atFoco:"",
+ atAba:"",atFiltro:"",atFoco:"",atSel:-1,atMenu:null,
+ atEvid:null,atEvidModo:"concluir",atEvidAlvo:"",atEvidTxt:"",atEvidLink:"",atEvidErro:"",
  painel:null,secoes:{},pendEvid:null,pendEvidModo:"concluir",pendEvidTxt:"",pendEvidLink:"",pendEvidErro:"",dirty:false,undo:null,undoTimer:null,dbTimer:null,
  usuario:null,servidor:false,versao:0,salvando:false,semRede:false
 };
@@ -3077,19 +3205,48 @@ const TODO_TIPOS={bloqueio:"Bloqueio",pendencia:"Pendência",passo:"Próximo pas
    Vocabulário fechado, como todo o resto do painel: área com dois valores e
    status com três. Nada de campo livre aqui -- status escrito à mão não soma,
    não filtra e não avisa ninguém.
-   O prazo usa a MESMA régua do To Do (diaLocal + dias): dia de calendário,
+
+   Sete campos: nome, breve descrição, responsável (quem faz), demandante
+   (quem pediu), status, data de início e data de fim. A urgência sai da data
+   de FIM, e usa a MESMA régua do To Do (diaLocal + dias): dia de calendário,
    não instante. Duplicar a conta aqui seria repetir o erro de fuso que já
    custou uma correção. */
 const AT_AREAS={comercial:"Comercial",marketing:"Marketing"};
 const AT_AREAS_ORDEM=["comercial","marketing"];
+/* Ponto da etiqueta. Não são as cores das frentes: área não é frente, e usar
+   a mesma paleta faria uma parecer a outra. */
+const AT_AREA_COR={comercial:"#0e5351",marketing:"#7a5ea8"};
 const AT_STATUS=["aberta","andamento","feita"];
 const AT_STATUS_LBL={aberta:"A fazer",andamento:"Em andamento",feita:"Concluída"};
-const AT_STATUS_CURTO={aberta:"A fazer",andamento:"Andamento",feita:"Concluída"};
+const AT_STATUS_COR={aberta:"var(--tx3)",andamento:"var(--warn)",feita:"var(--ok)"};
+/* Glifos de status: círculo vazio, círculo meio cheio, círculo com o traço.
+   A forma diferencia sem depender de cor. */
+const AT_GLIFO={
+ aberta:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='6' fill='none' stroke='currentColor' stroke-width='1.6'/></svg>",
+ andamento:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='6' fill='none' stroke='currentColor' stroke-width='1.6'/><path d='M8 3.2a4.8 4.8 0 0 1 0 9.6z' fill='currentColor'/></svg>",
+ feita:"<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='8' cy='8' r='6.4' fill='currentColor'/><path d='M5 8.2l2.1 2.1L11 6.4' fill='none' stroke='#fff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+};
+const ICO_DESC="<svg viewBox='0 0 16 16' aria-hidden='true'><path d='M3 4.5h10M3 8h10M3 11.5h6' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round'/></svg>";
+const ICO_MAIS="<svg viewBox='0 0 16 16' aria-hidden='true'><circle cx='3.5' cy='8' r='1.4' fill='currentColor'/><circle cx='8' cy='8' r='1.4' fill='currentColor'/><circle cx='12.5' cy='8' r='1.4' fill='currentColor'/></svg>";
 /* Acessor que conserta a base ao ler: documento antigo não tem a lista, e
-    criar na leitura evita uma migração de schema só para um array vazio. */
+   criar na leitura evita uma migração de schema só para um array vazio.
+   Também traz a primeira geração de atividades (texto/prazo) para os campos
+   de agora (titulo/fim) -- gravadas antes de existirem início, descrição e
+   demandante. Renomear na leitura mantém o dado; ignorar perderia. */
 function atividades(){
  if(!state.data)return [];
  if(!Array.isArray(state.data.atividades))state.data.atividades=[];
+ state.data.atividades.forEach(a=>{
+  if(!a||typeof a!=="object")return;
+  if(a.titulo===undefined&&a.texto!==undefined){a.titulo=a.texto;delete a.texto;}
+  if(a.fim===undefined&&a.prazo!==undefined){a.fim=a.prazo;delete a.prazo;}
+  if(a.titulo===undefined)a.titulo="";
+  if(a.descricao===undefined)a.descricao="";
+  if(a.demandante===undefined)a.demandante="";
+  if(a.inicio===undefined)a.inicio="";
+  if(a.fim===undefined)a.fim="";
+  if(!Array.isArray(a.evidencias))a.evidencias=[];
+ });
  return state.data.atividades;
 }
 function acharAtiv(id){return atividades().find(x=>x.id===id)||null;}
@@ -3097,11 +3254,16 @@ function acharAtiv(id){return atividades().find(x=>x.id===id)||null;}
 const areaDaAtiv=a=>AT_AREAS[a&&a.area]?a.area:"comercial";
 const statusDaAtiv=a=>AT_STATUS.indexOf(a&&a.status)>=0?a.status:"aberta";
 const atAberta=a=>statusDaAtiv(a)!=="feita";
-const atAtraso=a=>a&&a.prazo?dias(diaLocal(a.prazo),hoje()):null;
+const tituloAtiv=a=>String((a&&a.titulo)||"").trim();
+/* Atraso é medido pela data de FIM. Início é quando o trabalho começa e não
+   cobra ninguém: uma atividade que começou e não acabou não está atrasada. */
+const atAtraso=a=>a&&a.fim?dias(diaLocal(a.fim),hoje()):null;
 function estadoAtiv(a){
  const t=atAtraso(a);
  return t==null?"semPrazo":t>0?"vencido":t===0?"hoje":"prazo";
 }
+/* Quantas conclusões e reaberturas essa atividade já teve. */
+const evidsAtiv=a=>(a&&Array.isArray(a.evidencias))?a.evidencias:[];
 const quemSou=()=>(state.usuario&&state.usuario.nome)||"";
 /* Estado de cada item, na ordem em que interessa. É o que pinta a barra da
    esquerda e o que os cartões do topo filtram. Cor sozinha não informa: cada
@@ -3150,11 +3312,15 @@ function itensTodo(){
     uma frente para ela seria dado falso. Busca e responsável valem. */
  const q=f.busca.trim().toLowerCase();
  atividades().filter(atAberta).forEach(a=>{
-  if(q&&((a.texto||"")+" "+(a.responsavel||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+TEXTOS.ativ.rotulo)
+  if(q&&((a.titulo||"")+" "+(a.descricao||"")+" "+(a.responsavel||"")+" "+
+   (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+TEXTOS.ativ.rotulo)
    .toLowerCase().indexOf(q)<0)return;
-  const o={tipo:"atividade",ativ:a,d:null,texto:String(a.texto||"").trim()||TEXTOS.ativ.novaVazia,
-   quem:String(a.responsavel||"").trim(),aprova:"",consultados:[],
-   prazo:a.prazo||"",atraso:atAtraso(a)};
+  const o={tipo:"atividade",ativ:a,d:null,texto:tituloAtiv(a)||TEXTOS.ativ.semTitulo,
+   quem:String(a.responsavel||"").trim(),
+   /* Quem pediu é quem cobra: no To Do ele entra na coluna de quem responde,
+      onde o negócio põe o responsável dele. */
+   aprova:String(a.demandante||"").trim(),consultados:[],
+   prazo:a.fim||"",atraso:atAtraso(a)};
   o.estado=estadoTodo(o);out.push(o);
  });
  const alvo=f.responsavel;
@@ -3570,19 +3736,19 @@ function linhasTodo(itens,dentroDoGrupo){
  return h;
 }
 /* ================= TELA DE ATIVIDADES =================
-   Controle de comercial e marketing: o que precisa ser feito, em que status,
-   com quem e para quando. Quatro campos, nada mais -- e é de propósito: cada
-   campo a mais é um campo que ninguém preenche e que passa a mentir.
+   Controle de comercial e marketing: nome, breve descrição, responsável,
+   demandante, status, data de início e data de fim.
+
+   A tela é uma lista densa agrupada por status, com cabeçalhos que grudam no
+   topo -- uma linha por atividade, ações no hover, e o detalhe numa gaveta.
+   A primeira versão empilhava cartões com um grupo de três botões por linha:
+   ocupava a tela toda para mostrar três itens e parecia formulário. Aqui cabe
+   uma agenda inteira acima da dobra.
 
    Por que tela separada e não uma aba do To Do: o To Do é uma FILA derivada
    dos negócios, sem cadastro e sem status próprio; aqui há cadastro, exclusão
-   e um ciclo de status. Misturar as duas naturezas na mesma tela foi o que
-   deixou o To Do confuso antes. Em compensação, o que está em aberto aqui
-   aparece lá, na fila da pessoa: cadastrar é aqui, cobrar é lá.
-
-   O agrupamento primário é o STATUS, porque a pergunta desta tela é "em que
-   pé está". Quem quiser por pessoa usa o seletor de responsável, e a fila por
-   pessoa já existe no To Do. */
+   e um ciclo de status. Em compensação, o que está em aberto aqui aparece lá,
+   na fila da pessoa: cadastrar é aqui, cobrar é lá. */
 function ordenarAtiv(g,feitas){
  return g.slice().sort((a,b)=>{
   /* Concluída não tem urgência: a mais recente primeiro, que é o registro
@@ -3595,123 +3761,192 @@ function ordenarAtiv(g,feitas){
   return String(b.atualizadoEm||"").localeCompare(String(a.atualizadoEm||""));
  });
 }
-/* O mesmo controle em toda largura: no celular a linha quebra e os três
-   botões ficam embaixo do texto, com espaço de sobra. Um <select> escondido
-   atrás de clique-para-editar economizaria pixels e custaria o gesto -- mover
-   de status é a ação mais frequente desta tela, e ela não pode ficar atrás de
-   dois toques. */
-function controleStatusAtiv(a){
- const st=statusDaAtiv(a);
- return '<span class="atseg" role="group" aria-label="Status">'+AT_STATUS.map(k=>
-  '<button data-atstatus="'+esc(a.id)+":"+k+'" class="'+(st===k?"on":"")+'"'+
-  ' aria-pressed="'+(st===k?"true":"false")+'" title="'+esc(AT_STATUS_LBL[k])+'">'+
-  esc(AT_STATUS_CURTO[k])+"</button>").join("")+"</span>";
+/* O que a data de fim diz, por extenso. Vale para o title da linha e para a
+   gaveta -- cor sozinha não informa. */
+function prazoAtiv(a){
+ const T=TEXTOS.ativ,t=atAtraso(a);
+ if(t==null)return "";
+ return t>0?T.venc(t):t===0?T.hoje:T.emDias(-t);
 }
-function linhaAtividade(a){
- const st=statusDaAtiv(a),feita=st==="feita",t=atAtraso(a);
+/* A ordem das linhas visíveis, para j e k andarem por ela. */
+const AT_FOCO=[];
+function linhaAtiv(a){
+ const T=TEXTOS.ativ,st=statusDaAtiv(a),ar=areaDaAtiv(a);
  /* Concluída não tem estado de prazo: coisa entregue não está atrasada, e
-    dizer "vencida há 17 dias" numa linha concluída é mentira com aparência
-    de rigor. O gutter fica verde de entregue e a data só aparece como data. */
- const est=feita?"prazo":estadoAtiv(a);
- const quando=(feita||t==null)?""
-  :t>0?"vencida há "+t+(t===1?" dia":" dias")
-  :t===0?"vence hoje":"em "+(-t)+(t===-1?" dia":" dias");
- const vazio=!String(a.texto||"").trim();
- return '<div class="atv '+est+(feita?" feita":"")+(state.atFoco===a.id?" foco":"")+
-  '" data-atv="'+esc(a.id)+'" style="--tkc:'+(feita?"var(--ok)":TODO_ESTADOS[est].cor)+'">'+
-  '<span class="ic" title="'+esc(feita?AT_STATUS_LBL.feita:TODO_ESTADOS[est].lbl)+'">'+
-   (feita?ICO_CHECK:ICO_ESTADO[est])+"</span>"+
-  '<span class="corpo">'+
-   ed("ativ",a.id,"texto",vazio?"":a.texto,"textarea")+
-   '<span class="meta">'+
-    ed("ativ",a.id,"area",areaDaAtiv(a),"select",AT_AREAS)+"<span>·</span>"+
-    ed("ativ",a.id,"responsavel",a.responsavel,"select",opcoesResp(a.responsavel,TEXTOS.semQuem))+
-    "<span>·</span>"+ed("ativ",a.id,"prazo",a.prazo,"date",null,"definir data")+
-    (quando?'<span class="qd">'+esc(quando)+"</span>":"")+
-    (st==="feita"&&a.feitaPor?'<span class="fp">'+
-      esc(TEXTOS.ativ.feitaPor(a.feitaPor,dt(a.feitaEm)))+"</span>":"")+
-   "</span></span>"+
-  '<span class="st">'+controleStatusAtiv(a)+"</span>"+
-  '<span class="acs"><button data-delativ="'+esc(a.id)+
-   '" aria-label="Excluir atividade">Excluir</button></span></div>';
+    dizer "atrasada há 17 dias" numa linha concluída é mentira com aparência
+    de rigor. */
+ const est=st==="feita"?"prazo":estadoAtiv(a);
+ const tit=tituloAtiv(a);
+ const i=AT_FOCO.length;AT_FOCO.push(a.id);
+ const quando=st==="feita"?"":prazoAtiv(a);
+ const dica=[AT_STATUS_LBL[st],AT_AREAS[ar],a.fim?dt(a.fim)+(quando?" · "+quando:""):T.dSem]
+  .filter(Boolean).join(" · ");
+ return '<div class="atr '+est+(st==="feita"?" feita":"")+
+  (state.atSel===i||state.atFoco===a.id?" sel":"")+'" data-atv="'+esc(a.id)+
+  '" data-atrow="'+i+'" title="'+esc(dica)+'">'+
+  '<button class="atg" data-atglifo="'+esc(a.id)+'" style="--atc:'+AT_STATUS_COR[st]+'"'+
+   ' aria-label="'+esc(T.statusT+": "+AT_STATUS_LBL[st])+'" aria-haspopup="menu">'+
+   AT_GLIFO[st]+"</button>"+
+  '<button class="tt" data-atabre="'+esc(a.id)+'">'+
+   (tit?esc(tit):'<span class="vz">'+esc(T.semTitulo)+"</span>")+"</button>"+
+  (String(a.descricao||"").trim()
+   ?'<span class="dsc" title="'+esc(String(a.descricao).trim().slice(0,140))+'">'+ICO_DESC+"</span>":"")+
+  '<span class="atlb"><span class="pt" style="background:'+AT_AREA_COR[ar]+'"></span>'+
+   esc(AT_AREAS[ar])+"</span>"+
+  /* O ponto antes da data é marca de alerta, não enfeite: só aparece quando a
+     data passou ou é hoje. Numa data tranquila ele era ruído colorido. */
+  (a.fim?'<span class="dta">'+((est==="vencido"||est==="hoje")?'<span class="pt"></span>':"")+
+    esc(dt(a.fim))+"</span>"
+   :'<span class="dta vazia">'+esc(T.semData)+"</span>")+
+  (a.responsavel
+   ?'<span class="av" style="background:'+corDoNome(a.responsavel)+'" title="'+
+    esc(T.fResp+": "+a.responsavel)+'">'+esc(iniciais(a.responsavel))+"</span>"
+   :'<span class="av" style="background:var(--alt)" title="'+esc(TEXTOS.semQuem)+'">?</span>')+
+  '<button class="mais" data-atmais="'+esc(a.id)+'" aria-label="'+esc(T.acoesT)+
+   '" aria-haspopup="menu">'+ICO_MAIS+"</button></div>";
 }
 function telaAtividades(){
  const T=TEXTOS.ativ,todas=atividades();
  const q=state.filtros.busca.trim().toLowerCase();
  const resp=state.filtros.responsavel;
+ /* A busca varre nome, descrição, quem faz e quem pediu: procurar por
+    "Adriano" tem de achar o que ele pediu, não só o que ele faz. */
  const cabe=a=>(!resp||String(a.responsavel||"").trim()===resp)&&
-  (!q||((a.texto||"")+" "+(a.responsavel||"")+" "+AT_AREAS[areaDaAtiv(a)])
-   .toLowerCase().indexOf(q)>=0);
+  (!q||((a.titulo||"")+" "+(a.descricao||"")+" "+(a.responsavel||"")+" "+
+   (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]).toLowerCase().indexOf(q)>=0);
  const visiveis=todas.filter(cabe);
  if(state.atAba&&!AT_AREAS[state.atAba])state.atAba="";
- /* Área é aba, não pastilha: comercial e marketing são dois times olhando a
-    mesma tela, e cada um quer entrar direto no que é dele. A contagem da aba
-    é de abertas -- o número que interessa é o que falta fazer. */
- const abas=[["",T.abaTodas]].concat(AT_AREAS_ORDEM.map(k=>[k,AT_AREAS[k]]));
- let h='<div class="tabs">'+abas.map(([k,l])=>{
-  const n=visiveis.filter(a=>(!k||areaDaAtiv(a)===k)&&atAberta(a)).length;
-  return '<button data-ataba="'+k+'" class="'+(state.atAba===k?"on":"")+'">'+esc(l)+
-   '<span class="n">'+n+"</span></button>";
- }).join("")+"</div>";
  const daArea=state.atAba?visiveis.filter(a=>areaDaAtiv(a)===state.atAba):visiveis;
  const abertas=daArea.filter(atAberta);
  const nVenc=abertas.filter(a=>estadoAtiv(a)==="vencido").length;
- const nSem=abertas.filter(a=>!a.prazo).length;
+ const nSem=abertas.filter(a=>!a.fim).length;
  const nFeitas=daArea.length-abertas.length;
- const dest=[["",abertas.length,T.dAberto,state.atAba?T.daArea(AT_AREAS[state.atAba]):T.dasDuas,""],
-  ["vencido",nVenc,T.dVenc,T.dVencF,"warn"],
-  ["semPrazo",nSem,T.dSem,T.dSemF,"neutro"],
-  ["feita",nFeitas,T.dFeita,T.dFeitaF,"ok"]];
- h+='<div class="tdest q4">'+dest.map(([k,n,l,f,cls])=>{
+
+ /* Barra fina: área à esquerda, estado no meio, criar à direita. Os números
+    ficam dentro das próprias pastilhas -- quatro cartões grandes diziam o
+    mesmo e empurravam a lista para fora da tela. */
+ let h='<div class="atbar">';
+ h+='<span class="atseg2">'+[["",T.abaTodas]].concat(AT_AREAS_ORDEM.map(k=>[k,AT_AREAS[k]]))
+  .map(([k,l])=>{
+   const n=visiveis.filter(a=>(!k||areaDaAtiv(a)===k)&&atAberta(a)).length;
+   return '<button data-ataba="'+k+'" class="'+(state.atAba===k?"on":"")+'"'+
+    ' aria-pressed="'+(state.atAba===k?"true":"false")+'">'+esc(l)+
+    '<span class="n">'+n+"</span></button>";
+  }).join("")+"</span>";
+ const chip=(k,lbl,n,cor)=>{
   const on=state.atFiltro===k;
-  return '<button data-atfiltro="'+k+'" class="tdc'+(cls?" "+cls:"")+(on?" on":"")+'"'+
-   ' aria-pressed="'+(on?"true":"false")+'"'+((n||!k)?"":" disabled")+'>'+
-   '<span class="tdn">'+n+'</span><span class="tdl">'+esc(l)+"</span>"+
-   '<span class="tdf">'+esc(f)+"</span></button>";
- }).join("")+"</div>";
- h+='<div class="atbar"><button class="atnova" data-atnova="'+esc(state.atAba)+'">'+
+  return '<button class="atchip'+(on?" on":"")+'" data-atfiltro="'+k+'"'+
+   ' aria-pressed="'+(on?"true":"false")+'"'+(n?"":" disabled")+'>'+
+   (cor?'<span class="pt" style="background:'+cor+'"></span>':"")+
+   esc(lbl)+'<span class="n">'+n+"</span></button>";
+ };
+ h+=chip("vencido",T.dVenc,nVenc,"var(--warn)");
+ h+=chip("semPrazo",T.dSem,nSem,"var(--neutro)");
+ h+=chip("feita",T.dFeitas,nFeitas,"var(--ok)");
+ h+='<span class="sp"></span>';
+ h+='<button class="atnova" data-atnova="'+esc(state.atAba)+':aberta"><span class="p">+</span>'+
   esc(T.nova)+"</button>"+iconeHint("atividades")+"</div>";
- /* Concluídas ficam atrás do próprio cartão: lista que mostra tudo o que já
+
+ /* Concluídas ficam atrás da própria pastilha: lista que mostra tudo o que já
     foi feito deixa de ser lista de trabalho. O número fica à vista, então
     nada está escondido -- está guardado. */
  const statusVis=state.atFiltro==="feita"?["feita"]:["aberta","andamento"];
  const passa=a=>state.atFiltro==="vencido"?estadoAtiv(a)==="vencido"
-  :state.atFiltro==="semPrazo"?!a.prazo:true;
+  :state.atFiltro==="semPrazo"?!a.fim:true;
+ AT_FOCO.length=0;
  const secoes=statusVis.map(k=>[k,ordenarAtiv(
    daArea.filter(a=>statusDaAtiv(a)===k&&passa(a)),k==="feita")]).filter(x=>x[1].length);
- if(!secoes.length)return h+'<div class="tgrupo"><div class="empty" style="border:0;padding:28px 16px;text-align:center">'+
-  esc(state.atFiltro?T.vazioFiltro:(todas.length?T.vazioBusca:T.vazio))+"</div></div>";
- return h+secoes.map(([k,g])=>{
+ if(!secoes.length){
+  const [tl,tx]=state.atFiltro?[T.vazioFiltroTit,T.vazioFiltro]
+   :(q||resp||state.atAba)&&todas.length?[T.vazioBuscaTit,T.vazioBusca]
+   :[T.vazioTit,T.vazio];
+  return h+'<div class="atlista"><div class="atvazio"><b>'+esc(tl)+"</b>"+esc(tx)+
+   (state.atFiltro||todas.length?"":'<div><button class="atnova" data-atnova="'+
+    esc(state.atAba)+':aberta"><span class="p">+</span>'+esc(T.nova)+"</button></div>")+
+   "</div></div>";
+ }
+ return h+'<div class="atlista">'+secoes.map(([k,g])=>{
   const vc=k==="feita"?0:g.filter(a=>estadoAtiv(a)==="vencido").length;
-  const sd=(k==="feita"||state.atFiltro==="semPrazo")?0:g.filter(a=>!a.prazo).length;
-  return '<section class="tgrupo"><header class="th"><span class="thb">'+
-   '<span class="tn">'+esc(AT_STATUS_LBL[k])+'</span><span class="tc">'+g.length+"</span>"+
-   (vc?'<span class="tp"><span class="tw">'+vc+(vc===1?" atrasada":" atrasadas")+"</span></span>":"")+
-   (sd?'<span class="td">'+sd+" sem data</span>":"")+
-   "</span></header>"+g.map(linhaAtividade).join("")+"</section>";
- }).join("");
+  return '<section><header class="atgh">'+
+   '<span class="g" style="color:'+AT_STATUS_COR[k]+'">'+AT_GLIFO[k]+"</span>"+
+   '<span class="t">'+esc(AT_STATUS_LBL[k])+'</span><span class="c">'+g.length+"</span>"+
+   (vc?'<span class="w">'+vc+(vc===1?" atrasada":" atrasadas")+"</span>":"")+
+   '<span class="sp"></span>'+
+   (k==="feita"?"":'<button class="add" data-atnova="'+esc(state.atAba)+":"+k+
+    '" title="'+esc(T.novaAqui(AT_STATUS_LBL[k]))+'">+</button>')+
+   "</header>"+g.map(linhaAtiv).join("")+"</section>";
+ }).join("")+"</div>";
 }
-/* Nasce sem prazo e sem texto, com quem está logado como responsável. Sem
-   prazo é estado legítimo: chutar uma data cria cobrança falsa, e o cartão
-   "sem data" existe justamente para lembrar de marcar. */
-function criarAtividade(area){
+/* ---- o menu de status e o de ações, numa camada fixa por cima da lista ----
+   Fixa, e não dentro da linha, porque a lista tem cantos arredondados e um
+   menu dentro dela seria cortado no primeiro e no último item. */
+function renderAtMenu(){
+ const el=$("#atmenu");
+ const m=state.atMenu;
+ if(!m||!acharAtiv(m.id)){el.className="";el.setAttribute("hidden","");el.innerHTML="";return;}
+ const a=acharAtiv(m.id),T=TEXTOS.ativ,st=statusDaAtiv(a);
+ let h="";
+ if(m.tipo==="status"){
+  h+='<div class="mt">'+esc(T.statusT)+"</div>";
+  h+=AT_STATUS.map(k=>'<button data-atstatus="'+esc(a.id)+":"+k+'" class="'+(st===k?"on":"")+'">'+
+   '<span class="g" style="color:'+AT_STATUS_COR[k]+'">'+AT_GLIFO[k]+"</span>"+
+   esc(AT_STATUS_LBL[k])+(st===k?'<span class="k">agora</span>':"")+"</button>").join("");
+ }else{
+  h+='<div class="mt">'+esc(T.acoesT)+"</div>";
+  h+='<button data-atabre="'+esc(a.id)+'">'+esc(T.verDetalhe)+
+   '<span class="k">Enter</span></button>';
+  h+='<hr><button class="neg" data-delativ="'+esc(a.id)+'">'+esc(TEXTOS.excluir)+"</button>";
+ }
+ el.innerHTML=h;el.className="on";el.removeAttribute("hidden");
+ posicionarAtMenu();
+}
+function posicionarAtMenu(){
+ const m=state.atMenu;if(!m)return;
+ const el=$("#atmenu");
+ const btn=document.querySelector(m.tipo==="status"
+  ?'[data-atglifo="'+m.id+'"]':'[data-atmais="'+m.id+'"]');
+ if(!btn){fecharAtMenu();return;}
+ const r=btn.getBoundingClientRect(),c=el.getBoundingClientRect();
+ const larg=c.width||200,alt=c.height||120;
+ /* Abre para baixo; se não couber, para cima. Nunca fora da janela. */
+ const topo=(r.bottom+alt+8>window.innerHeight&&r.top-alt-6>0)?r.top-alt-6:r.bottom+6;
+ el.style.left=Math.max(8,Math.min(window.innerWidth-larg-8,r.left))+"px";
+ el.style.top=Math.max(8,topo)+"px";
+}
+function abrirAtMenu(tipo,id){state.atMenu={tipo:tipo,id:id};renderAtMenu();}
+function fecharAtMenu(){
+ if(!state.atMenu)return;
+ state.atMenu=null;
+ const el=$("#atmenu");el.className="";el.setAttribute("hidden","");el.innerHTML="";
+}
+/* Nasce sem datas e sem nome, com quem está logado como responsável e como
+   demandante -- quem cadastra normalmente é quem pediu, e trocar é um clique.
+   Sem data é estado legítimo: chutar um prazo cria cobrança falsa, e a
+   pastilha "sem data de fim" existe justamente para lembrar de marcar. */
+function criarAtividade(area,status){
  snapshot();
- const eu=quemSou();
- const a={id:uid("AT"),texto:"",area:AT_AREAS[area]?area:(state.atAba||"comercial"),
-  status:"aberta",responsavel:eu&&RESPS.indexOf(eu)>=0?eu:RESPS[0],prazo:"",
+ const eu=quemSou(),naLista=eu&&RESPS.indexOf(eu)>=0;
+ const a={id:uid("AT"),titulo:"",descricao:"",
+  area:AT_AREAS[area]?area:(state.atAba||"comercial"),
+  status:AT_STATUS.indexOf(status)>=0&&status!=="feita"?status:"aberta",
+  responsavel:naLista?eu:RESPS[0],demandante:naLista?eu:"",
+  inicio:"",fim:"",evidencias:[],
   criadaEm:agora(),criadaPor:eu||"—",atualizadoEm:agora(),atualizadoPor:eu||"—",
   feitaEm:"",feitaPor:""};
  atividades().unshift(a);
- state.tela="atividades";state.atAba=a.area;state.atFiltro="";state.atFoco=a.id;state.painel=null;
+ state.tela="atividades";state.atAba=a.area;state.atFiltro="";state.atFoco=a.id;state.atSel=-1;
+ fecharAtMenu();
+ /* Abre a gaveta com o nome em edição: atividade tem sete campos, e a lista
+    não é lugar de preencher sete campos. */
+ state.painel={tipo:"ativ",id:a.id};
+ state.atEvid=null;
  marcar();
- /* Já abre o campo de texto: atividade sem descrição não serve para nada, e
-    obrigar um segundo clique é como o painel pediria duas vezes. */
- const el=document.querySelector('[data-atv="'+a.id+'"] .corpo>[data-edit]');
- if(el){if(el.scrollIntoView)el.scrollIntoView({block:"center"});startEdit(el);}
- else toast(TEXTOS.ativ.criou,true);
+ const el=document.querySelector('#panel [data-edit$=":titulo"]');
+ if(el)startEdit(el);
 }
 /* Muda o status e carimba quem concluiu. Devolve o rótulo do que aconteceu,
-   ou "" quando nada mudou. */
+   ou "" quando nada mudou. Concluir NÃO passa por aqui sem evidência: quem
+   chama isso com "feita" é o formulário de evidência. */
 function mudarStatusAtiv(a,novo){
  if(AT_STATUS.indexOf(novo)<0)return "";
  const antes=statusDaAtiv(a);
@@ -3721,21 +3956,99 @@ function mudarStatusAtiv(a,novo){
  else{a.feitaEm="";a.feitaPor="";}
  return novo==="feita"?TEXTOS.ativ.concluiu:antes==="feita"?TEXTOS.ativ.reabriu:"";
 }
-/* Do To Do para a atividade: leva à tela dela, na aba e no filtro em que ela
-   aparece, com a linha destacada. Sem isto o clique cairia numa lista onde o
-   item pode estar filtrado fora -- ir para o lugar certo e não achar nada é
-   pior que não ter link. */
-function irParaAtividade(id){
+/* Da paleta e do To Do para a atividade: abre a gaveta dela. Quando vem da
+   paleta, também leva à tela, na aba e no filtro em que ela aparece -- ir para
+   o lugar certo e não achar nada é pior que não ter atalho. */
+function irParaAtividade(id,soGaveta){
  const a=acharAtiv(id);
- state.tela="atividades";state.painel=null;state.perdidos=false;
- if(a){
-  state.atAba=areaDaAtiv(a);
-  state.atFiltro=statusDaAtiv(a)==="feita"?"feita":"";
-  state.atFoco=id;
+ fecharAtMenu();
+ if(!soGaveta){
+  state.tela="atividades";state.perdidos=false;
+  if(a){state.atAba=areaDaAtiv(a);state.atFiltro=statusDaAtiv(a)==="feita"?"feita":"";}
  }
+ if(a)state.atFoco=id;
+ state.atEvid=null;
+ state.painel=a?{tipo:"ativ",id:id}:null;
  render();
- const el=document.querySelector('[data-atv="'+id+'"]');
- if(el&&el.scrollIntoView)el.scrollIntoView({block:"center"});
+}
+/* ---- a gaveta: os sete campos, o rastro e a evidência ---- */
+function painelAtiv(id){
+ const a=acharAtiv(id),T=TEXTOS.ativ;
+ if(!a)return '<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
+  '<div style="font-size:16px">'+esc(T.detalhe)+'</div></div><div class="pb">'+
+  '<div class="empty">Esta atividade não existe mais nesta base.</div></div>';
+ const st=statusDaAtiv(a),ar=areaDaAtiv(a);
+ const quando=st==="feita"?"":prazoAtiv(a);
+ let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
+  '<div class="pativ"><span class="g" style="--atc:'+AT_STATUS_COR[st]+'">'+AT_GLIFO[st]+"</span>"+
+   '<span class="s">'+esc(AT_STATUS_LBL[st])+"</span>"+
+   '<span class="atlb"><span class="pt" style="background:'+AT_AREA_COR[ar]+'"></span>'+
+    esc(AT_AREAS[ar])+"</span></div>"+
+  '<div style="font-size:19px;line-height:1.3">'+
+   ed("ativ",a.id,"titulo",a.titulo,"text",null,T.fTituloPh)+"</div>"+
+  (quando?'<div class="qual">'+esc(quando)+"</div>":"")+"</div>";
+ h+='<div class="pb">';
+ /* Status na gaveta são os três botões escritos: aqui há largura para eles, e
+    é onde a conclusão pede evidência. */
+ h+=fld(T.fStatus,'<span class="atseg2">'+AT_STATUS.map(k=>
+  '<button data-atstatus="'+esc(a.id)+":"+k+'" class="'+(st===k?"on":"")+'"'+
+  ' aria-pressed="'+(st===k?"true":"false")+'">'+
+  '<span class="g" style="color:'+AT_STATUS_COR[k]+';width:13px;height:13px;display:flex">'+
+   AT_GLIFO[k]+"</span>"+esc(AT_STATUS_LBL[k])+"</button>").join("")+"</span>");
+ h+=blocoEvidAtiv(a);
+ h+=fld(T.fDesc,ed("ativ",a.id,"descricao",a.descricao,"textarea",null,T.semDesc));
+ h+=fld(T.fArea,ed("ativ",a.id,"area",ar,"select",AT_AREAS));
+ h+=fld(T.fResp,
+  ed("ativ",a.id,"responsavel",a.responsavel,"select",opcoesResp(a.responsavel,TEXTOS.semQuem)));
+ h+=fld(T.fDemandante,
+  ed("ativ",a.id,"demandante",a.demandante,"select",opcoesResp(a.demandante,T.semDemandante)),
+  "atDemandante");
+ h+=fld(T.fInicio,ed("ativ",a.id,"inicio",a.inicio,"date",null,T.semData));
+ h+=fld(T.fFim,ed("ativ",a.id,"fim",a.fim,"date",null,T.semData));
+ /* O rastro: quem criou, quem mexeu por último, quem concluiu. */
+ const rastro=[T.criadaPor(a.criadaPor||"—",dt(a.criadaEm))];
+ if(a.atualizadoEm&&a.atualizadoEm!==a.criadaEm)
+  rastro.push(T.mexeuPor(a.atualizadoPor||"—",dt(a.atualizadoEm)));
+ h+='<div class="soft" style="font-size:11px;margin-top:16px;line-height:1.6">'+
+  rastro.map(esc).join("<br>")+"</div>";
+ h+='<div style="margin-top:20px"><button data-delativ="'+esc(a.id)+
+  '" style="color:var(--neg)">'+esc(TEXTOS.excluir)+"</button></div>";
+ return h+"</div>";
+}
+/* A evidência da atividade: a linha do tempo do que já foi registrado e, quando
+   pedido, o formulário. Mesma régua e o mesmo desenho da pendência do negócio
+   -- texto OU link para concluir, texto obrigatório para reabrir. Um cartão do
+   Linear já conta a história; "por quê" não cabe num link. */
+function blocoEvidAtiv(a){
+ const T=TEXTOS.ativ,st=statusDaAtiv(a),evs=evidsAtiv(a);
+ let h="";
+ if(evs.length)h+=evs.map(x=>{
+  const reab=x.tipo==="reabertura";
+  return '<div class="pevidok'+(reab?" reab":"")+'">'+
+   '<span class="mk">'+esc(reab?TEXTOS.marcaReabriu:TEXTOS.marcaConcluiu)+"</span>"+
+   '<span class="tx">'+esc(x.texto||"")+"</span>"+
+   (x.link?' <a href="'+esc(urlDe(x.link))+'" target="_blank" rel="noopener">abrir</a>':"")+
+   '<span class="qd">'+esc(TEXTOS.evidPor(x.por||"—",dt(x.em)))+"</span></div>";
+ }).join("");
+ /* Concluída sem registro é o que veio de antes deste recurso: dizer isso é
+    melhor que espaço em branco. */
+ else if(st==="feita"&&state.atEvid!==a.id)
+  h+='<div class="pevidok vazio"><span class="tx">'+esc(T.evidSem)+"</span></div>";
+ if(state.atEvid!==a.id)return h;
+ const reab=state.atEvidModo==="reabrir";
+ h+='<div class="pevid'+(reab?" reab":"")+'">'+
+  '<label>'+esc(reab?T.reabT:T.evidT)+iconeHint("evidencia")+"</label>"+
+  '<textarea data-atevid="texto" rows="3" placeholder="'+
+   esc(reab?T.reabPh:T.evidPh)+'">'+esc(state.atEvidTxt||"")+"</textarea>"+
+  (reab?"":'<label>'+esc(TEXTOS.evidLink)+"</label>"+
+   '<input data-atevid="link" value="'+esc(state.atEvidLink||"")+
+   '" placeholder="'+esc(TEXTOS.evidLinkPh)+'">')+
+  (reab?"":'<div class="soft" style="font-size:11px;margin-top:6px">'+esc(TEXTOS.evidNota)+"</div>")+
+  (state.atEvidErro?'<span class="err">'+esc(state.atEvidErro)+"</span>":"")+
+  '<div class="pevidacs"><button class="pri" data-atevidok="'+esc(a.id)+'">'+
+   esc(reab?T.reabOk:T.evidOk)+"</button>"+
+  '<button data-atevidcancel="1">'+esc(TEXTOS.evidCancel)+"</button></div></div>";
+ return h;
 }
 function atencao(lista){
  const h=hoje(),out=[];
@@ -3819,19 +4132,27 @@ function auditoria(){
   ["criadoEm","atualizadoEm"].forEach(k=>{if(c[k]&&!dataOk(c[k]))add("data inválida",c.id,k+" = "+c[k]);});
  });
 
- /* atividades: os quatro campos são o contrato desta tela. Texto vazio é uma
+ /* atividades: sete campos são o contrato desta tela. Nome vazio é uma
     atividade que ninguém sabe o que é; responsável fora da lista tira a
-    atividade do filtro e do To Do da pessoa. */
+    atividade do filtro e do To Do da pessoa; fim antes do início é data
+    trocada. Concluída sem evidência é registro que veio de antes do recurso. */
  (d.atividades||[]).forEach(a=>{
-  if(!String(a.texto||"").trim())add("atividade sem descrição",a.id,"a linha aparece como \u201c"+TEXTOS.ativ.novaVazia+"\u201d");
+  if(!String(a.titulo||"").trim())add("atividade sem nome",a.id,"a lista mostra “"+TEXTOS.ativ.semTitulo+"”");
   if(!AT_AREAS[a.area])add("área inválida",a.id,String(a.area)+" — a tela lê como comercial");
   if(AT_STATUS.indexOf(a.status)<0)add("status inválido",a.id,String(a.status)+" — a tela lê como a fazer");
-  if(a.prazo&&!dataOk(a.prazo))add("data inválida",a.id,"prazo = "+a.prazo);
-  ["criadaEm","atualizadoEm","feitaEm"].forEach(k=>{
+  ["inicio","fim","criadaEm","atualizadoEm","feitaEm"].forEach(k=>{
    if(a[k]&&!dataOk(a[k]))add("data inválida",a.id,k+" = "+a[k]);});
+  if(a.inicio&&a.fim&&dataOk(a.inicio)&&dataOk(a.fim)&&String(a.fim)<String(a.inicio))
+   add("fim antes do início",a.id,a.inicio+" → "+a.fim);
   if(!a.responsavel||!perfis[a.responsavel])
    add("responsável fora da lista",a.id,String(a.responsavel)+" — a atividade não aparece no To Do de ninguém");
-  if(a.status==="feita"&&!a.feitaEm)add("concluída sem data de conclusão",a.id,"veio de antes do registro de quem concluiu");
+  if(a.demandante&&!perfis[a.demandante])
+   add("demandante fora da lista",a.id,String(a.demandante));
+  if(a.status==="feita"){
+   if(!a.feitaEm)add("concluída sem data de conclusão",a.id,"veio de antes do registro de quem concluiu");
+   if(!(Array.isArray(a.evidencias)&&a.evidencias.length))
+    add("concluída sem evidência",a.id,"veio de antes de o painel pedir evidência");
+  }
  });
 
  /* exibição: valor ausente não é zero */
@@ -3902,6 +4223,9 @@ function rosca(itens){
 /* Cada verbete tem título, o que o número significa e como é calculado.
    Sem fórmula com símbolos, sem jargão, no máximo 45 palavras. */
 const HINTS={
+ atDemandante:{t:"Responsável e demandante",
+  a:"Responsável é quem faz. Demandante é quem pediu — normalmente quem cadastrou, e por isso o campo já nasce com o seu nome. Os dois saem da mesma lista de pessoas do painel.",
+  b:"Serve para duas coisas concretas: no To Do do responsável, o demandante aparece como quem responde pela atividade, do mesmo jeito que o negócio mostra o dono dele; e a busca acha pelos dois, então procurar por um nome traz o que a pessoa faz e o que ela pediu. Se quem pediu está fora da equipe — um cliente, um parceiro —, deixe o campo vazio e escreva na descrição: chutar um nome de dentro seria inventar."},
  atividades:{t:"Atividades de comercial e marketing",
   a:"O que o time precisa fazer fora do funil: uma campanha, um material, uma lista para prospectar, uma apresentação a refazer. Quatro campos e nada mais — o que precisa ser feito, em que status está, de quem é e para quando. Clique em qualquer valor da linha para editar no lugar.",
   b:"O status agrupa a lista: A fazer, Em andamento e Concluída. Concluídas saem da fila e ficam atrás do próprio cartão, com quem concluiu e quando — o número continua à vista, então nada fica escondido. Tudo o que está em aberto aqui também aparece no To Do da pessoa responsável, marcado como atividade: cadastrar e mover status é aqui, cobrar é lá. Sem data é estado legítimo para atividade nova, e é o cartão “sem data” que lembra de marcar — o painel não inventa prazo."},
@@ -4151,6 +4475,7 @@ function render(){
  else if(state.tela==="atividades")c.innerHTML=telaAtividades();
  else c.innerHTML=telaContas();
  renderPainelLateral();renderImpressao();
+ renderAtMenu();
 }
 function renderTopo(){
  $("#title").textContent=TEXTOS.nav[state.tela];
@@ -4559,6 +4884,7 @@ function renderPainelLateral(){
  el.className="open";$("#shade").className="open";
  const p=state.painel;
  el.innerHTML=p.tipo==="deal"?painelDeal(p.id)
+  :p.tipo==="ativ"?painelAtiv(p.id)
   :p.tipo==="novo"?painelNovo()
   :p.tipo==="kpi"?painelKpi(p.id)
   :p.tipo==="enc"?painelEnc(p.quem||"")
@@ -4946,13 +5272,20 @@ function setCampo(kind,id,campo,valor){
  }
  if(kind==="ativ"){
   const a=acharAtiv(id);if(!a)return;
+  /* Status não passa por aqui: mudar status é o menu do glifo ou os botões da
+     gaveta, e concluir tem de passar pela evidência. */
+  if(campo==="status")return;
   snapshot();
-  let aviso="";
-  if(campo==="status")aviso=mudarStatusAtiv(a,valor);
-  else if(campo==="area"){if(AT_AREAS[valor])a.area=valor;}
+  if(campo==="area"){if(AT_AREAS[valor])a.area=valor;}
   else a[campo]=valor;
   a.atualizadoEm=agora();a.atualizadoPor=quemSou()||"—";
-  marcar();if(aviso)toast(aviso);return;
+  /* Fim antes do início é quase sempre erro de digitação, mas quem sabe a
+     data é quem digitou: grava e avisa, em vez de recusar e perder o que foi
+     escrito. */
+  const fora=a.inicio&&a.fim&&String(a.fim)<String(a.inicio);
+  marcar();
+  if(fora&&(campo==="inicio"||campo==="fim"))toast(TEXTOS.ativ.fimAntes,true);
+  return;
  }
  if(kind==="contato"){
   const [tp,rid]=id.split("|");
@@ -5029,12 +5362,18 @@ document.addEventListener("click",e=>{
  const t=e.target;
  const g=s=>t.closest(s);
  let el;
+ /* Menu aberto: clique fora fecha, e o clique que fecha não vale como
+    escolha em outro lugar. Dentro do menu, segue para os data-* abaixo. */
+ if(state.atMenu&&!t.closest("#atmenu")&&!t.closest("[data-atglifo]")&&!t.closest("[data-atmais]")){
+  fecharAtMenu();
+  if(!t.closest(".atr"))return;
+ }
  const hb=t.closest("[data-hint]");
  if(hb){if(state.hintBtn===hb)fecharHint(true);else abrirHint(hb);return;}
  if(t.closest("#hint")){if(t.closest("[data-fechahint]"))fecharHint(true);return;}
  if(state.hintBtn)fecharHint(false);
  if(el=g("[data-tela]")){state.tela=el.dataset.tela;state.perdidos=false;state.painel=null;
-  state.atFoco="";render();return;}
+  state.atFoco="";state.atSel=-1;fecharAtMenu();render();return;}
  if(el=g("[data-sair]")){sair();return;}
  if(el=g("[data-senha]")){abrirTrocaSenha();return;}
  if(el=g("[data-menu]")){menuAcao(el.dataset.menu);return;}
@@ -5087,7 +5426,9 @@ document.addEventListener("click",e=>{
   if(state.ord.campo===c)state.ord.dir*=-1;else state.ord={campo:c,dir:1};render();return;}
  if(el=g("[data-sec]")){state.secoes[el.dataset.sec]=!state.secoes[el.dataset.sec];renderPainelLateral();return;}
  if(el=g("[data-pub]")){state.publico=el.dataset.pub;render();return;}
- if(el=g("[data-fechar]")){state.erroCard=null;fecharPainel();return;}
+ if(el=g("[data-fechar]")){state.erroCard=null;
+  state.atEvid=null;state.atEvidTxt="";state.atEvidLink="";state.atEvidErro="";
+  fecharPainel();return;}
  if(el=g("[data-mover]")){const [id,et]=el.dataset.mover.split(":");
   if(et==="perdido"&&!pedirMotivo(id)){render();return;}
   const err=moverEtapa(id,et);state.erroCard=err?{id:id,msg:err}:null;if(err)render();return;}
@@ -5165,28 +5506,85 @@ document.addEventListener("click",e=>{
  if(el=g("[data-criar]")){criar();return;}
  if(el=g("[data-conta]")){const [k,id]=el.dataset.conta.split(":");abrirPainel({tipo:"conta",kind:k,id:id});return;}
  if(el=g("[data-ataba]")){
-  state.atAba=el.dataset.ataba;state.atFiltro="";state.atFoco="";render();return;}
+  state.atAba=el.dataset.ataba;state.atFiltro="";state.atFoco="";state.atSel=-1;
+  fecharAtMenu();render();return;}
  /* Mesmo gesto liga e desliga, como as pastilhas do To Do. */
  if(el=g("[data-atfiltro]")){
   const v=el.dataset.atfiltro;
-  state.atFiltro=(v&&state.atFiltro===v)?"":v;state.atFoco="";render();return;}
- if(el=g("[data-atnova]")){criarAtividade(el.dataset.atnova);return;}
+  state.atFiltro=(v&&state.atFiltro===v)?"":v;state.atFoco="";state.atSel=-1;
+  fecharAtMenu();render();return;}
+ if(el=g("[data-atnova]")){
+  const [ar,st]=el.dataset.atnova.split(":");
+  criarAtividade(ar,st);return;}
+ /* O glifo abre o menu de status; o "⋯" abre o de ações. Segundo clique no
+    mesmo botão fecha, como todo menu. */
+ if(el=g("[data-atglifo]")){
+  const id=el.dataset.atglifo;
+  if(state.atMenu&&state.atMenu.tipo==="status"&&state.atMenu.id===id)fecharAtMenu();
+  else abrirAtMenu("status",id);
+  return;}
+ if(el=g("[data-atmais]")){
+  const id=el.dataset.atmais;
+  if(state.atMenu&&state.atMenu.tipo==="acoes"&&state.atMenu.id===id)fecharAtMenu();
+  else abrirAtMenu("acoes",id);
+  return;}
+ if(el=g("[data-atabre]")){irParaAtividade(el.dataset.atabre,true);return;}
+ /* Concluir e reabrir NÃO mudam nada aqui: abrem o formulário de evidência na
+    gaveta, como a pendência do negócio. Os outros passos são diretos -- pôr em
+    andamento não é um fato que precise de prova. */
  if(el=g("[data-atstatus]")){
   const [id,novo]=el.dataset.atstatus.split(":");
   const a=acharAtiv(id);if(!a)return;
+  const st=statusDaAtiv(a);
+  fecharAtMenu();
+  if(st===novo){state.atFoco=id;render();return;}
+  if(novo==="feita"||st==="feita"){
+   state.painel={tipo:"ativ",id:id};
+   state.atEvid=id;state.atEvidModo=novo==="feita"?"concluir":"reabrir";
+   state.atEvidAlvo=novo;
+   state.atEvidTxt="";state.atEvidLink="";state.atEvidErro="";
+   state.atFoco=id;render();
+   const t=document.querySelector('[data-atevid="texto"]');if(t)t.focus();
+   return;}
   snapshot();
-  const aviso=mudarStatusAtiv(a,novo);
-  if(!aviso&&statusDaAtiv(a)!==novo)return;
+  mudarStatusAtiv(a,novo);
   a.atualizadoEm=agora();a.atualizadoPor=quemSou()||"—";
-  state.atFoco=id;marcar();if(aviso)toast(aviso);return;}
+  state.atFoco=id;marcar();return;}
+ if(el=g("[data-atevidcancel]")){
+  state.atEvid=null;state.atEvidTxt="";state.atEvidLink="";state.atEvidErro="";
+  render();return;}
+ if(el=g("[data-atevidok]")){
+  const a=acharAtiv(el.dataset.atevidok);if(!a)return;
+  const reab=state.atEvidModo==="reabrir";
+  const txt=(state.atEvidTxt||"").trim(),lnk=(state.atEvidLink||"").trim();
+  /* Concluir aceita texto ou link. Reabrir exige texto: link não explica o
+     que mudou. */
+  const falta=reab?txt.length<3:(txt.length<3&&lnk.length<4);
+  if(falta){
+   state.atEvidErro=reab?TEXTOS.ativ.reabFalta:TEXTOS.ativ.evidFalta;render();
+   const t=document.querySelector('[data-atevid="texto"]');if(t)t.focus();return;}
+  snapshot();
+  a.evidencias=evidsAtiv(a).slice();
+  a.evidencias.push({tipo:reab?"reabertura":"conclusao",texto:txt,link:lnk,
+   por:quemSou()||"—",em:agora()});
+  const aviso=mudarStatusAtiv(a,state.atEvidAlvo||(reab?"aberta":"feita"));
+  a.atualizadoEm=agora();a.atualizadoPor=quemSou()||"—";
+  state.atEvid=null;state.atEvidTxt="";state.atEvidLink="";state.atEvidErro="";
+  state.atEvidAlvo="";
+  marcar();if(aviso)toast(aviso);return;}
  if(el=g("[data-delativ]")){
   const id=el.dataset.delativ,a=acharAtiv(id);if(!a)return;
   if(!confirm(TEXTOS.ativ.confirmaExcluir))return;
+  fecharAtMenu();
   snapshot();
   state.data.atividades=atividades().filter(x=>x.id!==id);
   if(state.atFoco===id)state.atFoco="";
+  if(state.painel&&state.painel.tipo==="ativ"&&state.painel.id===id)state.painel=null;
+  state.atEvid=null;
   marcar();toast(TEXTOS.ativ.excluiu);return;}
- if(el=g("[data-abreativ]")){irParaAtividade(el.dataset.abreativ);return;}
+ /* Clicar numa linha também move o foco do teclado para ela. */
+ if(el=g("[data-atrow]"))state.atSel=Number(el.dataset.atrow);
+ if(el=g("[data-abreativ]")){irParaAtividade(el.dataset.abreativ,true);return;}
  if(el=g("[data-abre]")){abrirPainel({tipo:"deal",id:el.dataset.abre});return;}
  /* O "?" do cartão explica o indicador; o resto do cartão abre a lista. */
  if((el=g("[data-kpi]"))&&!t.closest("[data-hint]")){abrirPainel({tipo:"kpi",id:el.dataset.kpi});return;}
@@ -5269,12 +5667,19 @@ document.addEventListener("input",e=>{
  if(t.matches&&t.matches("[data-pevid]")){
   if(t.dataset.pevid==="texto")state.pendEvidTxt=t.value;else state.pendEvidLink=t.value;
   return;}
+ if(t.matches&&t.matches("[data-atevid]")){
+  if(t.dataset.atevid==="texto")state.atEvidTxt=t.value;else state.atEvidLink=t.value;
+  return;}
  if(t.id==="busca"){
   const antes=state.filtros.busca.trim(),agora=t.value.trim();
   state.filtros.busca=t.value;
   /* Só no começo da busca, uma vez: depois disso a pessoa troca de tela e de
      vista à vontade sem a busca puxando de volta. */
-  if(!antes&&agora){
+  /* To Do e Atividades buscam na própria lista: arrastar para Negócios ao
+     digitar a primeira letra tirava a pessoa justamente da tela onde ela
+     estava procurando. */
+  const buscaAqui=state.tela==="todo"||state.tela==="atividades";
+  if(!antes&&agora&&!buscaAqui){
    if(state.tela!=="negocios"){state.tela="negocios";state.perdidos=false;}
    if(state.vista!=="lista")state.vista="lista";
   }
@@ -5295,8 +5700,9 @@ const ATALHOS=[
  ["G depois C","Contas"],
  ["G depois T","To Do"],
  ["G depois A","Atividades"],
- ["J e K","Andar pela lista do To Do"],
- ["C","Cadastrar negócio"],
+ ["J e K","Andar pela lista do To Do e de Atividades"],
+ ["S","Mudar o status da atividade em foco"],
+ ["C","Cadastrar negócio — ou atividade, na tela Atividades"],
  ["E","Alternar quadro e lista"],
  ["Esc","Fechar gaveta, paleta ou explicação"],
  ["?","Ver esta lista"]
@@ -5332,9 +5738,10 @@ function itensCmd(){
   state.data.deals.filter(d=>textoBusca(d).indexOf(q)>=0).slice(0,8).forEach(d=>out.push(
    {g:"Negócios",ico:d.id.split("-")[0],t:nomeNegocio(d),
     m:TEXTOS.frentesLbl[d.frente]+" · "+etapaNome(d),f:()=>abrirPainel({tipo:"deal",id:d.id})}));
-  atividades().filter(a=>((a.texto||"")+" "+a.id+" "+(a.responsavel||"")).toLowerCase().indexOf(q)>=0)
+  atividades().filter(a=>((a.titulo||"")+" "+(a.descricao||"")+" "+a.id+" "+
+   (a.responsavel||"")+" "+(a.demandante||"")).toLowerCase().indexOf(q)>=0)
    .slice(0,6).forEach(a=>out.push(
-   {g:TEXTOS.nav.atividades,ico:"A",t:String(a.texto||"").trim()||TEXTOS.ativ.novaVazia,
+   {g:TEXTOS.nav.atividades,ico:"A",t:tituloAtiv(a)||TEXTOS.ativ.semTitulo,
     m:AT_AREAS[areaDaAtiv(a)]+" · "+AT_STATUS_LBL[statusDaAtiv(a)],f:()=>irParaAtividade(a.id)}));
   state.data.customers.filter(c=>(c.nome+" "+c.id).toLowerCase().indexOf(q)>=0).slice(0,5).forEach(c=>out.push(
    {g:"Clientes",ico:"C",t:c.nome,m:c.id,f:()=>{state.tela="contas";state.aba="clientes";abrirPainel({tipo:"conta",kind:"cliente",id:c.id});}}));
@@ -5386,7 +5793,8 @@ function rodarCmd(i){
  if(!segue)fecharCmd();
 }
 function irPara(tela){
- state.tela=tela;state.perdidos=false;state.painel=null;state.atFoco="";render();
+ state.tela=tela;state.perdidos=false;state.painel=null;
+ state.atFoco="";state.atSel=-1;fecharAtMenu();render();
 }
 /* Digitação em campo não é atalho: sem isto, escrever "capital" numa nota
    navegaria a tela três vezes. */
@@ -5413,6 +5821,7 @@ document.addEventListener("keydown",e=>{
   return;
  }
  if(!tecla)return;
+ if(tecla==="Escape"&&state.atMenu){e.preventDefault();fecharAtMenu();return;}
  if(tecla==="Escape"&&state.hintBtn){e.preventDefault();fecharHint(true);return;}
  const cart=document.activeElement&&document.activeElement.closest?document.activeElement.closest("[data-kpi]"):null;
  if(cart&&(tecla==="Enter"||tecla===" ")){e.preventDefault();
@@ -5441,6 +5850,26 @@ document.addEventListener("keydown",e=>{
    const el=document.querySelector('[data-tirow="'+state.todoSel+'"]');
    if(el&&el.scrollIntoView)el.scrollIntoView({block:"nearest"});
    return;}
+  /* j e k andam pela lista de Atividades; Enter abre a gaveta; S abre o menu
+     de status da linha em foco -- o mesmo trio do To Do, na tela ao lado. */
+  if(state.tela==="atividades"&&!state.painel&&(k==="j"||k==="k"||k==="s"||tecla==="Enter")){
+   if(!AT_FOCO.length)return;
+   if(tecla==="Enter"){
+    if(state.atSel>=0){e.preventDefault();irParaAtividade(AT_FOCO[state.atSel],true);}
+    return;}
+   if(k==="s"){
+    if(state.atSel>=0){e.preventDefault();abrirAtMenu("status",AT_FOCO[state.atSel]);}
+    return;}
+   e.preventDefault();
+   state.atSel=Math.max(0,Math.min(AT_FOCO.length-1,state.atSel+(k==="j"?1:-1)));
+   state.atFoco="";fecharAtMenu();render();
+   const el=document.querySelector('[data-atrow="'+state.atSel+'"]');
+   if(el&&el.scrollIntoView)el.scrollIntoView({block:"nearest"});
+   return;}
+  /* Na tela de Atividades, "c" cria uma atividade: criar o que a tela mostra
+     é o que se espera do atalho. */
+  if(k==="c"&&!state.painel&&state.tela==="atividades"){
+   e.preventDefault();criarAtividade(state.atAba,"aberta");return;}
   if(k==="c"&&!state.painel){e.preventDefault();novoNegocio();return;}
   if(k==="e"&&state.tela==="negocios"){e.preventDefault();
    state.vista=state.vista==="lista"?"quadro":"lista";render();return;}
@@ -5479,7 +5908,12 @@ window.addEventListener("resize",()=>{
  state.rt=setTimeout(()=>{const f=faixaTela();if(f!==faixaAtual){faixaAtual=f;render();}
   else if(state.hintBtn)posicionarHint(state.hintBtn);},150);
 });
-window.addEventListener("scroll",()=>{if(state.hintBtn)posicionarHint(state.hintBtn);},true);
+window.addEventListener("scroll",()=>{
+ if(state.hintBtn)posicionarHint(state.hintBtn);
+ /* O cabeçalho de grupo é sticky e a lista rola por baixo dele: sem isto o
+    menu ficava parado no ar, apontando para uma linha que já saiu. */
+ if(state.atMenu)posicionarAtMenu();
+},true);
 $("#hint").addEventListener("keydown",e=>{
  if(e.key==="Tab"){e.preventDefault();const b=$("#hint").querySelector("button");if(b)b.focus();}
  else if(e.key==="Escape"){e.preventDefault();e.stopPropagation();fecharHint(true);}

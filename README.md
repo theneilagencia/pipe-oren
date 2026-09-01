@@ -245,22 +245,38 @@ Cada pessoa troca a própria senha no rodapé da lateral esquerda. Quem esqueceu
 ### Atividades de comercial e marketing
 
 A tela **Atividades** (atalho `G` `A`) guarda o trabalho que não pende de negócio
-nenhum: uma campanha, um material, uma lista para prospectar, uma apresentação a
-refazer. Quatro campos e nada mais — o que precisa ser feito, o status, o
-responsável e a data. Clicar em qualquer valor da linha edita no lugar.
+nenhum: campanhas, materiais, listas para prospectar, uma apresentação a refazer.
 
-A lista é agrupada por status (**A fazer**, **Em andamento**, **Concluída**),
-porque a pergunta desta tela é "em que pé está". A área — Comercial ou
-Marketing — é a aba de cima. Concluídas saem da fila e ficam atrás do próprio
-cartão, com quem concluiu e quando; o número continua à vista.
+Sete campos: **nome da atividade**, **breve descrição**, **área** (Comercial ou
+Marketing), **responsável** (quem faz), **demandante** (quem pediu), **status** e
+as datas de **início** e de **fim**. A lista mostra o essencial numa linha; o
+resto fica na gaveta, que abre clicando no nome.
+
+A lista é densa e agrupada por status — **A fazer**, **Em andamento**,
+**Concluída** — com os cabeçalhos grudando no topo ao rolar. O círculo à
+esquerda de cada linha é o status: clicar nele abre o seletor dos três. O `+` no
+cabeçalho de um grupo cria já naquele status.
+
+O atraso é medido pela **data de fim**, e só ela: uma atividade que começou e
+não acabou não está atrasada. Data em branco é estado legítimo para atividade
+nova — é a pastilha "sem data de fim" que lembra de marcar, e o painel não
+inventa prazo. Atividade concluída não tem atraso: coisa entregue não está
+vencida.
+
+**Concluir exige evidência**, como a pendência de um negócio: descreva o que foi
+entregue, ou cole um link que comprove (o cartão no Linear, o material, a pasta).
+Reabrir exige o motivo por escrito — link não explica o que mudou. Tudo fica
+registrado com quem fez e quando, e nada é sobrescrito.
 
 Tudo o que está em aberto aqui também aparece no **To Do** da pessoa
-responsável, marcado como atividade: cadastrar e mover status é na tela de
-Atividades, cobrar é no To Do. Data em branco é estado legítimo para atividade
-nova — é o cartão "sem data" que lembra de marcar, e o painel não inventa prazo.
+responsável, marcado como atividade, com o demandante na coluna de quem
+responde: cadastrar e mover status é na tela de Atividades, cobrar é no To Do.
+
+Atalhos: `J` e `K` andam pela lista, `Enter` abre a gaveta, `S` abre o seletor de
+status da linha em foco, `C` cria uma atividade.
 
 Atividade não tem frente, tipo de venda nem público: são atributos de negócio.
-Por isso, na tela de Atividades, o único filtro que sobra é o de responsável.
+Por isso, nesta tela, o único filtro que sobra é o de responsável.
 
 **Exportar** baixa o documento do pipeline inteiro: parceiros, clientes,
 negócios, pendências, atividades, histórico de etapas e a lista de responsáveis. O arquivo é
