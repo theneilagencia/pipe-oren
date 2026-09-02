@@ -1287,9 +1287,14 @@ const RESPS_PADRAO=["Paulo","Theo","Adriano","Adolfo"];
    dados.responsaveis e aqui ela é trocada no lugar, sem tocar em quem usa. */
 const RESPS=RESPS_PADRAO.slice();
 function aplicarResponsaveis(d){
- const lista=(d&&Array.isArray(d.responsaveis)&&d.responsaveis.length)
-  ?d.responsaveis.filter(x=>typeof x==="string"&&x.trim()).map(x=>x.trim())
-  :RESPS_PADRAO;
+ const crua=(d&&Array.isArray(d.responsaveis)&&d.responsaveis.length)
+  ?d.responsaveis.filter(x=>typeof x==="string"&&x.trim()).map(nomePessoa)
+  :RESPS_PADRAO.slice();
+ /* Duas grafias do mesmo nome na lista dariam duas opções idênticas no select.
+    A primeira vence e a segunda desaparece -- sem alarde, porque para quem lê
+    elas eram a mesma coisa desde o começo. */
+ const lista=[];
+ crua.forEach(x=>{if(x&&lista.indexOf(x)<0)lista.push(x);});
  RESPS.length=0;lista.forEach(x=>RESPS.push(x));
 }
 /* Se o Admin removeu alguém que ainda responde por um registro, o nome dele
@@ -1299,7 +1304,10 @@ function opcoesResp(atual,vazio){
  const o={};
  if(vazio!==undefined)o[""]=vazio;
  RESPS.forEach(r=>o[r]=r);
- if(atual&&o[atual]===undefined)o[atual]=atual+" (fora da lista)";
+ /* O valor gravado pode estar em outra forma Unicode que a lista: comparar cru
+    fazia o mesmo nome aparecer como "(fora da lista)" ao lado de si mesmo. */
+ const a=nomePessoa(atual);
+ if(a&&o[a]===undefined)o[a]=a+" (fora da lista)";
  return o;
 }
 const CINCO=[["pagamento","Capacidade de pagamento"],["contrato","Contrato"],["garantias","Garantias"],["valorImovel","Valor do imóvel"],["usoAlternativo","Uso alternativo"]];
@@ -1340,7 +1348,12 @@ const state={
  data:null,tela:"painel",todoQuem:"",todoTipo:"",todoSo:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
- atAba:"",atFiltro:"",atFoco:"",atSel:-1,atMenu:null,atAgrupar:"status",atSo:"",
+ atAba:"",atFiltro:"",atFoco:"",atSel:-1,atMenu:null,
+ /* A tela abre agrupada por responsável: a primeira pergunta de quem entra é
+    "o que é meu", e é a vista que se compartilha. Status continua a um clique.
+    Por isso o acordeão abre só a seção de quem entrou -- ver a lista dos outros
+    é escolha, não estado inicial. */
+ atAgrupar:"quem",atSo:"",
  atEvid:null,atEvidModo:"concluir",atEvidAlvo:"",atEvidTxt:"",atEvidLink:"",atEvidErro:"",
  painel:null,secoes:{},pendEvid:null,pendEvidModo:"concluir",pendEvidTxt:"",pendEvidLink:"",pendEvidErro:"",dirty:false,undo:null,undoTimer:null,dbTimer:null,
  usuario:null,servidor:false,versao:0,salvando:false,semRede:false
@@ -1369,6 +1382,20 @@ const diaLocal=v=>{
 const hoje=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());};
 const dias=(a,b)=>Math.round((b-a)/864e5);
 const iniciais=n=>String(n||"").trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();
+/* Nome de pessoa é chave: é por ele que o painel agrupa o To Do, monta o filtro
+   de responsável e decide de quem é a tarefa. E "Vinícius" tem DUAS grafias
+   Unicode que a tela desenha igual: o í como um caractere (U+00ED, NFC) ou como
+   i + acento combinante (U+0069 U+0301, NFD). Teclado de Mac e alguns campos de
+   texto produzem a segunda. Gravadas as duas, o mesmo Vinícius aparecia como
+   duas pessoas -- duas seções no To Do, dois nomes no filtro, e nenhuma pista
+   na tela de por quê.
+   NFC é a forma canônica: normalizar não junta nomes diferentes, junta o mesmo
+   nome escrito de dois jeitos. Espaço repetido e sobra nas pontas também caem
+   aqui, pelo mesmo motivo -- "Vinícius " não é outra pessoa. */
+function nomePessoa(x){
+ const t=String(x==null?"":x);
+ return (t.normalize?t.normalize("NFC"):t).replace(/\s+/g," ").trim();
+}
 /* Frente ausente ou desconhecida cai em governance, com aviso no console.
    A tela nunca quebra por causa de um registro torto. */
 const frentesAvisadas={};
@@ -3801,6 +3828,11 @@ function atividades(){
   if(a.titulo===undefined)a.titulo="";
   if(a.descricao===undefined)a.descricao="";
   if(a.demandante===undefined)a.demandante="";
+  /* Normaliza o nome na leitura, como faz com titulo e fim: gravado em duas
+     formas Unicode, o mesmo responsável virava duas seções na tela. */
+  ["responsavel","demandante","criadaPor","atualizadoPor","feitaPor"].forEach(k=>{
+   if(typeof a[k]==="string"){const n=nomePessoa(a[k]);if(n!==a[k])a[k]=n;}
+  });
   if(a.inicio===undefined)a.inicio="";
   if(a.fim===undefined)a.fim="";
   if(a.prioridade===undefined)a.prioridade="";
@@ -3851,7 +3883,7 @@ function itensTodo(){
  });
  const consultados=d=>PAPEIS.map(([k,l])=>{const v=(d.papeis||{})[k];return v?l+": "+v:"";}).filter(Boolean);
  const item=(d,tipo,texto,quem,prazo)=>{
-  const o={tipo:tipo,texto:texto,d:d,quem:(quem||"").trim(),aprova:d.responsavel||"",
+  const o={tipo:tipo,texto:texto,d:d,quem:nomePessoa(quem),aprova:nomePessoa(d.responsavel),
    consultados:consultados(d),prazo:prazo||"",atraso:prazo?dias(diaLocal(prazo),h):null};
   o.estado=estadoTodo(o);return o;
  };
@@ -3875,14 +3907,14 @@ function itensTodo(){
    (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+prioridadeAtiv(a)+" "+
    TEXTOS.ativ.rotulo).toLowerCase().indexOf(q)<0)return;
   const o={tipo:"atividade",ativ:a,d:null,texto:tituloAtiv(a)||TEXTOS.ativ.semTitulo,
-   quem:String(a.responsavel||"").trim(),
+   quem:nomePessoa(a.responsavel),
    /* Quem pediu é quem cobra: no To Do ele entra na coluna de quem responde,
       onde o negócio põe o responsável dele. */
-   aprova:String(a.demandante||"").trim(),consultados:[],
+   aprova:nomePessoa(a.demandante),consultados:[],
    prazo:a.fim||"",atraso:atAtraso(a)};
   o.estado=estadoTodo(o);out.push(o);
  });
- const alvo=f.responsavel;
+ const alvo=nomePessoa(f.responsavel);
  return alvo?out.filter(x=>x.quem===alvo):out;
 }
 /* Bloqueio primeiro, depois o mais atrasado, depois o prazo mais próximo. */
@@ -4222,7 +4254,9 @@ function barraAcordeao(){
  return '<div class="tacc">'+esq+'<span class="sp"></span>'+dir+"</div>";
 }
 function corpoTodo(itens){
- const chave=x=>(x.quem||TEXTOS.semQuem);
+ /* Já vem normalizado de itensTodo, mas a chave é o que decide se duas linhas
+    caem na mesma seção: normalizar aqui também é a tranca de dentro. */
+ const chave=x=>(nomePessoa(x.quem)||TEXTOS.semQuem);
  const grupos={};
  itens.forEach(x=>{const k=chave(x);(grupos[k]=grupos[k]||[]).push(x);});
  const ordem=Object.keys(grupos).sort((a,b)=>{
@@ -4400,7 +4434,7 @@ function telaAtividades(){
  const resp=state.filtros.responsavel;
  /* A busca varre nome, descrição, quem faz e quem pediu: procurar por
     "Adriano" tem de achar o que ele pediu, não só o que ele faz. */
- const cabe=a=>(!resp||String(a.responsavel||"").trim()===resp)&&
+ const cabe=a=>(!resp||nomeResp(a)===nomePessoa(resp))&&
   (!q||((a.titulo||"")+" "+(a.descricao||"")+" "+(a.responsavel||"")+" "+
    (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+prioridadeAtiv(a))
    .toLowerCase().indexOf(q)>=0);
@@ -4486,7 +4520,7 @@ function telaAtividades(){
 /* Agrupar por responsável só faz sentido quando há responsável a agrupar; com
    uma pessoa só, o cabeçalho seria decoração. Mas se o link pediu, respeita. */
 const porQuem=()=>state.atAgrupar==="quem";
-const nomeResp=a=>String((a&&a.responsavel)||"").trim()||TEXTOS.semQuem;
+const nomeResp=a=>nomePessoa(a&&a.responsavel)||TEXTOS.semQuem;
 /* ---------------------------- ACORDEÃO ----------------------------
    Mesma mecânica do To Do, e pelo mesmo motivo: com sete pessoas na tela, ler
    a lista inteira para achar a sua parte é trabalho. Fechada, a seção precisa
@@ -4936,6 +4970,53 @@ function atencao(lista){
    palpite: o código vem da publicação (e um navegador com a aba antiga mostra
    o selo antigo), o dado vem do banco (e a carga só grava na primeira entrada
    de um editor). Uma linha para cada, e a resposta cabe num print. */
+/* Nomes que a tela desenha igual mas o dado guarda diferente. Depois da
+   normalização não deveria sobrar nenhum -- se sobrar, é sinal de que entrou
+   por um caminho que não passa por nomePessoa. */
+function gemeas(){
+ const cru={};
+ nomesEmUso().forEach(n=>{const k=nomePessoa(n);(cru[k]=cru[k]||[]).push(n);});
+ const out=[];
+ Object.keys(cru).forEach(k=>{
+  const u=[];cru[k].forEach(n=>{if(u.indexOf(n)<0)u.push(n);});
+  if(u.length>1)out.push(k+" ("+u.length+" formas)");
+ });
+ return out.length?out.join(", "):"nenhuma";
+}
+/* Nomes que só diferem por acento, caixa ou espaço. Estes o painel trata como
+   pessoas diferentes DE PROPÓSITO -- "Vinicius" e "Vinícius" podem ser duas
+   pessoas, e juntar por conta própria seria decidir por quem responde pelo
+   dado. O caminho é /admin → Responsáveis → Renomear. */
+function parecidas(){
+ const achatar=n=>nomePessoa(n).toLowerCase()
+  .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+ const g={};
+ nomesEmUso().forEach(n=>{const k=achatar(n);
+  const v=nomePessoa(n);if(!v)return;
+  g[k]=g[k]||[];if(g[k].indexOf(v)<0)g[k].push(v);});
+ const out=[];
+ Object.keys(g).forEach(k=>{if(g[k].length>1)out.push(g[k].join(" / "));});
+ return out.length?out.join(" · ")+" — resolva em /admin → Responsáveis → Renomear"
+  :"nenhuma";
+}
+/* Todo nome de pessoa gravado em qualquer lugar do documento, cru. */
+function nomesEmUso(){
+ const d=state.data||{},L=[];
+ const add=x=>{if(typeof x==="string"&&x.trim())L.push(x);};
+ (d.deals||[]).forEach(x=>{
+  add(x.responsavel);
+  (x.pendencias||[]).forEach(pd=>add(pd.responsavel));
+  (x.historico||[]).forEach(h=>add(h.quem));
+  Object.keys(x.papeis||{}).forEach(k=>add(x.papeis[k]));
+ });
+ (d.customers||[]).concat(d.partners||[]).forEach(c=>add(c.responsavel));
+ (d.atividades||[]).forEach(a=>{
+  add(a.responsavel);add(a.demandante);add(a.criadaPor);add(a.atualizadoPor);add(a.feitaPor);
+  (a.evidencias||[]).forEach(e=>add(e.por));
+ });
+ (d.responsaveis||[]).forEach(add);
+ return L;
+}
 function diagnostico(){
  const d=state.data||{};
  const ats=(typeof atividades==="function")?atividades():[];
@@ -4961,6 +5042,8 @@ function diagnostico(){
     :" — não entrou; entre como editor e recarregue")],
   ["responsáveis na lista",RESPS.join(", ")||"(vazia)"],
   ["nomes usados fora da lista",fora.length?fora.join(", "):"nenhum"],
+  ["grafias gêmeas (mesmo nome, Unicode diferente)",gemeas()],
+  ["grafias parecidas (o painel trata como pessoas diferentes)",parecidas()],
   ["telas disponíveis",["painel","negocios","contas","todo","atividades"]
    .filter(k=>TEXTOS.nav[k]).map(k=>TEXTOS.nav[k]).join(" · ")],
   ["agrupar atividades por",state.atAgrupar==="quem"?"responsável":"status"]
@@ -5810,7 +5893,18 @@ function centralizarTrilha(el){
 /* vazio: o que escrever quando o campo está em branco. Sem ele o travessão
    serve -- num prazo, "definir data" diz o que se espera de quem lê. */
 function ed(kind,id,campo,valor,tipo,ops,vazio){
- const raw=valor==null?"":valor;
+ let raw=valor==null?"":valor;
+ /* Vocabulário fechado é o único caso em que dá para consertar o valor com
+    segurança: se o gravado não casa com opção nenhuma mas casa depois de
+    normalizar, é a mesma coisa escrita de outro jeito -- nome de pessoa em NFD,
+    ou com espaço sobrando. Sem isto o <select> abria SEM opção selecionada, o
+    navegador mostrava a primeira, e um blur gravava outra pessoa por cima. Dano
+    silencioso, do pior tipo. Em texto livre não se toca: colapsar espaço numa
+    anotação destruiria os parágrafos. */
+ if(ops&&ops[raw]===undefined){
+  const n=nomePessoa(raw);
+  if(n&&ops[n]!==undefined)raw=n;
+ }
  let vis=raw===""?(vazio||"—"):raw;
  if(raw===""&&vazio)return '<span data-edit="'+kind+":"+id+":"+campo+'" data-tipo="'+(tipo||"text")+
   '" data-raw=""'+(ops?" data-ops='"+esc(JSON.stringify(ops))+"'":"")+' class="vaz">'+esc(vazio)+"</span>";
@@ -6189,6 +6283,7 @@ function setCampo(kind,id,campo,valor){
   snapshot();
   if(campo==="area"){if(AT_AREAS[valor])a.area=valor;}
   else if(campo==="prioridade"){a.prioridade=AT_PRIS.indexOf(valor)>=0?valor:"";}
+  else if(campo==="responsavel"||campo==="demandante")a[campo]=nomePessoa(valor);
   else a[campo]=valor;
   a.atualizadoEm=agora();a.atualizadoPor=quemSou()||"—";
   /* Fim antes do início é quase sempre erro de digitação, mas quem sabe a

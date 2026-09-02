@@ -79,6 +79,22 @@ pessoas que o item 25 nomeia. Três regras valem para toda a carga:
   trabalho. **Demandante** é Vinícius onde ele não é o responsável, porque a ata
   lhe dá a cobrança dos responsáveis (itens 2, 3 e 28).
 
+#### Nome de pessoa é chave
+
+O painel agrupa o To Do e as Atividades pelo nome do responsável, então o nome é
+chave — e "Vinícius" tem **duas grafias Unicode que a tela desenha igual**: o `í`
+como um caractere (NFC) ou `i` + acento combinante (NFD), que é o que teclado de
+Mac costuma produzir. Gravadas as duas, o mesmo Vinícius aparecia como duas
+pessoas: duas seções no To Do, dois nomes no filtro.
+
+Agora todo nome passa por uma normalização (NFC, espaço colapsado, pontas
+aparadas) na leitura, na gravação, no agrupamento e no `/admin`. Isso **não junta
+nomes diferentes** — junta o mesmo nome escrito de dois jeitos. Grafias de fato
+diferentes ("Vinicius" sem acento) continuam sendo duas pessoas de propósito, e
+`diagnostico()` aponta as duas situações em separado: *grafias gêmeas* (mesmo
+nome, Unicode diferente — já resolvido) e *grafias parecidas* (resolve em
+`/admin` → Responsáveis → **Renomear**).
+
 A carga usa nomes que podem não estar na lista de responsáveis do painel —
 **Vinícius** e **André**, entre outros. Enquanto não estiverem, o painel mostra
 "(fora da lista)" no campo, eles não aparecem no filtro de responsável e a
@@ -286,8 +302,9 @@ acima da lista tem **Abrir todos / Fechar todos**. Fechada, a seção diz o que
 tem dentro: total, quantos P0 e quantas atrasadas. A escolha fica gravada no
 navegador de quem lê — é preferência de leitura, não vai para o banco nem
 aparece para os outros — e é guardada **por eixo**: fechar "Concluída" não
-fecha "Adolfo". Por padrão, agrupado por status tudo abre (são duas ou três
-seções e todas interessam); agrupado por responsável abre só a de quem entrou.
+fecha "Adolfo". Por padrão, agrupado por responsável (que é como a tela
+abre) só a seção de quem entrou fica aberta; agrupado por status tudo abre, que
+são duas ou três seções e todas interessam.
 Com uma pastilha de estado ligada o acordeão sai de cena e tudo abre: filtro já
 é um estreitamento, e estreitar duas vezes esconde a resposta.
 
@@ -308,9 +325,9 @@ responde: cadastrar e mover status é na tela de Atividades, cobrar é no To Do.
 
 #### Agrupar e compartilhar
 
-O interruptor **agrupar por** troca o eixo da lista: por **status** responde "em
-que pé está o plano"; por **responsável** responde "o que está no nome de cada
-um" — e é essa a vista que se compartilha. Cada pessoa vira uma seção com a
+A tela abre **agrupada por responsável**: a primeira pergunta de quem entra é "o
+que é meu", e é essa a vista que se compartilha. O interruptor **agrupar por**
+troca o eixo: por **status** responde "em que pé está o plano". Cada pessoa vira uma seção com a
 contagem, quantos P0 e quantas atrasadas, ordenada por quem tem mais coisa
 atrasada e mais P0 primeiro. Quem não tem responsável fica no fim: é lacuna, não
 pessoa.

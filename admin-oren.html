@@ -235,9 +235,19 @@ async function pipeline(opcoes){
 }
 /* Cada nome contado onde ele realmente aparece. Sem isto, remover alguem
    deixaria negocios apontando para um nome que nao existe mais. */
+/* Nome de pessoa é chave no painel: é por ele que o To Do agrupa e o filtro de
+   responsável se monta. E "Vinícius" tem duas grafias Unicode que a tela desenha
+   igual -- o í como um caractere (NFC) ou i + acento combinante (NFD), que é o
+   que teclado de Mac costuma produzir. Digitadas as duas, o mesmo Vinícius
+   aparecia como duas pessoas no painel. NFC é a forma canônica: normalizar não
+   junta nomes diferentes, junta o mesmo nome escrito de dois jeitos. */
+function nomePessoa(x){
+ const t=String(x==null?"":x);
+ return (t.normalize?t.normalize("NFC"):t).replace(/\s+/g," ").trim();
+}
 function usoDeNomes(d){
  const u={};
- const soma=(nome,onde)=>{if(!nome)return;
+ const soma=(cru,onde)=>{const nome=nomePessoa(cru);if(!nome)return;
   u[nome]=u[nome]||{negocios:0,pendencias:0,contas:0,atividades:0,historico:0};u[nome][onde]++;};
  (d.deals||[]).forEach(x=>{
   soma(x.responsavel,"negocios");
@@ -263,7 +273,11 @@ async function carregarResponsaveis(){
   const linha=linhas[0]||{dados:{},versao:0};
   const d=linha.dados||{};
   state.resp.uso=usoDeNomes(d);
-  const daBase=Array.isArray(d.responsaveis)?d.responsaveis.filter(x=>typeof x==="string"&&x.trim()):null;
+  const cruas=Array.isArray(d.responsaveis)
+   ?d.responsaveis.filter(x=>typeof x==="string"&&x.trim()).map(nomePessoa):null;
+  /* Duas grafias do mesmo nome na lista dariam duas linhas idênticas na tela e
+     duas opções idênticas no select do painel. */
+  const daBase=cruas?cruas.filter((x,i)=>x&&cruas.indexOf(x)===i):null;
   /* Sem lista gravada, a lista é a mesma que o painel usa por padrão. Antes eu
      semeava com todos os nomes em uso, e quem só aparecia numa pendência —
      Vinícius, nas OB-03 e OB-04 da ata — entrava como responsável na primeira
@@ -286,28 +300,31 @@ async function gravarResponsaveis(lista,renomear){
   throw new Error("Alguém gravou no painel enquanto você editava. Recarreguei a lista: confira e tente de novo.");
  }
  const d=linha.dados||{};
- d.responsaveis=lista;
- if(renomear&&renomear.de&&renomear.para&&renomear.de!==renomear.para){
-  const de=renomear.de,para=renomear.para;
+ const limpa=(lista||[]).map(nomePessoa).filter(x=>!!x);
+ d.responsaveis=limpa.filter((x,i)=>limpa.indexOf(x)===i);
+ if(renomear&&renomear.de&&renomear.para&&nomePessoa(renomear.de)!==nomePessoa(renomear.para)){
+  /* Compara normalizado dos dois lados: sem isto, renomear a grafia NFD para a
+     NFC não trocava nada -- o de nunca casava com o que estava gravado. */
+  const de=nomePessoa(renomear.de),para=nomePessoa(renomear.para);
   (d.deals||[]).forEach(x=>{
-   if(x.responsavel===de)x.responsavel=para;
-   (x.pendencias||[]).forEach(pd=>{if(pd.responsavel===de)pd.responsavel=para;});
+   if(nomePessoa(x.responsavel)===de)x.responsavel=para;
+   (x.pendencias||[]).forEach(pd=>{if(nomePessoa(pd.responsavel)===de)pd.responsavel=para;});
    /* Historico tambem: e a mesma pessoa com outro nome, nao outra pessoa. */
-   (x.historico||[]).forEach(h=>{if(h.quem===de)h.quem=para;});
+   (x.historico||[]).forEach(h=>{if(nomePessoa(h.quem)===de)h.quem=para;});
   });
-  (d.customers||[]).forEach(c=>{if(c.responsavel===de)c.responsavel=para;});
-  (d.partners||[]).forEach(c=>{if(c.responsavel===de)c.responsavel=para;});
+  (d.customers||[]).forEach(c=>{if(nomePessoa(c.responsavel)===de)c.responsavel=para;});
+  (d.partners||[]).forEach(c=>{if(nomePessoa(c.responsavel)===de)c.responsavel=para;});
   /* Atividades: responsável, demandante e o rastro de quem mexeu. Mesma regra
      do histórico do negócio -- é a mesma pessoa com outro nome, não outra
      pessoa. Sem isto, renomear alguém deixava as atividades dele apontando
      para um nome que saiu da lista. */
   (d.atividades||[]).forEach(a=>{
-   if(a.responsavel===de)a.responsavel=para;
-   if(a.demandante===de)a.demandante=para;
-   if(a.criadaPor===de)a.criadaPor=para;
-   if(a.atualizadoPor===de)a.atualizadoPor=para;
-   if(a.feitaPor===de)a.feitaPor=para;
-   (a.evidencias||[]).forEach(e=>{if(e.por===de)e.por=para;});
+   if(nomePessoa(a.responsavel)===de)a.responsavel=para;
+   if(nomePessoa(a.demandante)===de)a.demandante=para;
+   if(nomePessoa(a.criadaPor)===de)a.criadaPor=para;
+   if(nomePessoa(a.atualizadoPor)===de)a.atualizadoPor=para;
+   if(nomePessoa(a.feitaPor)===de)a.feitaPor=para;
+   (a.evidencias||[]).forEach(e=>{if(nomePessoa(e.por)===de)e.por=para;});
   });
  }
  const gravadas=await pipeline({metodo:"PATCH",
@@ -634,9 +651,9 @@ document.addEventListener("click",async e=>{
  }
 
  if(el=g("[data-add-resp]")){
-  const c=$("#rnovo"),nome=c?c.value.trim():"";
+  const c=$("#rnovo"),nome=nomePessoa(c?c.value:"");
   if(!nome){aviso("Escreva o nome antes de acrescentar.","ruim");return}
-  if((state.resp.lista||[]).some(x=>x.toLowerCase()===nome.toLowerCase())){
+  if((state.resp.lista||[]).some(x=>nomePessoa(x).toLowerCase()===nome.toLowerCase())){
    aviso("“"+nome+"” já está na lista.","ruim");return}
   await comOcupado(el,async()=>{
    await gravarResponsaveis((state.resp.lista||[]).concat([nome]));
@@ -647,7 +664,7 @@ document.addEventListener("click",async e=>{
  }
 
  if(el=g("[data-add-nome]")){
-  const nome=el.dataset.addNome;
+  const nome=nomePessoa(el.dataset.addNome);
   await comOcupado(el,async()=>{
    await gravarResponsaveis((state.resp.lista||[]).concat([nome]));
    aviso("“"+nome+"” entrou na lista de responsáveis.","ok");
