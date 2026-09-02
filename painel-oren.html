@@ -580,9 +580,18 @@ border-color:var(--deep);font-weight:500;padding:5px 12px;min-height:30px;font-s
 .atlista>section:first-child .atgh{border-radius:calc(var(--r2) - 1px) calc(var(--r2) - 1px) 0 0}
 .atlista>section:last-child .atr:last-child{border-bottom:0;
 border-radius:0 0 calc(var(--r2) - 1px) calc(var(--r2) - 1px)}
-/* Cabeçalho de grupo: 30px, grudando no topo, com o "+" que cria já naquele status. */
-.atgh{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--alt);
-border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:3}
+/* Cabeçalho de grupo: 30px, grudando no topo, com o "+" que cria já naquele
+   status. Com acordeão, a faixa toda menos a ação da direita é o botão que
+   abre e fecha. */
+.atgh{display:flex;align-items:center;background:var(--alt);
+border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:3;padding-right:8px}
+.atgh .ghb{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;
+padding:6px 12px;background:none;border:0;border-radius:0;text-align:left;min-height:0}
+.atgh .ghb.ac{cursor:pointer;transition:background var(--fast) ease-out}
+.atgh .ghb.ac:hover{background:rgba(255,255,255,.62)}
+.atgh .ghb .sp{flex:1 1 auto}
+.atlista>section.fechada .atgh{border-bottom:0}
+.atlista>section.fechada:last-child .atgh{border-radius:0 0 calc(var(--r2) - 1px) calc(var(--r2) - 1px)}
 .atgh .g{width:14px;height:14px;flex:0 0 auto;display:flex}
 .atgh .g svg{width:14px;height:14px}
 .atgh .t{font-size:12px;font-weight:600;color:var(--tx);letter-spacing:-.006em}
@@ -630,7 +639,14 @@ font-size:12px;font-weight:500;border:1px solid var(--bd);border-radius:999px;
 background:var(--surf);color:var(--tx2)}
 .atenc:hover{border-color:var(--mid);color:var(--deep)}
 /* A faixa da pastilha "só de <pessoa>", acima da lista. */
-.atacc{display:flex;align-items:center;gap:6px;margin:0 0 8px}
+.atacc{display:flex;align-items:center;gap:6px;margin:-2px 0 8px}
+.atacc .sp{flex:1 1 auto}
+.atacc button{display:inline-flex;align-items:center;gap:6px;background:none;border:0;
+padding:4px 6px;font-size:12px;font-weight:500;color:var(--tx3);border-radius:var(--r)}
+.atacc button:hover{background:var(--alt);color:var(--tx)}
+.atacc .tso{background:#eef4f0;border:1px solid #cfe0d5;color:var(--deep);
+font-weight:600;padding:5px 10px;min-height:30px;border-radius:999px}
+.atacc .tso:hover{border-color:var(--mid);background:#eef4f0}
 .atacs{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto}
 /* Cabeçalho de grupo por pessoa: avatar, nome, contagem, P0, atrasadas. */
 .atgh .av{width:20px;height:20px;font-size:9px;border:1px solid var(--bd);flex:0 0 auto}
@@ -1072,6 +1088,8 @@ const TEXTOS={
   encAssunto:q=>"Atividades — "+q,
   soDe:n=>"Só de "+n,
   agrupadoPor:"agrupado por responsável",
+  abrirSec:n=>"Abrir as "+n+(n===1?" atividade":" atividades")+" desta seção",
+  fecharSec:"Fechar esta seção",
   soVazio:n=>"O link vinha filtrado por "+n+", e não há atividade nenhuma no nome de "+n+
    " com estes filtros. Abri a lista inteira.",
   fInicio:"Data de início",
@@ -4442,8 +4460,6 @@ function telaAtividades(){
   setTimeout(()=>toast(T.soVazio(perdido),true),0);
  }
  const daPessoa=state.atSo?daArea.filter(a=>nomeResp(a)===state.atSo):daArea;
- if(state.atSo)h+='<div class="atacc"><button class="tso" data-atso="">'+
-  esc(T.soDe(state.atSo))+'<span class="x">×</span></button></div>';
 
  /* Concluídas ficam atrás da própria pastilha: lista que mostra tudo o que já
     foi feito deixa de ser lista de trabalho. O número fica à vista, então
@@ -4462,26 +4478,110 @@ function telaAtividades(){
     esc(state.atAba)+':aberta"><span class="p">+</span>'+esc(T.nova)+"</button></div>")+
    "</div></div>";
  }
- return h+'<div class="atlista">'+(porQuem()
-  ?secoesPorQuem(dentro):secoesPorStatus(dentro,statusVis))+"</div>";
+ /* O corpo primeiro: é ele que monta AT_SECOES, e a barra depende dela. */
+ AT_SECOES.length=0;
+ const corpo=porQuem()?secoesPorQuem(dentro):secoesPorStatus(dentro,statusVis);
+ return h+barraAtiv()+'<div class="atlista">'+corpo+"</div>";
 }
 /* Agrupar por responsável só faz sentido quando há responsável a agrupar; com
    uma pessoa só, o cabeçalho seria decoração. Mas se o link pediu, respeita. */
 const porQuem=()=>state.atAgrupar==="quem";
 const nomeResp=a=>String((a&&a.responsavel)||"").trim()||TEXTOS.semQuem;
+/* ---------------------------- ACORDEÃO ----------------------------
+   Mesma mecânica do To Do, e pelo mesmo motivo: com sete pessoas na tela, ler
+   a lista inteira para achar a sua parte é trabalho. Fechada, a seção precisa
+   dizer se vale abrir -- daí total, P0 e atrasadas no cabeçalho.
+
+   A chave leva o eixo ("status:aberta", "quem:Paulo"), porque agrupar por
+   status e por responsável são duas leituras diferentes da mesma lista: quem
+   fechou "Concluída" não pediu para fechar "Adolfo". Sem o prefixo, os dois
+   dividiriam o mesmo mapa e um fecharia o outro.
+
+   Guardado no navegador de quem lê: é preferência de leitura, não dado do
+   negócio -- não vai para o banco nem aparece para os outros. */
+const AT_ABRE_CHAVE="oren.ativ.secoes.v1";
+let AT_ABRE=(function(){
+ try{const o=JSON.parse(localStorage.getItem(AT_ABRE_CHAVE)||"{}");
+  return (o&&typeof o==="object")?o:{};}catch(e){return {};}
+})();
+function gravarAbertasAtiv(){
+ try{localStorage.setItem(AT_ABRE_CHAVE,JSON.stringify(AT_ABRE));}catch(e){}
+}
+/* Os nomes das seções desta renderização, na ordem da tela. */
+const AT_SECOES=[];
+const chaveSec=k=>state.atAgrupar+":"+k;
+/* Sem escolha registrada, o padrão depende do eixo, e isso não é capricho: por
+   status são duas ou três seções e todas interessam -- fechar por padrão
+   esconderia a lista inteira. Por responsável são tantas quantas pessoas, e a
+   pergunta é "o que é meu": abre a de quem entrou e fecha o resto. Se quem
+   entrou não tem nada, abre a primeira -- tela com tudo fechado parece tela
+   sem dado. */
+function secaoAbertaAtiv(k,ordem){
+ const r=AT_ABRE[chaveSec(k)];
+ if(r!==undefined)return !!r;
+ if(!porQuem())return true;
+ const eu=(state.usuario&&state.usuario.nome)||"";
+ return (eu&&ordem.indexOf(eu)>=0)?k===eu:k===ordem[0];
+}
+/* Garante aberta a seção onde uma atividade cai. Criar ou abrir pelo link uma
+   atividade de seção fechada fazia ela desaparecer no ato. */
+function abrirSecaoDe(a){
+ if(!a)return;
+ AT_ABRE["status:"+statusDaAtiv(a)]=true;
+ AT_ABRE["quem:"+nomeResp(a)]=true;
+ gravarAbertasAtiv();
+}
+/* Abrir e fechar todas de uma vez, e a pastilha "só de <pessoa>" quando o link
+   trouxe uma. Fica acima da primeira seção, como no To Do. */
+function barraAtiv(){
+ const T=TEXTOS.ativ;
+ let esq="";
+ if(state.atSo)esq='<button class="tso" data-atso="">'+esc(T.soDe(state.atSo))+
+  '<span class="x">×</span></button>';
+ let dir="";
+ if(AT_SECOES.length>=2&&!state.atFiltro){
+  const abrir=AT_SECOES.filter(k=>!secaoAbertaAtiv(k,AT_SECOES)).length>0;
+  dir='<button data-atacc="'+(abrir?"abrir":"fechar")+'">'+
+   '<span class="chev'+(abrir?"":" on")+'">'+ICO_CHEV+"</span>"+
+   esc(abrir?TEXTOS.todoExpandir:TEXTOS.todoRecolher)+"</button>";
+ }
+ if(!esq&&!dir)return "";
+ return '<div class="atacc">'+esq+'<span class="sp"></span>'+dir+"</div>";
+}
+/* O cabeçalho de uma seção. Com acordeão é botão, com chevron e aria-expanded;
+   sem acordeão volta a ser cabeçalho. Botão dentro de botão é HTML inválido,
+   então a ação da direita ("+" ou "Encaminhar") é irmã, não filha. */
+function cabecalhoSec(k,miolo,aberta,semAcordeao,dica,acao){
+ const abre=semAcordeao
+  ?'<span class="ghb">'+miolo+'<span class="sp"></span></span>'
+  :'<button class="ghb ac" data-atsec="'+esc(k)+'" aria-expanded="'+(aberta?"true":"false")+
+   '" title="'+esc(dica)+'">'+
+   '<span class="chev'+(aberta?" on":"")+'">'+ICO_CHEV+"</span>"+miolo+
+   '<span class="sp"></span></button>';
+ return '<header class="atgh">'+abre+(acao||"")+"</header>";
+}
 function secoesPorStatus(itens,statusVis){
  const T=TEXTOS.ativ;
- return statusVis.map(k=>[k,ordenarAtiv(itens.filter(a=>statusDaAtiv(a)===k),k==="feita")])
-  .filter(x=>x[1].length).map(([k,g])=>{
+ const gs=statusVis.map(k=>[k,ordenarAtiv(itens.filter(a=>statusDaAtiv(a)===k),k==="feita")])
+  .filter(x=>x[1].length);
+ AT_SECOES.length=0;gs.forEach(x=>AT_SECOES.push(x[0]));
+ /* Com filtro ligado tudo abre, e o cabeçalho volta a ser cabeçalho: filtro já
+    é um estreitamento, e estreitar duas vezes esconde a resposta. Uma seção só
+    também não vira acordeão -- não há o que organizar. */
+ const semAcordeao=!!state.atFiltro||gs.length<2;
+ return gs.map(([k,g])=>{
   const vc=k==="feita"?0:g.filter(a=>estadoAtiv(a)==="vencido").length;
-  return '<section><header class="atgh">'+
-   '<span class="g" style="color:'+AT_STATUS_COR[k]+'">'+AT_GLIFO[k]+"</span>"+
+  const p0=g.filter(a=>prioridadeAtiv(a)==="P0").length;
+  const aberta=semAcordeao||secaoAbertaAtiv(k,AT_SECOES);
+  const miolo='<span class="g" style="color:'+AT_STATUS_COR[k]+'">'+AT_GLIFO[k]+"</span>"+
    '<span class="t">'+esc(AT_STATUS_LBL[k])+'</span><span class="c">'+g.length+"</span>"+
-   (vc?'<span class="w">'+vc+(vc===1?" atrasada":" atrasadas")+"</span>":"")+
-   '<span class="sp"></span>'+
-   (k==="feita"?"":'<button class="add" data-atnova="'+esc(state.atAba)+":"+k+
-    '" title="'+esc(T.novaAqui(AT_STATUS_LBL[k]))+'">+</button>')+
-   "</header>"+g.map(linhaAtiv).join("")+"</section>";
+   (p0?'<span class="atpri P0">'+p0+" P0</span>":"")+
+   (vc?'<span class="w">'+vc+(vc===1?" atrasada":" atrasadas")+"</span>":"");
+  const acao=k==="feita"?"":'<button class="add" data-atnova="'+esc(state.atAba)+":"+k+
+   '" title="'+esc(T.novaAqui(AT_STATUS_LBL[k]))+'">+</button>';
+  return '<section class="'+(aberta?"":"fechada")+'">'+
+   cabecalhoSec(k,miolo,aberta,semAcordeao,aberta?T.fecharSec:T.abrirSec(g.length),acao)+
+   (aberta?g.map(linhaAtiv).join(""):"")+"</section>";
  }).join("");
 }
 /* Uma seção por pessoa, ordenada por quem tem mais coisa atrasada e mais P0 --
@@ -4500,20 +4600,23 @@ function secoesPorQuem(itens){
   if(grupos[a].length!==grupos[b].length)return grupos[b].length-grupos[a].length;
   return a.localeCompare(b,"pt-BR");
  });
+ AT_SECOES.length=0;ordem.forEach(k=>AT_SECOES.push(k));
+ const semAcordeao=!!state.atFiltro||ordem.length<2;
  return ordem.map(k=>{
   const g=ordenarAtiv(grupos[k],state.atFiltro==="feita");
   const vc=conta(g,x=>estadoAtiv(x)==="vencido"),p0=conta(g,x=>prioridadeAtiv(x)==="P0");
   const sem=k===TEXTOS.semQuem;
-  return '<section><header class="atgh">'+
-   '<span class="av" style="background:'+(sem?"var(--alt)":corDoNome(k))+'">'+
+  const aberta=semAcordeao||secaoAbertaAtiv(k,AT_SECOES);
+  const miolo='<span class="av" style="background:'+(sem?"var(--alt)":corDoNome(k))+'">'+
     esc(sem?"?":iniciais(k))+"</span>"+
    '<span class="t">'+esc(k)+'</span><span class="c">'+g.length+"</span>"+
    (p0?'<span class="atpri P0">'+p0+" P0</span>":"")+
-   (vc?'<span class="w">'+vc+(vc===1?" atrasada":" atrasadas")+"</span>":"")+
-   '<span class="sp"></span>'+
-   '<button class="ghenc" data-atenc="'+esc(sem?"":k)+'" title="'+
-    esc(T.encBtn+": "+k)+'">'+esc(T.encBtn)+"</button>"+
-   "</header>"+g.map(linhaAtiv).join("")+"</section>";
+   (vc?'<span class="w">'+vc+(vc===1?" atrasada":" atrasadas")+"</span>":"");
+  const acao='<button class="ghenc" data-atenc="'+esc(sem?"":k)+'" title="'+
+   esc(T.encBtn+": "+k)+'">'+esc(T.encBtn)+"</button>";
+  return '<section class="'+(aberta?"":"fechada")+'">'+
+   cabecalhoSec(k,miolo,aberta,semAcordeao,aberta?T.fecharSec:T.abrirSec(g.length),acao)+
+   (aberta?g.map(linhaAtiv).join(""):"")+"</section>";
  }).join("");
 }
 /* ---- o menu de status e o de ações, numa camada fixa por cima da lista ----
@@ -4573,6 +4676,8 @@ function criarAtividade(area,status){
   criadaEm:agora(),criadaPor:eu||"—",atualizadoEm:agora(),atualizadoPor:eu||"—",
   feitaEm:"",feitaPor:""};
  atividades().unshift(a);
+ /* A nova cai numa seção que pode estar fechada -- e aí nasce invisível. */
+ abrirSecaoDe(a);
  state.tela="atividades";state.atAba=a.area;state.atFiltro="";state.atFoco=a.id;state.atSel=-1;
  fecharAtMenu();
  /* Abre a gaveta com o nome em edição: atividade tem sete campos, e a lista
@@ -4605,7 +4710,7 @@ function irParaAtividade(id,soGaveta){
   state.tela="atividades";state.perdidos=false;
   if(a){state.atAba=areaDaAtiv(a);state.atFiltro=statusDaAtiv(a)==="feita"?"feita":"";}
  }
- if(a)state.atFoco=id;
+ if(a){state.atFoco=id;abrirSecaoDe(a);}
  state.atEvid=null;
  state.painel=a?{tipo:"ativ",id:id}:null;
  render();
@@ -6320,6 +6425,17 @@ document.addEventListener("click",e=>{
   const v=el.dataset.atfiltro;
   state.atFiltro=(v&&state.atFiltro===v)?"":v;state.atFoco="";state.atSel=-1;
   fecharAtMenu();render();return;}
+ if(el=g("[data-atsec]")){
+  const k=el.dataset.atsec;
+  AT_ABRE[chaveSec(k)]=el.getAttribute("aria-expanded")!=="true";
+  gravarAbertasAtiv();
+  /* A lista visível mudou de tamanho: o foco do teclado não pode apontar para
+     uma linha que saiu da tela. */
+  state.atSel=-1;fecharAtMenu();render();return;}
+ if(el=g("[data-atacc]")){
+  const abrir=el.dataset.atacc==="abrir";
+  AT_SECOES.forEach(k=>{AT_ABRE[chaveSec(k)]=abrir;});
+  gravarAbertasAtiv();state.atSel=-1;fecharAtMenu();render();return;}
  if(el=g("[data-atagrupar]")){
   state.atAgrupar=el.dataset.atagrupar==="quem"?"quem":"status";
   state.atSel=-1;fecharAtMenu();render();return;}

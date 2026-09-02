@@ -281,6 +281,16 @@ A lista é densa e agrupada por status — **A fazer**, **Em andamento**,
 esquerda de cada linha é o status: clicar nele abre o seletor dos três. O `+` no
 cabeçalho de um grupo cria já naquele status.
 
+Cada seção **abre e fecha** clicando no cabeçalho, como no To Do, e a barra
+acima da lista tem **Abrir todos / Fechar todos**. Fechada, a seção diz o que
+tem dentro: total, quantos P0 e quantas atrasadas. A escolha fica gravada no
+navegador de quem lê — é preferência de leitura, não vai para o banco nem
+aparece para os outros — e é guardada **por eixo**: fechar "Concluída" não
+fecha "Adolfo". Por padrão, agrupado por status tudo abre (são duas ou três
+seções e todas interessam); agrupado por responsável abre só a de quem entrou.
+Com uma pastilha de estado ligada o acordeão sai de cena e tudo abre: filtro já
+é um estreitamento, e estreitar duas vezes esconde a resposta.
+
 O atraso é medido pela **data de fim**, e só ela: uma atividade que começou e
 não acabou não está atrasada. Data em branco é estado legítimo para atividade
 nova — é a pastilha "sem data de fim" que lembra de marcar, e o painel não
