@@ -61,6 +61,30 @@ passo nenhum: o painel grava na primeira entrada de um editor, não duplica na
 segunda, e um perfil leitor não grava nada. `supabase/ata-2026-08-21.sql` continua
 no repositório para quem preferir o SQL Editor — rodar os dois é seguro.
 
+As **22 atividades da ata de 02/09/2026** (ids `AT-ATA-01` a `AT-ATA-22`) entram
+pelo mesmo caminho, na primeira entrada de um editor. São as 20 linhas do plano
+de ação do item 27, com a linha "revisar todas as pendências" desdobrada nas três
+pessoas que o item 25 nomeia. Três regras valem para toda a carga:
+
+- **Responsável** é o primeiro nome da linha do plano; os demais ficam escritos na
+  descrição. Onde o plano não nomeia pessoa — "Operação", "responsáveis jurídicos
+  / societários" — o campo fica **vazio**, e a descrição diz isso. O item 3 da ata
+  trata atividade sem responsável e sem data como atividade não definida: deixar
+  vazio registra a lacuna em vez de apagá-la.
+- **Data de fim** só onde a ata dá uma data. "Imediato", "Prioritário",
+  "Pendente", "Próxima rodada" e "Definir no CRM" não são datas; a palavra do
+  plano fica na descrição e o campo vazio aparece na pastilha "sem data de fim" —
+  que é exatamente a primeira ação P0 do plano.
+- **Data de início** é 02/09/2026 em todas: é a data da reunião que atribuiu o
+  trabalho. **Demandante** é Vinícius onde ele não é o responsável, porque a ata
+  lhe dá a cobrança dos responsáveis (itens 2, 3 e 28).
+
+A carga usa nomes que podem não estar na lista de responsáveis do painel —
+**Vinícius** e **André**, entre outros. Enquanto não estiverem, o painel mostra
+"(fora da lista)" no campo, eles não aparecem no filtro de responsável e a
+`auditoria()` acusa. O caminho é `/admin` → Responsáveis: os nomes em uso e fora
+da lista aparecem lá, com a contagem, e entram com um clique.
+
 ## Área administrativa
 
 Em `/admin`, só para `vinicius.debian@btsglobalcorp.com`. De lá se cria pessoa,

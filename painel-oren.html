@@ -547,8 +547,13 @@ letter-spacing:0;font-weight:400}
 /* A barra fina no topo, no lugar dos quatro cartões grandes. */
 .atbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px}
 .atbar .sp{flex:1 1 auto}
+/* Com cinco áreas mais "Todas", o trilho rola em vez de espremer os rótulos
+   até virarem sopa de letras. */
 .atseg2{display:inline-flex;background:var(--alt);border:1px solid var(--bd);
-border-radius:999px;padding:2px;max-width:100%;min-width:0}
+border-radius:999px;padding:2px;max-width:100%;min-width:0;overflow-x:auto;
+scrollbar-width:none}
+.atseg2::-webkit-scrollbar{display:none}
+.atseg2 button{flex:0 0 auto}
 .atseg2 button{border:0;background:none;border-radius:999px;padding:4px 11px;min-height:28px;
 font-size:12px;font-weight:600;color:var(--tx3);display:inline-flex;align-items:center;gap:6px;
 min-width:0;white-space:nowrap}
@@ -610,6 +615,15 @@ background:none;border:0;border-radius:0;padding:9px 0;text-align:left;min-heigh
 /* Indicador de descrição: quem tem contexto escrito mostra o traço duplo. */
 .atr .dsc{width:13px;height:13px;flex:0 0 auto;color:var(--tx3);display:flex}
 .atr .dsc svg{width:13px;height:13px}
+/* Prioridade: a palavra da própria ata (P0/P1/P2), com o peso decrescendo.
+   Não é cor sozinha -- o nível vai escrito. */
+.atpri{flex:0 0 auto;font-size:10px;font-weight:700;letter-spacing:.04em;
+padding:2px 6px;border-radius:4px;font-variant-numeric:tabular-nums;
+background:var(--alt);color:var(--tx3)}
+.atpri.P0{background:#fdf0f2;color:var(--crit)}
+.atpri.P1{background:#fdf6ea;color:var(--warn)}
+.atpri.P2{background:var(--alt);color:var(--tx3)}
+.atr.feita .atpri{background:var(--alt);color:var(--tx3)}
 /* Etiqueta de área, com o ponto da cor. */
 .atlb{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;font-size:11px;font-weight:500;
 color:var(--tx2);background:var(--surf);border:1px solid var(--bd);border-radius:999px;padding:2px 8px;
@@ -663,7 +677,6 @@ color:var(--tx2);text-align:left}
  .atr .mais{opacity:1}
  .atbar{gap:5px}
  .atseg2{order:1;width:100%}
- .atseg2 button{flex:1 1 0;justify-content:center}
  .atbar .atchip{order:2}
  /* O "?" fica no fim da própria linha, encostado à direita: solto no meio
     parecia elemento perdido. */
@@ -1024,6 +1037,7 @@ const TEXTOS={
   fResp:"Responsável",fRespAjuda:"quem faz",
   fDemandante:"Demandante",fDemandanteAjuda:"quem pediu",
   fStatus:"Status",
+  fPrioridade:"Prioridade",
   fInicio:"Data de início",
   fFim:"Data de fim",
   semData:"definir",
@@ -2853,11 +2867,487 @@ async function cargaRelatoSeNecessario(){
  }
  console.warn("Não consegui gravar a carga do relato depois de três tentativas.");
 }
+/* ---------- CARGA DA ATA DE 02/09/2026: PLANO DE AÇÃO ----------
+   As 22 atividades saíram do plano de ação consolidado (item 27 da ata), com o
+   desdobramento do item 25 -- a linha "Revisar todas as pendências existentes
+   no CRM" tem responsável "Todos" no plano, e o item 25 nomeia as três pessoas
+   com a contagem de cada uma, então virou uma atividade por pessoa. As outras
+   19 linhas do plano são uma atividade cada.
+
+   Três regras que valem para toda a carga, e nenhuma delas inventa dado:
+
+   1. Responsável é o PRIMEIRO nome da linha do plano; os demais vão escritos na
+      descrição. Onde o plano não nomeia pessoa -- "Operação", "responsáveis
+      jurídicos / societários" -- o campo fica VAZIO, e a descrição diz isso. O
+      item 3 da ata trata atividade sem responsável e sem data como atividade
+      não definida: deixar vazio é registrar a lacuna, e escolher alguém por
+      conta própria seria apagá-la.
+   2. Data de fim só onde a ata dá uma data. O plano usa "Imediato",
+      "Prioritário", "Pendente", "Próxima rodada", "Definir no CRM" -- e nenhum
+      desses é data. Traduzir "Imediato" em 05/09 seria eu decidindo um prazo
+      que a reunião não decidiu. A palavra do plano fica na descrição, e o campo
+      vazio aparece na pastilha "sem data de fim" -- que é exatamente a primeira
+      ação P0 do plano (garantir prazo em todas as atividades).
+   3. Data de início é 02/09/2026 em todas: é a data da reunião que atribuiu o
+      trabalho. Demandante é Vinícius onde ele não é o responsável, porque a ata
+      lhe dá a cobrança dos responsáveis (itens 2, 3 e 28); onde ele responde
+      pela atividade, fica vazio -- ninguém cobra a si mesmo.
+
+   Só a atividade 5 nasce em andamento, e por um fato verificável: a área
+   operacional de demandas que ela pede é a tela Atividades deste painel, que já
+   existe com a maior parte dos campos do item 26. O que falta está escrito na
+   descrição dela. */
+const CARGA_ATIV_ATA0209=[
+ {
+  "id": "AT-ATA-01",
+  "titulo": "Revisar as pendências do CRM atribuídas ao Theo",
+  "descricao": "Item 27 do plano de ação (P0), com o desdobramento do item 25: na data da reunião havia aproximadamente 5 pendências no nome de Theo. Confirmar a validade de cada uma, atualizar o responsável, registrar o próximo passo, inserir prazo e encerrar o que perdeu sentido. Prazo no plano: 02/09/2026. Apoio: Vinícius.",
+  "area": "comercial",
+  "prioridade": "P0",
+  "responsavel": "Theo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "2026-09-02",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-02",
+  "titulo": "Revisar as pendências do CRM atribuídas ao Paulo",
+  "descricao": "Item 27 do plano de ação (P0), com o desdobramento do item 25: na data da reunião havia aproximadamente 21 pendências no nome de Paulo. Confirmar a validade de cada uma, atualizar o responsável, registrar o próximo passo, inserir prazo e encerrar o que perdeu sentido. Prazo no plano: 02/09/2026. Apoio: Vinícius.",
+  "area": "comercial",
+  "prioridade": "P0",
+  "responsavel": "Paulo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "2026-09-02",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-03",
+  "titulo": "Revisar as pendências do CRM atribuídas ao Adriano",
+  "descricao": "Item 27 do plano de ação (P0), com o desdobramento do item 25: na data da reunião havia aproximadamente 36 pendências no nome de Adriano. Confirmar a validade de cada uma, atualizar o responsável, registrar o próximo passo, inserir prazo e encerrar o que perdeu sentido. Prazo no plano: 02/09/2026. Apoio: Vinícius.",
+  "area": "comercial",
+  "prioridade": "P0",
+  "responsavel": "Adriano",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "2026-09-02",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-04",
+  "titulo": "Garantir responsável, próximo passo e prazo em todas as atividades",
+  "descricao": "Item 27 do plano de ação (P0). Apoio: todos. O item 3 da ata define a régua: atividade sem responsável e sem data é tratada como atividade não definida. Vinícius faz o acompanhamento recorrente e a cobrança dos responsáveis. Prazo no plano: imediato.",
+  "area": "comercial",
+  "prioridade": "P0",
+  "responsavel": "Vinícius",
+  "demandante": "",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-05",
+  "titulo": "Criar a área operacional de demandas, separada do pipeline comercial",
+  "descricao": "Item 27 do plano de ação (P0) e item 26. A estrutura deve conter demanda, área, solicitante, responsável, aprovador, prioridade, prazo, status, links, documentos e observações. Já existe no painel a tela Atividades, com nome, descrição, área, responsável, demandante (solicitante), prioridade, status, data de início e data de fim, separada do pipeline. Faltam aprovador, links e documentos anexados. Apoio: Adolfo. Prazo no plano: imediato.",
+  "area": "operacao",
+  "prioridade": "P0",
+  "responsavel": "Vinícius",
+  "demandante": "",
+  "status": "andamento",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-06",
+  "titulo": "Consolidar todas as oportunidades relevantes no CRM",
+  "descricao": "Item 27 do plano de ação (P0). Cada oportunidade deve conter, no mínimo (item 3): cliente e oportunidade, vertical, originador, responsável atual, valor estimado, estágio, próxima ação, dependências, responsável pela dependência, prazo final e observações relevantes. Apoio: Paulo, Adriano, Afrânio e demais originadores. Prazo no plano: imediato.",
+  "area": "comercial",
+  "prioridade": "P0",
+  "responsavel": "Vinícius",
+  "demandante": "",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-07",
+  "titulo": "Portal Oren: exibir jornada, etapa atual, próximo passo, status, documentos e histórico",
+  "descricao": "Item 27 do plano de ação (P0) e item 5. O portal deve organizar, conforme a vertical: etapa atual da jornada, próximo passo, documentos enviados/aprovados/rejeitados/pendentes, pendências que dependem do cliente, status da operação, responsável interno quando aplicável, comprovantes e documentos associados e histórico do processo. A referência conceitual é a dor que originou o Orbit: o cliente não deve depender de mensagem e ligação para saber onde está a demanda dele. Apoio: Vinícius, Operação e TI. Prazo no plano: prioritário.",
+  "area": "produto",
+  "prioridade": "P0",
+  "responsavel": "André",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-08",
+  "titulo": "Portal Oren: estruturar onboarding, documentos, compliance e pendências do cliente",
+  "descricao": "Item 27 do plano de ação (P0) e item 6. A jornada deve contemplar, quando aplicável: identificação de pessoa física ou jurídica, lista de documentos exigidos, envio de documentos, validação e compliance, indicação do que foi aprovado ou recusado, motivo da recusa, pendências e ações requeridas, aprovação e habilitação final. Apoio: Operação e Compliance. Prazo no plano: prioritário.",
+  "area": "produto",
+  "prioridade": "P0",
+  "responsavel": "André",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-09",
+  "titulo": "Orenpay: definir e executar o backlog tecnológico prioritário",
+  "descricao": "Item 27 do plano de ação (P0) e item 29. Entregas: visão de saldo e posição financeira, histórico de movimentações, status das transferências e operações, comprovantes por operação, documentos vinculados, pendências do cliente, visão consolidada de operações em andamento e capacidade operacional para atualização de status e registros. Theo deve coordenar a priorização com o time de tecnologia, definir responsáveis técnicos e devolver cronograma e dependências no CRM. Apoio: Vinícius, Produto/TI e Operação. Prazo no plano: prioritário.",
+  "area": "produto",
+  "prioridade": "P0",
+  "responsavel": "Theo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-10",
+  "titulo": "Orenpay: entregar o escopo mínimo do primeiro ciclo",
+  "descricao": "Item 27 do plano de ação (P0) e item 30. Escopo: Dashboard (saldo, posição, operações em andamento), Movimentações (entradas, saídas, histórico, comprovantes), Operações (status, timeline, próxima etapa), Documentos (enviados, pendentes, aprovados, rejeitados) e Pendências (ação necessária, responsável, prazo). Critério de sucesso: o cliente responder sozinho quanto dinheiro tem, onde ele está, o que aconteceu, qual operação está em andamento, qual é o status, se existe pendência, qual é o próximo passo e onde está o comprovante. Apoio: Vinícius, Produto/TI e Operação. Prazo no plano: prioritário.",
+  "area": "produto",
+  "prioridade": "P0",
+  "responsavel": "Theo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-11",
+  "titulo": "Disponibilizar o contrato atualizado de parceria",
+  "descricao": "Item 27 do plano de ação (P0) e item 24. Algumas oportunidades antigas precisarão reiniciar o processo de assinatura. Acompanhamento: Vinícius. Prazo no plano: a definir no CRM.",
+  "area": "juridico",
+  "prioridade": "P0",
+  "responsavel": "Theo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-12",
+  "titulo": "Compartilhar os materiais e links já estruturados",
+  "descricao": "Item 27 do plano de ação (P1) e item 20. Adolfo informou que já existem materiais estruturados ou parcialmente estruturados; os conteúdos serão compartilhados para revisão, com validação de Paulo e Vinícius. Sem apoio designado no plano. Prazo no plano: imediato.",
+  "area": "marketing",
+  "prioridade": "P1",
+  "responsavel": "Adolfo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-13",
+  "titulo": "Revisar e aprovar a estrutura de comunicação existente",
+  "descricao": "Item 27 do plano de ação (P1). Depende do recebimento dos materiais do Adolfo. Apoio: Vinícius. Prazo no plano: após o recebimento.",
+  "area": "marketing",
+  "prioridade": "P1",
+  "responsavel": "Paulo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-14",
+  "titulo": "Definir o ICP de cada vertical",
+  "descricao": "Item 27 do plano de ação (P1). Responsáveis no plano: Paulo e Vinícius. Cada vertical (Payments/Orenpay, Capital e Governance) deve ter proposta de valor, ICP, critérios de entrada, documentação, esteira, materiais e modelo econômico próprios (item 4). Apoio: Adriano, Adolfo e demais envolvidos. Prazo no plano: próxima rodada.",
+  "area": "comercial",
+  "prioridade": "P1",
+  "responsavel": "Paulo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-15",
+  "titulo": "Desenhar a esteira completa de Payments",
+  "descricao": "Item 27 do plano de ação (P1). Responsável no plano: Operação — pessoa ainda não nomeada, e por isso o campo está vazio. O item 28 registra que Vinícius coordena o desenho das esteiras. Apoio: Comercial, André e TI. Prazo no plano: prioritário.",
+  "area": "operacao",
+  "prioridade": "P1",
+  "responsavel": "",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-16",
+  "titulo": "Desenhar a esteira completa de Capital",
+  "descricao": "Item 27 do plano de ação (P1). Responsáveis no plano: Paulo e Eduardo (OICUS). As doze etapas estão no item 18: entrada do lead, análise inicial, documentação, critérios eliminatórios, análise financeira, entrada da OICUS ou estruturador, modelagem, captação ou distribuição, aprovação, assinatura, liberação e acompanhamento posterior. A esteira deve ser desenhada de ponta a ponta antes de ser escalada. Apoio: Vinícius, Afrânio. Prazo no plano: prioritário.",
+  "area": "operacao",
+  "prioridade": "P1",
+  "responsavel": "Paulo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-17",
+  "titulo": "Definir ticket mínimo e critérios de elegibilidade de Capital",
+  "descricao": "Item 27 do plano de ação (P1) e item 17. Responsáveis no plano: Paulo e Eduardo. Definir ticket mínimo, ticket ideal, setores prioritários, garantias aceitas, prazos, documentação, critérios eliminatórios e operações não elegíveis. Foi discutido que, no estágio atual, operações muito pequenas podem não justificar a complexidade operacional exigida. Apoio: Adriano, Afrânio. Prazo no plano: próxima reunião específica.",
+  "area": "comercial",
+  "prioridade": "P1",
+  "responsavel": "Paulo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-18",
+  "titulo": "Definir as operações prioritárias para iniciar com a OICUS",
+  "descricao": "Item 27 do plano de ação (P1) e item 16. Responsáveis no plano: Paulo e Eduardo. A recomendação é iniciar com um conjunto limitado de operações concretas em vez de abrir muitas frentes ao mesmo tempo. Exemplos citados: aeroporto de Betim, estruturas imobiliárias relacionadas ao Mercado Livre, operações de atacarejo, reperfilamento de dívidas, ativos imobiliários, aeronaves e oportunidades ligadas a direitos esportivos. Apoio: Afrânio. Prazo no plano: próxima rodada.",
+  "area": "comercial",
+  "prioridade": "P1",
+  "responsavel": "Paulo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-19",
+  "titulo": "Definir o modelo jurídico da relação Oren–OICUS",
+  "descricao": "Item 27 do plano de ação (P1) e item 15. Responsável no plano: responsáveis jurídicos e societários — ainda não nomeados, e por isso o campo está vazio. A OICUS é gestora com aproximadamente R$ 14 bilhões sob gestão; a relação pode ampliar a capacidade de estruturação em dívida, fundos, securitização, estruturas imobiliárias, operações internacionais e veículos específicos para projetos. Apoio: Paulo e Eduardo. Prazo no plano: pendente.",
+  "area": "juridico",
+  "prioridade": "P1",
+  "responsavel": "",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-20",
+  "titulo": "Criar o modelo econômico das operações e a remuneração de parceiros e originadores",
+  "descricao": "Item 27 do plano de ação (P1) e item 23. Responsáveis no plano: Paulo e Eduardo. Definir a participação da Oren, dos estruturadores, dos originadores e dos parceiros, além do evento que gera pagamento, o momento do pagamento, a recorrência e as regras de proteção da origem. Foi reforçado que quem origina uma operação precisa ter incentivo econômico relevante. Apoio: Comercial e Adriano. Prazo no plano: pendente.",
+  "area": "comercial",
+  "prioridade": "P1",
+  "responsavel": "Paulo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-21",
+  "titulo": "Estruturar os materiais comerciais por vertical",
+  "descricao": "Item 27 do plano de ação (P2) e item 22. Lista mínima: apresentação institucional, apresentação Orenpay, apresentação Capital, apresentação Governance, FAQ, onboarding, jornada do cliente, segurança e documentação institucional, materiais para parceiros, argumentário comercial, respostas às principais objeções e fluxos operacionais. Apoio: Paulo e Vinícius. Prazo no plano: após a definição das esteiras.",
+  "area": "marketing",
+  "prioridade": "P2",
+  "responsavel": "Adolfo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ },
+ {
+  "id": "AT-ATA-22",
+  "titulo": "Consolidar a narrativa institucional e a presença digital",
+  "descricao": "Item 27 do plano de ação (P2) e item 21. A narrativa precisa explicar quem está por trás da empresa, histórico, experiência, parceiros, estrutura, responsabilidades e mecanismos de segurança — a Oren precisa vender para clientes sem relacionamento prévio com os sócios. Apoio: Paulo e Vinícius. Prazo no plano: após as aprovações.",
+  "area": "marketing",
+  "prioridade": "P2",
+  "responsavel": "Adolfo",
+  "demandante": "Vinícius",
+  "status": "aberta",
+  "inicio": "2026-09-02",
+  "fim": "",
+  "evidencias": [],
+  "criadaEm": "2026-09-02",
+  "criadaPor": "Ata de 02/09/2026",
+  "atualizadoEm": "2026-09-02",
+  "atualizadoPor": "Ata de 02/09/2026",
+  "feitaEm": "",
+  "feitaPor": ""
+ }
+];
+/* Idempotente pelo id: rodar de novo não duplica e não sobrescreve o que a
+   equipe já editou. Só insere o que ainda não está lá. */
+function aplicarCargaAtiv(d){
+ if(!d||typeof d!=="object")return 0;
+ if(!Array.isArray(d.atividades))d.atividades=[];
+ let n=0;
+ CARGA_ATIV_ATA0209.forEach(a=>{
+  if(d.atividades.some(x=>x&&x.id===a.id))return;
+  d.atividades.push(JSON.parse(JSON.stringify(a)));
+  n++;
+ });
+ return n;
+}
+async function cargaAtivSeNecessario(){
+ if(!state.data)return;
+ if(state.usuario&&state.usuario.papel==="leitor")return;
+ for(let tentativa=1;tentativa<=3;tentativa++){
+  const n=aplicarCargaAtiv(state.data);
+  if(!n)return;
+  console.log("Carga da ata de 02/09/2026: "+n+" atividades inseridas.");
+  if(await gravarAgora()){console.log("Carga das atividades gravada.");return;}
+  console.log("Conflito ao gravar a carga das atividades. Recarreguei do servidor (tentativa "+tentativa+" de 3).");
+ }
+ console.warn("Não consegui gravar a carga das atividades depois de três tentativas.");
+}
 async function carregarEMigrar(){
  if(!await carregarDoServidor(true))return false;
  await migrarSeNecessario();
  await cargaAtaSeNecessario();
  await cargaRelatoSeNecessario();
+ await cargaAtivSeNecessario();
  render();
  return true;
 }
@@ -3211,11 +3701,25 @@ const TODO_TIPOS={bloqueio:"Bloqueio",pendencia:"Pendência",passo:"Próximo pas
    de FIM, e usa a MESMA régua do To Do (diaLocal + dias): dia de calendário,
    não instante. Duplicar a conta aqui seria repetir o erro de fuso que já
    custou uma correção. */
-const AT_AREAS={comercial:"Comercial",marketing:"Marketing"};
-const AT_AREAS_ORDEM=["comercial","marketing"];
+/* As áreas são as que a operação usa de fato. Começou com duas -- comercial e
+   marketing --, e a ata de 02/09/2026 mostrou que não bastava: metade do plano
+   de ação é produto e tecnologia (Portal Oren, Orenpay) e duas ações são
+   jurídicas. Forçar "Ajustar o Portal Oren" em Comercial não é simplificar, é
+   gravar errado. O item 26 da ata pede exatamente este campo. */
+const AT_AREAS={comercial:"Comercial",marketing:"Marketing",
+ produto:"Produto e tecnologia",operacao:"Operação",juridico:"Jurídico"};
+const AT_AREAS_ORDEM=["comercial","marketing","produto","operacao","juridico"];
 /* Ponto da etiqueta. Não são as cores das frentes: área não é frente, e usar
    a mesma paleta faria uma parecer a outra. */
-const AT_AREA_COR={comercial:"#0e5351",marketing:"#7a5ea8"};
+const AT_AREA_COR={comercial:"#0e5351",marketing:"#7a5ea8",produto:"#1f6f9c",
+ operacao:"#a8622a",juridico:"#4b5563"};
+/* Prioridade com o vocabulário da própria ata (item 27): P0, P1, P2. Vazio é
+   estado legítimo -- atividade que ninguém priorizou ainda. O painel não
+   inventa a prioridade, e não diz o que cada nível significa em dias: isso é
+   decisão de quem coordena, não efeito colateral de um campo. */
+const AT_PRIS=["P0","P1","P2"];
+const AT_PRI_OPS={"":"sem prioridade",P0:"P0",P1:"P1",P2:"P2"};
+const prioridadeAtiv=a=>AT_PRIS.indexOf(a&&a.prioridade)>=0?a.prioridade:"";
 const AT_STATUS=["aberta","andamento","feita"];
 const AT_STATUS_LBL={aberta:"A fazer",andamento:"Em andamento",feita:"Concluída"};
 const AT_STATUS_COR={aberta:"var(--tx3)",andamento:"var(--warn)",feita:"var(--ok)"};
@@ -3245,6 +3749,7 @@ function atividades(){
   if(a.demandante===undefined)a.demandante="";
   if(a.inicio===undefined)a.inicio="";
   if(a.fim===undefined)a.fim="";
+  if(a.prioridade===undefined)a.prioridade="";
   if(!Array.isArray(a.evidencias))a.evidencias=[];
  });
  return state.data.atividades;
@@ -3313,8 +3818,8 @@ function itensTodo(){
  const q=f.busca.trim().toLowerCase();
  atividades().filter(atAberta).forEach(a=>{
   if(q&&((a.titulo||"")+" "+(a.descricao||"")+" "+(a.responsavel||"")+" "+
-   (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+TEXTOS.ativ.rotulo)
-   .toLowerCase().indexOf(q)<0)return;
+   (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+prioridadeAtiv(a)+" "+
+   TEXTOS.ativ.rotulo).toLowerCase().indexOf(q)<0)return;
   const o={tipo:"atividade",ativ:a,d:null,texto:tituloAtiv(a)||TEXTOS.ativ.semTitulo,
    quem:String(a.responsavel||"").trim(),
    /* Quem pediu é quem cobra: no To Do ele entra na coluna de quem responde,
@@ -3719,7 +4224,7 @@ function linhasTodo(itens,dentroDoGrupo){
    :"";
   const meta=x.ativ
    ?[esc(TEXTOS.ativ.rotulo)+" · "+esc(AT_AREAS[areaDaAtiv(x.ativ)]),
-     esc(AT_STATUS_LBL[statusDaAtiv(x.ativ)])]
+     [prioridadeAtiv(x.ativ),AT_STATUS_LBL[statusDaAtiv(x.ativ)]].filter(Boolean).map(esc).join(" · ")]
    :[esc(nomeNegocio(x.d)),esc(frenteRotulo(x.d))+" · "+esc(etapaNome(x.d))];
   if(!dentroDoGrupo)meta.push(x.quem?esc(x.quem):'<span class="late">'+esc(TEXTOS.semQuem)+"</span>");
   if(x.aprova&&x.aprova!==x.quem)meta.push("responde: "+esc(x.aprova));
@@ -3749,15 +4254,25 @@ function linhasTodo(itens,dentroDoGrupo){
    dos negócios, sem cadastro e sem status próprio; aqui há cadastro, exclusão
    e um ciclo de status. Em compensação, o que está em aberto aqui aparece lá,
    na fila da pessoa: cadastrar é aqui, cobrar é lá. */
+/* A ordem: primeiro o que já passou da data e o que vence hoje, porque isso é
+   fato; depois a prioridade, porque isso é plano; e só então a data. Ordenar
+   por prazo antes da prioridade punia o P0 sem data marcada -- ele caía abaixo
+   de um P2 com data folgada, e num plano recém-escrito quase nada tem data. */
+const ORDEM_PRI={P0:0,P1:1,P2:2,"":3};
 function ordenarAtiv(g,feitas){
+ const urgente=x=>{const e=estadoAtiv(x);return e==="vencido"?0:e==="hoje"?1:2;};
  return g.slice().sort((a,b)=>{
   /* Concluída não tem urgência: a mais recente primeiro, que é o registro
      que alguém vai querer conferir. */
   if(feitas)return String(b.feitaEm||b.atualizadoEm||"").localeCompare(String(a.feitaEm||a.atualizadoEm||""));
-  const ea=ORDEM_TODO[estadoAtiv(a)],eb=ORDEM_TODO[estadoAtiv(b)];
-  if(ea!==eb)return ea-eb;
+  const ua=urgente(a),ub=urgente(b);
+  if(ua!==ub)return ua-ub;
   const ta=atAtraso(a),tb=atAtraso(b);
-  if(ta!=null&&tb!=null&&ta!==tb)return tb-ta;
+  if(ua===0&&ta!==tb)return tb-ta;
+  const pa=ORDEM_PRI[prioridadeAtiv(a)],pb=ORDEM_PRI[prioridadeAtiv(b)];
+  if(pa!==pb)return pa-pb;
+  if(ta!=null&&tb!=null&&ta!==tb)return ta-tb;
+  if((ta==null)!==(tb==null))return ta==null?1:-1;
   return String(b.atualizadoEm||"").localeCompare(String(a.atualizadoEm||""));
  });
 }
@@ -3779,14 +4294,16 @@ function linhaAtiv(a){
  const tit=tituloAtiv(a);
  const i=AT_FOCO.length;AT_FOCO.push(a.id);
  const quando=st==="feita"?"":prazoAtiv(a);
- const dica=[AT_STATUS_LBL[st],AT_AREAS[ar],a.fim?dt(a.fim)+(quando?" · "+quando:""):T.dSem]
-  .filter(Boolean).join(" · ");
+ const dica=[AT_STATUS_LBL[st],prioridadeAtiv(a),AT_AREAS[ar],
+  a.fim?dt(a.fim)+(quando?" · "+quando:""):T.dSem].filter(Boolean).join(" · ");
  return '<div class="atr '+est+(st==="feita"?" feita":"")+
   (state.atSel===i||state.atFoco===a.id?" sel":"")+'" data-atv="'+esc(a.id)+
   '" data-atrow="'+i+'" title="'+esc(dica)+'">'+
   '<button class="atg" data-atglifo="'+esc(a.id)+'" style="--atc:'+AT_STATUS_COR[st]+'"'+
    ' aria-label="'+esc(T.statusT+": "+AT_STATUS_LBL[st])+'" aria-haspopup="menu">'+
    AT_GLIFO[st]+"</button>"+
+  (prioridadeAtiv(a)?'<span class="atpri '+prioridadeAtiv(a)+'" title="'+
+    esc(T.fPrioridade+" "+prioridadeAtiv(a))+'">'+prioridadeAtiv(a)+"</span>":"")+
   '<button class="tt" data-atabre="'+esc(a.id)+'">'+
    (tit?esc(tit):'<span class="vz">'+esc(T.semTitulo)+"</span>")+"</button>"+
   (String(a.descricao||"").trim()
@@ -3813,7 +4330,8 @@ function telaAtividades(){
     "Adriano" tem de achar o que ele pediu, não só o que ele faz. */
  const cabe=a=>(!resp||String(a.responsavel||"").trim()===resp)&&
   (!q||((a.titulo||"")+" "+(a.descricao||"")+" "+(a.responsavel||"")+" "+
-   (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]).toLowerCase().indexOf(q)>=0);
+   (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+prioridadeAtiv(a))
+   .toLowerCase().indexOf(q)>=0);
  const visiveis=todas.filter(cabe);
  if(state.atAba&&!AT_AREAS[state.atAba])state.atAba="";
  const daArea=state.atAba?visiveis.filter(a=>areaDaAtiv(a)===state.atAba):visiveis;
@@ -3996,6 +4514,7 @@ function painelAtiv(id){
   '<span class="g" style="color:'+AT_STATUS_COR[k]+';width:13px;height:13px;display:flex">'+
    AT_GLIFO[k]+"</span>"+esc(AT_STATUS_LBL[k])+"</button>").join("")+"</span>");
  h+=blocoEvidAtiv(a);
+ h+=fld(T.fPrioridade,ed("ativ",a.id,"prioridade",prioridadeAtiv(a),"select",AT_PRI_OPS));
  h+=fld(T.fDesc,ed("ativ",a.id,"descricao",a.descricao,"textarea",null,T.semDesc));
  h+=fld(T.fArea,ed("ativ",a.id,"area",ar,"select",AT_AREAS));
  h+=fld(T.fResp,
@@ -4140,6 +4659,8 @@ function auditoria(){
   if(!String(a.titulo||"").trim())add("atividade sem nome",a.id,"a lista mostra “"+TEXTOS.ativ.semTitulo+"”");
   if(!AT_AREAS[a.area])add("área inválida",a.id,String(a.area)+" — a tela lê como comercial");
   if(AT_STATUS.indexOf(a.status)<0)add("status inválido",a.id,String(a.status)+" — a tela lê como a fazer");
+  if(a.prioridade&&AT_PRIS.indexOf(a.prioridade)<0)
+   add("prioridade inválida",a.id,String(a.prioridade)+" — a tela lê como sem prioridade");
   ["inicio","fim","criadaEm","atualizadoEm","feitaEm"].forEach(k=>{
    if(a[k]&&!dataOk(a[k]))add("data inválida",a.id,k+" = "+a[k]);});
   if(a.inicio&&a.fim&&dataOk(a.inicio)&&dataOk(a.fim)&&String(a.fim)<String(a.inicio))
@@ -5277,6 +5798,7 @@ function setCampo(kind,id,campo,valor){
   if(campo==="status")return;
   snapshot();
   if(campo==="area"){if(AT_AREAS[valor])a.area=valor;}
+  else if(campo==="prioridade"){a.prioridade=AT_PRIS.indexOf(valor)>=0?valor:"";}
   else a[campo]=valor;
   a.atualizadoEm=agora();a.atualizadoPor=quemSou()||"—";
   /* Fim antes do início é quase sempre erro de digitação, mas quem sabe a
