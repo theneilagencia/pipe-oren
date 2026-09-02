@@ -296,6 +296,29 @@ Tudo o que está em aberto aqui também aparece no **To Do** da pessoa
 responsável, marcado como atividade, com o demandante na coluna de quem
 responde: cadastrar e mover status é na tela de Atividades, cobrar é no To Do.
 
+#### Agrupar e compartilhar
+
+O interruptor **agrupar por** troca o eixo da lista: por **status** responde "em
+que pé está o plano"; por **responsável** responde "o que está no nome de cada
+um" — e é essa a vista que se compartilha. Cada pessoa vira uma seção com a
+contagem, quantos P0 e quantas atrasadas, ordenada por quem tem mais coisa
+atrasada e mais P0 primeiro. Quem não tem responsável fica no fim: é lacuna, não
+pessoa.
+
+**Encaminhar** (na barra, ou no cabeçalho de cada pessoa) abre uma gaveta com:
+
+- o **link** — `.../#atividades?agrupar=quem`, mais `quem=`, `area=` e `filtro=`
+  quando estiverem ligados, para quem recebe ver a mesma lista de quem enviou;
+- a **mensagem** em texto puro, agrupada por responsável, com prioridade, área,
+  status e data por extenso (em WhatsApp não há cor nem etiqueta);
+- botões de copiar, WhatsApp e e-mail.
+
+O link é **endereço, não dado**: quem abre entra com a conta dele e o banco
+decide o que ele pode ver. Um link com `quem=` cai na lista daquela pessoa com a
+pastilha "Só de <nome>" e o × que devolve a lista inteira; se aquela pessoa não
+tiver nada com aqueles filtros, o painel diz isso em vez de abrir tudo em
+silêncio.
+
 Atalhos: `J` e `K` andam pela lista, `Enter` abre a gaveta, `S` abre o seletor de
 status da linha em foco, `C` cria uma atividade.
 

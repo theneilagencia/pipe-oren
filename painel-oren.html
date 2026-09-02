@@ -615,6 +615,31 @@ background:none;border:0;border-radius:0;padding:9px 0;text-align:left;min-heigh
 /* Indicador de descrição: quem tem contexto escrito mostra o traço duplo. */
 .atr .dsc{width:13px;height:13px;flex:0 0 auto;color:var(--tx3);display:flex}
 .atr .dsc svg{width:13px;height:13px}
+/* Agrupar por: interruptor de eixo, com o rótulo do lado -- sem ele, dois
+   botões soltos na barra pareciam mais um filtro. */
+.atgrp{display:inline-flex;align-items:center;gap:2px;background:var(--alt);
+border:1px solid var(--bd);border-radius:999px;padding:2px 2px 2px 9px;white-space:nowrap}
+.atgrp .l{font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+font-weight:600;color:var(--tx3);margin-right:4px}
+.atgrp button{border:0;background:none;border-radius:999px;padding:3px 10px;min-height:26px;
+font-size:12px;font-weight:600;color:var(--tx3)}
+.atgrp button:hover{color:var(--tx)}
+.atgrp button.on{background:var(--surf);color:var(--deep);box-shadow:var(--sh1)}
+.atenc{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;min-height:30px;
+font-size:12px;font-weight:500;border:1px solid var(--bd);border-radius:999px;
+background:var(--surf);color:var(--tx2)}
+.atenc:hover{border-color:var(--mid);color:var(--deep)}
+/* A faixa da pastilha "só de <pessoa>", acima da lista. */
+.atacc{display:flex;align-items:center;gap:6px;margin:0 0 8px}
+.atacs{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto}
+/* Cabeçalho de grupo por pessoa: avatar, nome, contagem, P0, atrasadas. */
+.atgh .av{width:20px;height:20px;font-size:9px;border:1px solid var(--bd);flex:0 0 auto}
+.atgh .atpri{margin-left:2px}
+.atgh .ghenc{flex:0 0 auto;font-size:11px;font-weight:600;padding:4px 9px;min-height:26px;
+border:1px solid transparent;border-radius:999px;color:var(--tx3);background:none;
+opacity:0;transition:opacity var(--fast) ease-out}
+.atgh:hover .ghenc,.atgh .ghenc:focus-visible{opacity:1}
+.atgh .ghenc:hover{border-color:var(--bd);color:var(--deep);background:var(--surf)}
 /* Prioridade: a palavra da própria ata (P0/P1/P2), com o peso decrescendo.
    Não é cor sozinha -- o nível vai escrito. */
 .atpri{flex:0 0 auto;font-size:10px;font-weight:700;letter-spacing:.04em;
@@ -685,9 +710,11 @@ color:var(--tx2);text-align:left}
     repetir o botão na barra empurrava as pastilhas para uma terceira linha. */
  .atbar .atnova{display:none}
  .atbar .sp{display:none}
- /* Sem hover no toque, o "+" do grupo tem de estar visível -- é o caminho para
-    criar já no status certo. */
- .atgh .add{opacity:1}
+ /* Sem hover no toque, o "+" e o encaminhar do grupo têm de estar visíveis. */
+ .atgh .add,.atgh .ghenc{opacity:1}
+ .atgrp{order:2}
+ .atgrp .l{display:none}
+ .atbar .atacs{order:3;margin-left:auto}
 }
 /* ================= PALETA DE COMANDOS ================= */
 #cmdshade{position:fixed;inset:0;background:rgba(9,45,41,.32);z-index:48;display:none}
@@ -1038,6 +1065,15 @@ const TEXTOS={
   fDemandante:"Demandante",fDemandanteAjuda:"quem pediu",
   fStatus:"Status",
   fPrioridade:"Prioridade",
+  agrupar:"agrupar por",agrStatus:"status",agrQuem:"responsável",
+  encT:"Encaminhar atividades",encBtn:"Encaminhar",
+  encTodas:"Todas, de todo o time",
+  encPara:"Encaminhar o quê",
+  encAssunto:q=>"Atividades — "+q,
+  soDe:n=>"Só de "+n,
+  agrupadoPor:"agrupado por responsável",
+  soVazio:n=>"O link vinha filtrado por "+n+", e não há atividade nenhuma no nome de "+n+
+   " com estes filtros. Abri a lista inteira.",
   fInicio:"Data de início",
   fFim:"Data de fim",
   semData:"definir",
@@ -1286,7 +1322,7 @@ const state={
  data:null,tela:"painel",todoQuem:"",todoTipo:"",todoSo:"",todoFiltro:"",todoSel:-1,vista:"quadro",perdidos:false,aba:"clientes",publico:"",
  filtros:{periodo:"tudo",frente:"",responsavel:"",tipoVenda:"",busca:""},
  ord:{campo:"valor",dir:-1},
- atAba:"",atFiltro:"",atFoco:"",atSel:-1,atMenu:null,
+ atAba:"",atFiltro:"",atFoco:"",atSel:-1,atMenu:null,atAgrupar:"status",atSo:"",
  atEvid:null,atEvidModo:"concluir",atEvidAlvo:"",atEvidTxt:"",atEvidLink:"",atEvidErro:"",
  painel:null,secoes:{},pendEvid:null,pendEvidModo:"concluir",pendEvidTxt:"",pendEvidLink:"",pendEvidErro:"",dirty:false,undo:null,undoTimer:null,dbTimer:null,
  usuario:null,servidor:false,versao:0,salvando:false,semRede:false
@@ -3991,6 +4027,9 @@ let LINK_TODO=(function(){
  const p=new URLSearchParams(q>=0?h.slice(q+1):"");
  if(h.indexOf("#negocio")===0)return {alvo:"negocio",id:p.get("id")||""};
  if(h.indexOf("#todo")===0)return {alvo:"todo",quem:p.get("quem")||"",tipo:p.get("tipo")||""};
+ if(h.indexOf("#atividades")===0)return {alvo:"atividades",
+  agrupar:p.get("agrupar")||"",quem:p.get("quem")||"",
+  area:p.get("area")||"",filtro:p.get("filtro")||""};
  return null;
 })();
 function aplicarLinkTodo(){
@@ -4007,6 +4046,21 @@ function aplicarLinkTodo(){
      e não é o que ele veio ver. */
   state.secoes.compartilhar=false;
   state.painel={tipo:"deal",id:d.id};
+  return;
+ }
+ if(l.alvo==="atividades"){
+  state.tela="atividades";
+  state.atAgrupar=l.agrupar==="status"?"status":"quem";
+  state.atAba=AT_AREAS[l.area]?l.area:"";
+  state.atFiltro=["vencido","semPrazo","feita"].indexOf(l.filtro)>=0?l.filtro:"";
+  /* O responsável do link vira a pastilha "só de <pessoa>", com saída. Filtrar
+     no seletor global de responsável deixaria a pessoa presa num filtro que
+     ela não ligou e que vale para as outras telas também. */
+  state.atSo=l.quem||"";
+  state.atSel=-1;state.atFoco="";
+  /* A gaveta de encaminhar aberta seria a primeira coisa que quem recebe veria,
+     e não é o que ele veio ver. */
+  state.painel=null;
   return;
  }
  state.tela="todo";
@@ -4361,9 +4415,35 @@ function telaAtividades(){
  h+=chip("vencido",T.dVenc,nVenc,"var(--warn)");
  h+=chip("semPrazo",T.dSem,nSem,"var(--neutro)");
  h+=chip("feita",T.dFeitas,nFeitas,"var(--ok)");
+ /* Agrupar é o eixo da leitura, e por isso é interruptor e não filtro: por
+    status responde "em que pé está o plano"; por responsável responde "o que
+    está no nome de cada um" -- que é a vista que se compartilha. */
+ h+='<span class="atgrp"><span class="l">'+esc(T.agrupar)+"</span>"+
+  [["status",T.agrStatus],["quem",T.agrQuem]].map(([k,l])=>
+   '<button data-atagrupar="'+k+'" class="'+(porQuem()?(k==="quem"?"on":""):(k==="status"?"on":""))+'"'+
+   ' aria-pressed="'+((porQuem()?k==="quem":k==="status")?"true":"false")+'">'+esc(l)+"</button>").join("")+
+  "</span>";
  h+='<span class="sp"></span>';
- h+='<button class="atnova" data-atnova="'+esc(state.atAba)+':aberta"><span class="p">+</span>'+
-  esc(T.nova)+"</button>"+iconeHint("atividades")+"</div>";
+ /* Encaminhar, criar e o "?" quebram juntos: soltos, o criar caía sozinho numa
+    terceira linha enquanto sobrava espaço ao lado do encaminhar. */
+ h+='<span class="atacs">'+
+  '<button class="atenc" data-atenc="'+esc(state.atSo)+'">'+esc(T.encBtn)+"</button>"+
+  '<button class="atnova" data-atnova="'+esc(state.atAba)+':aberta"><span class="p">+</span>'+
+  esc(T.nova)+"</button>"+iconeHint("atividades")+"</span></div>";
+
+ /* "Só de <pessoa>" existe para o link encaminhado cair na lista certa. Fica
+    numa pastilha com saída: quem recebe tem de entender por que a lista está
+    curta, e poder ver o resto. */
+ const nomes={};daArea.forEach(a=>{nomes[nomeResp(a)]=1;});
+ if(state.atSo&&!nomes[state.atSo]){
+  /* Link encaminhado apontando para quem não tem nada: dizer isso. Cair na
+     lista inteira em silêncio faria quem recebe pensar que as 22 são dele. */
+  const perdido=state.atSo;state.atSo="";
+  setTimeout(()=>toast(T.soVazio(perdido),true),0);
+ }
+ const daPessoa=state.atSo?daArea.filter(a=>nomeResp(a)===state.atSo):daArea;
+ if(state.atSo)h+='<div class="atacc"><button class="tso" data-atso="">'+
+  esc(T.soDe(state.atSo))+'<span class="x">×</span></button></div>';
 
  /* Concluídas ficam atrás da própria pastilha: lista que mostra tudo o que já
     foi feito deixa de ser lista de trabalho. O número fica à vista, então
@@ -4371,19 +4451,28 @@ function telaAtividades(){
  const statusVis=state.atFiltro==="feita"?["feita"]:["aberta","andamento"];
  const passa=a=>state.atFiltro==="vencido"?estadoAtiv(a)==="vencido"
   :state.atFiltro==="semPrazo"?!a.fim:true;
+ const dentro=daPessoa.filter(a=>statusVis.indexOf(statusDaAtiv(a))>=0&&passa(a));
  AT_FOCO.length=0;
- const secoes=statusVis.map(k=>[k,ordenarAtiv(
-   daArea.filter(a=>statusDaAtiv(a)===k&&passa(a)),k==="feita")]).filter(x=>x[1].length);
- if(!secoes.length){
+ if(!dentro.length){
   const [tl,tx]=state.atFiltro?[T.vazioFiltroTit,T.vazioFiltro]
-   :(q||resp||state.atAba)&&todas.length?[T.vazioBuscaTit,T.vazioBusca]
+   :(q||resp||state.atAba||state.atSo)&&todas.length?[T.vazioBuscaTit,T.vazioBusca]
    :[T.vazioTit,T.vazio];
   return h+'<div class="atlista"><div class="atvazio"><b>'+esc(tl)+"</b>"+esc(tx)+
    (state.atFiltro||todas.length?"":'<div><button class="atnova" data-atnova="'+
     esc(state.atAba)+':aberta"><span class="p">+</span>'+esc(T.nova)+"</button></div>")+
    "</div></div>";
  }
- return h+'<div class="atlista">'+secoes.map(([k,g])=>{
+ return h+'<div class="atlista">'+(porQuem()
+  ?secoesPorQuem(dentro):secoesPorStatus(dentro,statusVis))+"</div>";
+}
+/* Agrupar por responsável só faz sentido quando há responsável a agrupar; com
+   uma pessoa só, o cabeçalho seria decoração. Mas se o link pediu, respeita. */
+const porQuem=()=>state.atAgrupar==="quem";
+const nomeResp=a=>String((a&&a.responsavel)||"").trim()||TEXTOS.semQuem;
+function secoesPorStatus(itens,statusVis){
+ const T=TEXTOS.ativ;
+ return statusVis.map(k=>[k,ordenarAtiv(itens.filter(a=>statusDaAtiv(a)===k),k==="feita")])
+  .filter(x=>x[1].length).map(([k,g])=>{
   const vc=k==="feita"?0:g.filter(a=>estadoAtiv(a)==="vencido").length;
   return '<section><header class="atgh">'+
    '<span class="g" style="color:'+AT_STATUS_COR[k]+'">'+AT_GLIFO[k]+"</span>"+
@@ -4393,7 +4482,39 @@ function telaAtividades(){
    (k==="feita"?"":'<button class="add" data-atnova="'+esc(state.atAba)+":"+k+
     '" title="'+esc(T.novaAqui(AT_STATUS_LBL[k]))+'">+</button>')+
    "</header>"+g.map(linhaAtiv).join("")+"</section>";
- }).join("")+"</div>";
+ }).join("");
+}
+/* Uma seção por pessoa, ordenada por quem tem mais coisa atrasada e mais P0 --
+   o cabeçalho tem de dizer se vale abrir. Sem responsável vai para o fim: é
+   lacuna, não pessoa. */
+function secoesPorQuem(itens){
+ const T=TEXTOS.ativ,grupos={};
+ itens.forEach(a=>{const k=nomeResp(a);(grupos[k]=grupos[k]||[]).push(a);});
+ const conta=(g,f)=>g.filter(f).length;
+ const ordem=Object.keys(grupos).sort((a,b)=>{
+  if((a===TEXTOS.semQuem)!==(b===TEXTOS.semQuem))return a===TEXTOS.semQuem?1:-1;
+  const va=conta(grupos[a],x=>estadoAtiv(x)==="vencido"),vb=conta(grupos[b],x=>estadoAtiv(x)==="vencido");
+  if(va!==vb)return vb-va;
+  const pa=conta(grupos[a],x=>prioridadeAtiv(x)==="P0"),pb=conta(grupos[b],x=>prioridadeAtiv(x)==="P0");
+  if(pa!==pb)return pb-pa;
+  if(grupos[a].length!==grupos[b].length)return grupos[b].length-grupos[a].length;
+  return a.localeCompare(b,"pt-BR");
+ });
+ return ordem.map(k=>{
+  const g=ordenarAtiv(grupos[k],state.atFiltro==="feita");
+  const vc=conta(g,x=>estadoAtiv(x)==="vencido"),p0=conta(g,x=>prioridadeAtiv(x)==="P0");
+  const sem=k===TEXTOS.semQuem;
+  return '<section><header class="atgh">'+
+   '<span class="av" style="background:'+(sem?"var(--alt)":corDoNome(k))+'">'+
+    esc(sem?"?":iniciais(k))+"</span>"+
+   '<span class="t">'+esc(k)+'</span><span class="c">'+g.length+"</span>"+
+   (p0?'<span class="atpri P0">'+p0+" P0</span>":"")+
+   (vc?'<span class="w">'+vc+(vc===1?" atrasada":" atrasadas")+"</span>":"")+
+   '<span class="sp"></span>'+
+   '<button class="ghenc" data-atenc="'+esc(sem?"":k)+'" title="'+
+    esc(T.encBtn+": "+k)+'">'+esc(T.encBtn)+"</button>"+
+   "</header>"+g.map(linhaAtiv).join("")+"</section>";
+ }).join("");
 }
 /* ---- o menu de status e o de ações, numa camada fixa por cima da lista ----
    Fixa, e não dentro da linha, porque a lista tem cantos arredondados e um
@@ -4488,6 +4609,128 @@ function irParaAtividade(id,soGaveta){
  state.atEvid=null;
  state.painel=a?{tipo:"ativ",id:id}:null;
  render();
+}
+/* ============ ENCAMINHAR ATIVIDADES ============
+   O link é endereço, não dado: leva à lista certa, agrupada por responsável, e
+   quem abre entra com a conta dele -- o banco decide o que ele pode ver. Não
+   existe atalho de acesso aqui, e não deveria: seria vazamento com aparência
+   de comodidade. Mesma regra do encaminhar do To Do e do compartilhar de um
+   negócio. */
+function linkAtividades(quem){
+ const p=["agrupar=quem"];
+ if(quem)p.push("quem="+encodeURIComponent(quem));
+ /* Área e estado entram no link para quem recebe ver a MESMA lista de quem
+    enviou. Sem isso, o link de "Marketing, atrasadas" abria tudo. */
+ if(state.atAba)p.push("area="+encodeURIComponent(state.atAba));
+ if(state.atFiltro)p.push("filtro="+encodeURIComponent(state.atFiltro));
+ return baseLink()+"#atividades?"+p.join("&");
+}
+/* As atividades que o link mostra, na mesma régua da tela: área e estado da
+   tela valem, e o responsável opcional recorta. Concluídas só quando o estado
+   escolhido é justamente "concluídas". */
+function ativsEnc(quem){
+ const T=TEXTOS.ativ;
+ let l=atividades();
+ if(state.atAba)l=l.filter(a=>areaDaAtiv(a)===state.atAba);
+ l=state.atFiltro==="feita"?l.filter(a=>!atAberta(a)):l.filter(atAberta);
+ if(state.atFiltro==="vencido")l=l.filter(a=>estadoAtiv(a)==="vencido");
+ else if(state.atFiltro==="semPrazo")l=l.filter(a=>!a.fim);
+ if(quem)l=l.filter(a=>nomeResp(a)===quem);
+ return l;
+}
+/* Uma linha por atividade, em texto puro: é o que se cola numa conversa. O
+   estado vai por extenso, porque em WhatsApp não há cor nem etiqueta. */
+function textoAtividades(quem){
+ const T=TEXTOS.ativ,itens=ativsEnc(quem);
+ const L=["Atividades · Oren · "+(quem||T.encTodas)];
+ const vc=itens.filter(a=>estadoAtiv(a)==="vencido").length;
+ const hj=itens.filter(a=>estadoAtiv(a)==="hoje").length;
+ const sd=itens.filter(a=>!a.fim).length;
+ const pri=AT_PRIS.map(k=>{const n=itens.filter(a=>prioridadeAtiv(a)===k).length;
+  return n?n+" "+k:"";}).filter(Boolean);
+ L.push(itens.length+(itens.length===1?" atividade":" atividades")+
+  (state.atFiltro==="feita"?" concluída"+(itens.length===1?"":"s"):" em aberto")+
+  (vc?" · "+vc+" atrasada"+(vc===1?"":"s"):"")+
+  (hj?" · "+hj+" termina"+(hj===1?"":"m")+" hoje":"")+
+  (sd?" · "+sd+" sem data de fim":""));
+ if(pri.length)L.push(pri.join(" · "));
+ if(state.atAba)L.push("Área: "+AT_AREAS[state.atAba]);
+ /* Agrupado por responsável, na mesma ordem da tela. Com uma pessoa só, não
+    repete o nome dela em cabeçalho: já está no título. */
+ const grupos={};
+ itens.forEach(a=>{const k=nomeResp(a);(grupos[k]=grupos[k]||[]).push(a);});
+ const ordem=Object.keys(grupos).sort((a,b)=>{
+  if((a===TEXTOS.semQuem)!==(b===TEXTOS.semQuem))return a===TEXTOS.semQuem?1:-1;
+  if(grupos[a].length!==grupos[b].length)return grupos[b].length-grupos[a].length;
+  return a.localeCompare(b,"pt-BR");
+ });
+ let mostrados=0;
+ ordem.forEach(k=>{
+  if(mostrados>=ENC_TETO)return;
+  const g=ordenarAtiv(grupos[k],state.atFiltro==="feita");
+  L.push("");
+  if(!quem)L.push(k.toUpperCase()+" — "+g.length);
+  g.forEach(a=>{
+   if(mostrados>=ENC_TETO)return;
+   mostrados++;
+   const pr=prioridadeAtiv(a);
+   L.push("- "+(pr?"["+pr+"] ":"")+(tituloAtiv(a)||T.semTitulo));
+   const q=estadoAtiv(a),t=atAtraso(a);
+   const quando=!a.fim?"sem data de fim"
+    :dt(a.fim)+(statusDaAtiv(a)==="feita"?""
+      :q==="vencido"?" (atrasada há "+t+(t===1?" dia":" dias")+")"
+      :q==="hoje"?" (termina hoje)":"");
+   L.push("  "+AT_AREAS[areaDaAtiv(a)]+" · "+AT_STATUS_LBL[statusDaAtiv(a)].toLowerCase()+
+    " · "+quando+(a.demandante?" · pediu: "+a.demandante:""));
+  });
+ });
+ if(itens.length>mostrados)L.push("","… e mais "+(itens.length-mostrados)+" na lista completa.");
+ L.push("");
+ L.push("Lista completa: "+linkAtividades(quem));
+ return L.join("\n");
+}
+function painelAtivEnc(quem){
+ const T=TEXTOS.ativ;
+ const todas=ativsEnc("");
+ const nomes=[];
+ todas.forEach(a=>{const k=nomeResp(a);if(k!==TEXTOS.semQuem&&nomes.indexOf(k)<0)nomes.push(k);});
+ nomes.sort((a,b)=>a.localeCompare(b,"pt-BR"));
+ if(quem&&nomes.indexOf(quem)<0&&quem!==TEXTOS.semQuem)quem="";
+ const itens=ativsEnc(quem);
+ const vc=itens.filter(a=>estadoAtiv(a)==="vencido").length;
+ const sd=itens.filter(a=>!a.fim).length;
+ const p0=itens.filter(a=>prioridadeAtiv(a)==="P0").length;
+ const link=linkAtividades(quem),msg=textoAtividades(quem);
+ const ops={"":T.encTodas+" · "+todas.length};
+ nomes.forEach(n=>{ops[n]=n+" · "+todas.filter(a=>nomeResp(a)===n).length;});
+ const semN=todas.filter(a=>nomeResp(a)===TEXTOS.semQuem).length;
+ if(semN)ops[TEXTOS.semQuem]=TEXTOS.semQuem+" · "+semN;
+ let h='<div class="ph"><button class="x" data-fechar="1">Fechar</button>'+
+  '<div class="lbl">'+esc(T.encT)+"</div>"+
+  '<div style="font-size:20px;margin-top:6px">'+esc(quem||T.encTodas)+"</div>"+
+  '<div style="font-size:13px;margin-top:4px;opacity:.85">'+itens.length+
+   (itens.length===1?" atividade":" atividades")+
+   (state.atFiltro==="feita"?" concluída"+(itens.length===1?"":"s"):" em aberto")+
+   (state.atAba?" · "+esc(AT_AREAS[state.atAba]):"")+"</div>"+
+  '<div class="qual">'+esc(T.agrupadoPor)+"</div></div>";
+ h+='<div class="pb">';
+ h+=fld(T.encPara,'<select data-atencquem>'+Object.keys(ops).map(k=>
+  '<option value="'+esc(k)+'"'+(k===quem?" selected":"")+">"+esc(ops[k])+"</option>").join("")+"</select>");
+ h+='<div class="encres">'+
+  '<span><b>'+p0+"</b> P0</span><span><b>"+vc+"</b> atrasadas</span>"+
+  "<span><b>"+sd+"</b> sem data</span></div>";
+ h+='<div class="encacs">'+
+  '<button class="pri" data-atenccopia="msg">'+esc(TEXTOS.encCopiarMsg)+"</button>"+
+  '<button data-atenccopia="link">'+esc(TEXTOS.encCopiarLink)+"</button>"+
+  '<a class="btnl" href="https://wa.me/?text='+encodeURIComponent(msg)+
+   '" target="_blank" rel="noopener">'+esc(TEXTOS.encWhats)+"</a>"+
+  '<a class="btnl" href="mailto:?subject='+encodeURIComponent(T.encAssunto(quem||T.encTodas))+
+   "&body="+encodeURIComponent(msg)+'">'+esc(TEXTOS.encMail)+"</a></div>";
+ h+=fld(TEXTOS.encLink,'<input class="enclink" readonly value="'+esc(link)+'">'+
+  '<div class="soft" style="font-size:11px;margin-top:6px">'+esc(TEXTOS.encLinkNota)+"</div>");
+ h+='<div class="lbl" style="margin:18px 0 6px">'+esc(TEXTOS.encPrevia)+"</div>"+
+  '<textarea class="encmsg" readonly rows="14">'+esc(msg)+"</textarea>";
+ return h+"</div>";
 }
 /* ---- a gaveta: os sete campos, o rastro e a evidência ---- */
 function painelAtiv(id){
@@ -5406,6 +5649,7 @@ function renderPainelLateral(){
  const p=state.painel;
  el.innerHTML=p.tipo==="deal"?painelDeal(p.id)
   :p.tipo==="ativ"?painelAtiv(p.id)
+  :p.tipo==="atenc"?painelAtivEnc(p.quem||"")
   :p.tipo==="novo"?painelNovo()
   :p.tipo==="kpi"?painelKpi(p.id)
   :p.tipo==="enc"?painelEnc(p.quem||"")
@@ -6035,6 +6279,21 @@ document.addEventListener("click",e=>{
   const v=el.dataset.atfiltro;
   state.atFiltro=(v&&state.atFiltro===v)?"":v;state.atFoco="";state.atSel=-1;
   fecharAtMenu();render();return;}
+ if(el=g("[data-atagrupar]")){
+  state.atAgrupar=el.dataset.atagrupar==="quem"?"quem":"status";
+  state.atSel=-1;fecharAtMenu();render();return;}
+ if(el=g("[data-atso]")){
+  state.atSo=el.dataset.atso||"";state.atSel=-1;state.atFoco="";
+  fecharAtMenu();render();return;}
+ /* Encaminhar abre a gaveta com o link e a mensagem. Agrupar por responsável
+    vira o padrão ao abrir: é a vista que o link mostra, e ver uma coisa e
+    enviar outra é como se perde confiança na ferramenta. */
+ if(el=g("[data-atenc]")){
+  state.atAgrupar="quem";fecharAtMenu();
+  abrirPainel({tipo:"atenc",quem:el.dataset.atenc||""});return;}
+ if(el=g("[data-atenccopia]")){
+  const q=state.painel&&state.painel.tipo==="atenc"?(state.painel.quem||""):"";
+  copiar(el.dataset.atenccopia==="link"?linkAtividades(q):textoAtividades(q));return;}
  if(el=g("[data-atnova]")){
   const [ar,st]=el.dataset.atnova.split(":");
   criarAtividade(ar,st);return;}
@@ -6131,6 +6390,8 @@ document.addEventListener("change",e=>{
  if(t.matches("[data-filtro]")){state.filtros[t.dataset.filtro]=t.value;render();return;}
  /* Trocar de pessoa no painel de encaminhar não muda a tela de quem envia:
     redesenha só o painel. */
+ if(t.matches("[data-atencquem]")){
+  state.painel={tipo:"atenc",quem:t.value||""};renderPainelLateral();return;}
  if(t.matches("[data-encquem]")){
   if(state.painel&&state.painel.tipo==="enc"){state.painel.quem=t.value;renderPainelLateral();}
   return;}
