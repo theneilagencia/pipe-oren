@@ -4825,6 +4825,47 @@ function atencao(lista){
  return out.sort((a,b)=>(Number(b.d.valor)||0)-(Number(a.d.valor)||0)).slice(0,15);
 }
 
+/* -------------------------- DIAGNÓSTICO --------------------------
+   Roda no console: diagnostico(). Existe porque "não foi aplicado em produção"
+   são DUAS perguntas que falham de formas diferentes, e misturá-las vira
+   palpite: o código vem da publicação (e um navegador com a aba antiga mostra
+   o selo antigo), o dado vem do banco (e a carga só grava na primeira entrada
+   de um editor). Uma linha para cada, e a resposta cabe num print. */
+function diagnostico(){
+ const d=state.data||{};
+ const ats=(typeof atividades==="function")?atividades():[];
+ const naAta=CARGA_ATIV_ATA0209.filter(a=>ats.some(x=>x&&x.id===a.id)).length;
+ const eu=(state.usuario&&state.usuario.nome)||"";
+ const fora=[];
+ ats.forEach(a=>{
+  [a.responsavel,a.demandante].forEach(n=>{
+   if(n&&RESPS.indexOf(n)<0&&fora.indexOf(n)<0)fora.push(n);});
+ });
+ const L=[
+  ["selo publicado",VERSAO],
+  ["endereço",location.origin+location.pathname],
+  ["modo",state.servidor?"servidor (dados no banco)":"arquivo local"],
+  ["quem está logado",eu?eu+" · "+state.usuario.papel:"ninguém"],
+  ["versão do documento",String(state.versao)],
+  ["negócios · clientes · parceiros",
+   (d.deals||[]).length+" · "+(d.customers||[]).length+" · "+(d.partners||[]).length],
+  ["atividades no banco",String(ats.length)],
+  ["carga da ata de 02/09",naAta+" de "+CARGA_ATIV_ATA0209.length+
+   (naAta===CARGA_ATIV_ATA0209.length?" — completa"
+    :naAta?" — parcial, recarregue a página como editor"
+    :" — não entrou; entre como editor e recarregue")],
+  ["responsáveis na lista",RESPS.join(", ")||"(vazia)"],
+  ["nomes usados fora da lista",fora.length?fora.join(", "):"nenhum"],
+  ["telas disponíveis",["painel","negocios","contas","todo","atividades"]
+   .filter(k=>TEXTOS.nav[k]).map(k=>TEXTOS.nav[k]).join(" · ")],
+  ["agrupar atividades por",state.atAgrupar==="quem"?"responsável":"status"]
+ ];
+ console.log("=== Diagnóstico Oren ===");
+ L.forEach(([k,v])=>console.log(k+": "+v));
+ console.log("Nada foi alterado. Cole isto se algo não bater com o esperado.");
+ const o={};L.forEach(([k,v])=>{o[k]=v;});
+ return o;
+}
 /* ---------------------------- AUDITORIA ----------------------------
    Roda sob demanda, no console: auditoria(). Só lê e imprime. Nenhuma
    correção automática, porque quase toda lacuna aqui precisa de decisão
