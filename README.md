@@ -62,7 +62,15 @@ segunda, e um perfil leitor não grava nada. `supabase/ata-2026-08-21.sql` conti
 no repositório para quem preferir o SQL Editor — rodar os dois é seguro.
 
 As **22 atividades da ata de 02/09/2026** (ids `AT-ATA-01` a `AT-ATA-22`) entram
-pelo mesmo caminho, na primeira entrada de um editor. São as 20 linhas do plano
+pelo mesmo caminho, na primeira entrada de um editor.
+
+**Toda carga carimba que rodou** (a chave `cargas` no documento), e o carimbo vai
+na mesma gravação dos registros. Isso é o que faz **exclusão ser definitiva**:
+uma carga idempotente só pela presença dos ids não distingue "nunca inseri" de
+"inseri e alguém apagou", e o registro excluído voltava a cada F5. Em base onde a
+carga rodou antes do carimbo existir, o painel reconhece pela presença parcial
+dos ids — carga é tudo-ou-nada, então falta de alguns só pode ser exclusão — e
+carimba sem inserir nada. São as 20 linhas do plano
 de ação do item 27, com a linha "revisar todas as pendências" desdobrada nas três
 pessoas que o item 25 nomeia. Três regras valem para toda a carga:
 

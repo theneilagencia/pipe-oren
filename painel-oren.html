@@ -1955,11 +1955,19 @@ const CARGA_ATA={
   "publico": "B2B"
  }
 };
+/* Dois defeitos aqui, os dois do mesmo tipo, e os dois consertados pelo
+   carimbo. Sem ele: excluir o cliente ou o negócio desta ata os trazia de volta
+   no próximo load; e a "normalização" -- que era uma correção de UMA vez, do
+   nome e das notas gravados errado -- rodava a cada load, desfazendo qualquer
+   edição que alguém fizesse nesses quatro campos. Correção de uma vez tem de
+   rodar uma vez. */
 function aplicarCargaAta(d){
- if(!d||!Array.isArray(d.deals)||!Array.isArray(d.customers))return null;
+ if(!d||!Array.isArray(d.deals)||!Array.isArray(d.customers))return {mudou:false,oque:""};
+ if(cargaFeita(d,"ata2108"))return {mudou:false,oque:""};
  const cli=CARGA_ATA.cliente,neg=CARGA_ATA.negocio;
  const jaCliente=d.customers.some(c=>c.id===cli.id);
  const jaNegocio=d.deals.some(x=>x.id===neg.id);
+ carimbarCarga(d,"ata2108");
  if(!jaCliente)d.customers.push(JSON.parse(JSON.stringify(cli)));
  if(!jaNegocio)d.deals.push(JSON.parse(JSON.stringify(neg)));
  if(jaCliente&&jaNegocio){
@@ -1968,20 +1976,21 @@ function aplicarCargaAta(d){
   const c=d.customers.find(x=>x.id===cli.id),e=d.deals.find(x=>x.id===neg.id);
   const antes=JSON.stringify([c.nome,c.notas,e.responsavel,e.notas]);
   c.nome=cli.nome;c.notas=cli.notas;e.responsavel=neg.responsavel;e.notas=neg.notas;
-  if(JSON.stringify([c.nome,c.notas,e.responsavel,e.notas])===antes)return null;
-  return "normalizou";
+  return {mudou:true,
+   oque:JSON.stringify([c.nome,c.notas,e.responsavel,e.notas])===antes?"carimbou":"normalizou"};
  }
- return "inseriu";
+ return {mudou:true,oque:(jaCliente||jaNegocio)?"completou":"inseriu"};
 }
 async function cargaAtaSeNecessario(){
  if(!state.data)return;
  if(state.usuario&&state.usuario.papel==="leitor")return;
  for(let tentativa=1;tentativa<=3;tentativa++){
   const antes=state.data.deals.length+state.data.customers.length;
-  const oque=aplicarCargaAta(state.data);
-  if(!oque)return;
+  const r=aplicarCargaAta(state.data);
+  if(!r.mudou)return;
   const depois=state.data.deals.length+state.data.customers.length;
-  console.log("Carga da ata de 21/08/2026: "+oque+" · registros antes "+antes+" · depois "+depois);
+  console.log("Carga da ata de 21/08/2026: "+r.oque+" · registros antes "+antes+" · depois "+depois+
+   (r.oque==="carimbou"?" · daqui em diante não roda mais, e exclusão não volta":""));
   if(await gravarAgora()){console.log("Carga da ata gravada.");return;}
   console.log("Conflito ao gravar a carga da ata. Recarreguei do servidor (tentativa "+tentativa+" de 3).");
  }
@@ -2928,26 +2937,71 @@ const CARGA_RELATO={
   }
  ]
 };
+/* Mesmo defeito da carga das atividades, mesma correção: sem carimbo, excluir
+   um dos clientes ou negócios deste relato o traria de volta no próximo load. */
 function aplicarCargaRelato(d){
- if(!d||!Array.isArray(d.deals)||!Array.isArray(d.customers))return null;
+ if(!d||!Array.isArray(d.deals)||!Array.isArray(d.customers))return {mudou:false,inseridas:0};
+ if(cargaFeita(d,"relato2408"))return {mudou:false,inseridas:0};
+ const idsC={};d.customers.forEach(x=>{if(x&&x.id)idsC[x.id]=1;});
+ const idsN={};d.deals.forEach(x=>{if(x&&x.id)idsN[x.id]=1;});
+ const rodouAntes=CARGA_RELATO.clientes.some(c=>idsC[c.id])||
+  CARGA_RELATO.negocios.some(g=>idsN[g.id]);
+ carimbarCarga(d,"relato2408");
+ if(rodouAntes)return {mudou:true,inseridas:0};
  let n=0;
  CARGA_RELATO.clientes.forEach(c=>{
-  if(!d.customers.some(x=>x.id===c.id)){d.customers.push(JSON.parse(JSON.stringify(c)));n++;}});
+  if(!idsC[c.id]){d.customers.push(JSON.parse(JSON.stringify(c)));n++;}});
  CARGA_RELATO.negocios.forEach(g=>{
-  if(!d.deals.some(x=>x.id===g.id)){d.deals.push(JSON.parse(JSON.stringify(g)));n++;}});
- return n;
+  if(!idsN[g.id]){d.deals.push(JSON.parse(JSON.stringify(g)));n++;}});
+ return {mudou:true,inseridas:n};
 }
 async function cargaRelatoSeNecessario(){
  if(!state.data)return;
  if(state.usuario&&state.usuario.papel==="leitor")return;
  for(let tentativa=1;tentativa<=3;tentativa++){
-  const n=aplicarCargaRelato(state.data);
-  if(!n)return;
-  console.log("Carga do relato de 24/08/2026: "+n+" registros inseridos.");
+  const r=aplicarCargaRelato(state.data);
+  if(!r.mudou)return;
+  console.log(r.inseridas
+   ?"Carga do relato de 24/08/2026: "+r.inseridas+" registros inseridos."
+   :"Carga do relato de 24/08/2026: já estava aplicada. Carimbando para não rodar de novo.");
   if(await gravarAgora()){console.log("Carga do relato gravada.");return;}
   console.log("Conflito ao gravar a carga do relato. Recarreguei do servidor (tentativa "+tentativa+" de 3).");
  }
  console.warn("Não consegui gravar a carga do relato depois de três tentativas.");
+}
+/* ---------------------- CARGAS JÁ APLICADAS ----------------------
+   Uma carga não pode ser idempotente pela PRESENÇA dos registros: quem exclui
+   um deles tira o id, a carga não acha e insere de novo no próximo load. O
+   registro volta do túmulo a cada F5, e não há como o painel distinguir
+   "nunca inseri" de "inseri e alguém apagou".
+
+   Então a carga passa a carimbar que rodou, e o carimbo vai na MESMA gravação
+   dos registros -- gravar um sem o outro deixaria a base num estado que nenhum
+   dos dois lados sabe consertar. Com o carimbo, exclusão é definitiva, que é o
+   que "excluir" quer dizer.
+
+   Para as bases onde a carga já rodou antes do carimbo existir: se QUALQUER id
+   da carga ainda está lá, ela rodou -- carimba e não insere nada. A carga é
+   tudo-ou-nada, então presença parcial só pode ser exclusão. */
+function cargaFeita(d,chave){
+ return !!(d&&d.cargas&&typeof d.cargas==="object"&&d.cargas[chave]);
+}
+function carimbarCarga(d,chave){
+ if(!d.cargas||typeof d.cargas!=="object")d.cargas={};
+ d.cargas[chave]=agora();
+}
+/* Devolve {mudou, inseridas}. mudou também é true quando só o carimbo entrou:
+   sem gravá-lo, a carga voltaria a se perguntar isso em cada load, e uma
+   exclusão futura ressuscitaria tudo. */
+function aplicarCargaLista(d,chave,itens,lista){
+ if(cargaFeita(d,chave))return {mudou:false,inseridas:0};
+ const ids={};lista.forEach(x=>{if(x&&x.id)ids[x.id]=1;});
+ const rodouAntes=itens.some(x=>ids[x.id]);
+ carimbarCarga(d,chave);
+ if(rodouAntes)return {mudou:true,inseridas:0};
+ let n=0;
+ itens.forEach(x=>{if(ids[x.id])return;lista.push(JSON.parse(JSON.stringify(x)));n++;});
+ return {mudou:true,inseridas:n};
 }
 /* ---------- CARGA DA ATA DE 02/09/2026: PLANO DE AÇÃO ----------
    As 22 atividades saíram do plano de ação consolidado (item 27 da ata), com o
@@ -3402,23 +3456,19 @@ const CARGA_ATIV_ATA0209=[
 /* Idempotente pelo id: rodar de novo não duplica e não sobrescreve o que a
    equipe já editou. Só insere o que ainda não está lá. */
 function aplicarCargaAtiv(d){
- if(!d||typeof d!=="object")return 0;
+ if(!d||typeof d!=="object")return {mudou:false,inseridas:0};
  if(!Array.isArray(d.atividades))d.atividades=[];
- let n=0;
- CARGA_ATIV_ATA0209.forEach(a=>{
-  if(d.atividades.some(x=>x&&x.id===a.id))return;
-  d.atividades.push(JSON.parse(JSON.stringify(a)));
-  n++;
- });
- return n;
+ return aplicarCargaLista(d,"ativAta0209",CARGA_ATIV_ATA0209,d.atividades);
 }
 async function cargaAtivSeNecessario(){
  if(!state.data)return;
  if(state.usuario&&state.usuario.papel==="leitor")return;
  for(let tentativa=1;tentativa<=3;tentativa++){
-  const n=aplicarCargaAtiv(state.data);
-  if(!n)return;
-  console.log("Carga da ata de 02/09/2026: "+n+" atividades inseridas.");
+  const r=aplicarCargaAtiv(state.data);
+  if(!r.mudou)return;
+  console.log(r.inseridas
+   ?"Carga da ata de 02/09/2026: "+r.inseridas+" atividades inseridas."
+   :"Carga da ata de 02/09/2026: já estava aplicada. Carimbando para não rodar de novo — daqui em diante, atividade excluída não volta.");
   if(await gravarAgora()){console.log("Carga das atividades gravada.");return;}
   console.log("Conflito ao gravar a carga das atividades. Recarreguei do servidor (tentativa "+tentativa+" de 3).");
  }
@@ -5052,6 +5102,8 @@ function diagnostico(){
   ["negócios · clientes · parceiros",
    (d.deals||[]).length+" · "+(d.customers||[]).length+" · "+(d.partners||[]).length],
   ["atividades no banco",String(ats.length)],
+  ["cargas já carimbadas",Object.keys((d.cargas&&typeof d.cargas==="object")?d.cargas:{})
+   .map(k=>k+" ("+d.cargas[k]+")").join(", ")||"nenhuma — vão carimbar na próxima entrada de um editor"],
   ["carga da ata de 02/09",naAta+" de "+CARGA_ATIV_ATA0209.length+
    (naAta===CARGA_ATIV_ATA0209.length?" — completa"
     :naAta?" — parcial, recarregue a página como editor"
