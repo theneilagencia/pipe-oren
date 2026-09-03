@@ -1090,6 +1090,7 @@ const TEXTOS={
   agrupadoPor:"agrupado por responsável",
   abrirSec:n=>"Abrir as "+n+(n===1?" atividade":" atividades")+" desta seção",
   fecharSec:"Fechar esta seção",
+  saiuDaVista:"Gravado. A atividade saiu desta lista por causa de um filtro ou de uma aba ligada — ela continua lá, na lista completa.",
   soVazio:n=>"O link vinha filtrado por "+n+", e não há atividade nenhuma no nome de "+n+
    " com estes filtros. Abri a lista inteira.",
   fInicio:"Data de início",
@@ -4557,6 +4558,21 @@ function secaoAbertaAtiv(k,ordem){
  const eu=(state.usuario&&state.usuario.nome)||"";
  return (eu&&ordem.indexOf(eu)>=0)?k===eu:k===ordem[0];
 }
+/* A atividade cabe na lista que a tela mostra agora? Aba de área, pastilha de
+   estado, "só de <pessoa>" e a régua de concluídas -- todos recortam. Serve
+   para saber se uma edição fez a linha SAIR da vista: gravar e a linha
+   desaparecer é indistinguível, para quem está olhando, de não ter gravado. */
+function ativNaVista(a){
+ if(!a||state.tela!=="atividades")return false;
+ if(state.atAba&&areaDaAtiv(a)!==state.atAba)return false;
+ if(state.atSo&&nomeResp(a)!==state.atSo)return false;
+ const st=statusDaAtiv(a);
+ if(state.atFiltro==="feita"){if(st!=="feita")return false;}
+ else if(st==="feita")return false;
+ if(state.atFiltro==="vencido"&&estadoAtiv(a)!=="vencido")return false;
+ if(state.atFiltro==="semPrazo"&&a.fim)return false;
+ return true;
+}
 /* Garante aberta a seção onde uma atividade cai. Criar ou abrir pelo link uma
    atividade de seção fechada fazia ela desaparecer no ato. */
 function abrirSecaoDe(a){
@@ -6281,17 +6297,31 @@ function setCampo(kind,id,campo,valor){
      gaveta, e concluir tem de passar pela evidência. */
   if(campo==="status")return;
   snapshot();
+  /* Medido ANTES de aplicar: "estava à vista" é sobre o estado de onde a
+     edição partiu. Medir depois responde outra pergunta -- e a resposta é
+     sempre a mesma da linha seguinte, então o aviso nunca disparava. */
+  const estava=ativNaVista(a);
   if(campo==="area"){if(AT_AREAS[valor])a.area=valor;}
   else if(campo==="prioridade"){a.prioridade=AT_PRIS.indexOf(valor)>=0?valor:"";}
   else if(campo==="responsavel"||campo==="demandante")a[campo]=nomePessoa(valor);
   else a[campo]=valor;
   a.atualizadoEm=agora();a.atualizadoPor=quemSou()||"—";
+  /* Editar justamente o campo que decide o agrupamento tira a linha da seção
+     em que ela estava. Com o acordeão, a seção de destino pode estar fechada,
+     e a linha simplesmente desaparecia -- para quem olha, igual a não ter
+     gravado. Então: abre a seção de destino, e se a mudança foi de área, a
+     aba segue a atividade em vez de esconder o que acabou de ser editado. */
+  abrirSecaoDe(a);
+  if(campo==="area"&&state.atAba&&state.atAba!==areaDaAtiv(a))state.atAba=areaDaAtiv(a);
+  state.atFoco=a.id;
   /* Fim antes do início é quase sempre erro de digitação, mas quem sabe a
      data é quem digitou: grava e avisa, em vez de recusar e perder o que foi
      escrito. */
   const fora=a.inicio&&a.fim&&String(a.fim)<String(a.inicio);
+  const saiu=estava&&!ativNaVista(a);
   marcar();
   if(fora&&(campo==="inicio"||campo==="fim"))toast(TEXTOS.ativ.fimAntes,true);
+  else if(saiu)toast(TEXTOS.ativ.saiuDaVista,true);
   return;
  }
  if(kind==="contato"){
@@ -6580,9 +6610,15 @@ document.addEventListener("click",e=>{
    const t=document.querySelector('[data-atevid="texto"]');if(t)t.focus();
    return;}
   snapshot();
+  const estava=ativNaVista(a);
   mudarStatusAtiv(a,novo);
   a.atualizadoEm=agora();a.atualizadoPor=quemSou()||"—";
-  state.atFoco=id;marcar();return;}
+  abrirSecaoDe(a);
+  state.atFoco=id;
+  const saiu=estava&&!ativNaVista(a);
+  marcar();
+  if(saiu)toast(TEXTOS.ativ.saiuDaVista,true);
+  return;}
  if(el=g("[data-atevidcancel]")){
   state.atEvid=null;state.atEvidTxt="";state.atEvidLink="";state.atEvidErro="";
   render();return;}
@@ -6602,6 +6638,7 @@ document.addEventListener("click",e=>{
    por:quemSou()||"—",em:agora()});
   const aviso=mudarStatusAtiv(a,state.atEvidAlvo||(reab?"aberta":"feita"));
   a.atualizadoEm=agora();a.atualizadoPor=quemSou()||"—";
+  abrirSecaoDe(a);state.atFoco=a.id;
   state.atEvid=null;state.atEvidTxt="";state.atEvidLink="";state.atEvidErro="";
   state.atEvidAlvo="";
   marcar();if(aviso)toast(aviso);return;}
