@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Oren · Administração</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20fill='%23092d29'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='8.5'%20fill='none'%20stroke='%23affa57'%20stroke-width='4'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#092d29">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--deep:#092d29;--mid:#0e5351;--luz:#affa57;--creme:#e8f3e8;
+--bg:#f7f8f7;--surf:#fff;--alt:#f2f4f2;--bd:#ecefec;--bdf:#dde2dd;
+--tx:#16211d;--tx2:#5b6660;--tx3:#8a938e;--neg:#b00020;--pos:#1a6e3a;
+--av:#0e5351;--r:6px;--r2:10px;--fast:120ms;
+--sh1:0 1px 2px rgba(9,45,41,.05);--sh2:0 4px 16px rgba(9,45,41,.10);
+--sh3:0 16px 48px rgba(9,45,41,.18);--safe:env(safe-area-inset-bottom,0px);
+}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+ font-size:13px;line-height:1.5;color:var(--tx);background:var(--bg);
+ -webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;font-size:13px;color:inherit;border-radius:var(--r);max-width:100%}
+button{cursor:pointer;background:var(--alt);border:1px solid transparent;padding:8px 12px;
+min-height:44px;color:var(--tx2);font-weight:500;
+transition:background var(--fast) ease-out,color var(--fast) ease-out,border-color var(--fast) ease-out}
+button:hover{background:#e6eae6;color:var(--tx)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:disabled:hover{border-color:var(--bdf)}
+input,select{border:1px solid var(--bdf);background:var(--surf);padding:9px 11px;width:100%;
+min-height:44px;transition:border-color var(--fast) ease-out}
+input:hover,select:hover{border-color:#c9d0c9}
+input:focus,select:focus,button:focus-visible,.row:focus-visible{outline:2px solid var(--mid);outline-offset:1px}
+a{color:var(--mid)}
+.pri{background:var(--mid);color:#fff;border-color:var(--mid);font-weight:600}
+.pri:hover{background:#0a4240;border-color:#0a4240;color:#fff}
+.per{color:var(--neg);background:#fdf0f2}
+.per:hover{background:#fbe3e7;color:var(--neg)}
+
+/* cabeçalho */
+header{background:var(--deep);color:var(--creme);padding:12px 20px;display:flex;
+ gap:12px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+header .marca{font-size:14px;font-weight:600;letter-spacing:-.01em}
+header .marca span{font-size:10px;letter-spacing:.16em;font-weight:400;
+ opacity:.72;margin-left:8px;text-transform:uppercase}
+header .eu{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:12px;opacity:.9;min-width:0}
+header .eu .mail{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42vw}
+header a{color:var(--luz)}
+header .ver{font-size:10px;letter-spacing:.06em;color:rgba(232,243,232,.45);
+font-variant-numeric:tabular-nums}
+
+/* menu de secoes */
+/* Controle segmentado, a mesma pastilha do painel. */
+.menu{display:flex;gap:2px;border:1px solid var(--bd);background:var(--alt);padding:2px;
+ border-radius:var(--r2);margin-bottom:20px}
+.menu button{flex:1 1 0;border:0;background:none;min-height:36px;color:var(--tx2);font-weight:500;
+ border-radius:calc(var(--r2) - 3px)}
+.menu button:hover{background:rgba(255,255,255,.7);color:var(--tx)}
+.menu button.on{background:var(--surf);color:var(--deep);box-shadow:var(--sh1)}
+
+main{max-width:840px;margin:0 auto;padding:20px 16px calc(40px + var(--safe))}
+
+/* barra de ações */
+.barra{display:flex;gap:10px;align-items:center;margin-bottom:16px}
+.barra .busca{position:relative;flex:1 1 auto;min-width:0}
+.barra .busca input{padding-left:34px}
+.barra .busca svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);
+ width:15px;height:15px;stroke:var(--tx3);fill:none;stroke-width:1.6;pointer-events:none}
+
+/* lista */
+.cont{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);
+ margin:0 0 8px 2px}
+.lista{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden}
+.row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:0;
+ border-bottom:1px solid var(--bd);padding:14px 14px;min-height:68px;background:none}
+.row:last-child{border-bottom:0}
+.row{transition:background var(--fast) ease-out}
+.row:hover{background:var(--alt);border-color:var(--bd)}
+.av{flex:0 0 auto;width:36px;height:36px;border-radius:999px;background:var(--av);color:#fff;
+ display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;
+ letter-spacing:.02em;text-transform:uppercase}
+.av.vazio{background:var(--bdf);color:var(--tx3)}
+.quem{flex:1 1 auto;min-width:0}
+.quem .n{font-weight:500;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.quem .n .semnome{font-weight:400;color:var(--tx3);font-style:italic}
+.quem .e{color:var(--tx3);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dir{flex:0 0 auto;display:flex;gap:10px;align-items:center;color:var(--tx3);font-size:12px}
+.dir .chev{width:16px;height:16px;stroke:var(--bdf);fill:none;stroke-width:1.8}
+.row:hover .chev{stroke:var(--mid)}
+.badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:10px;
+ letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--bd);color:var(--tx2);
+ white-space:nowrap}
+.badge.voce{border-color:var(--mid);color:var(--mid)}
+.badge.alerta{border-color:#e4d9a8;background:#fbf7e6;color:#6b5a12}
+.badge.leitor{border-color:var(--bdf);color:var(--tx3)}
+
+.vazio-msg{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);
+padding:28px 16px;text-align:center;color:var(--tx3)}
+
+/* aviso */
+.aviso{border:1px solid var(--bd);background:var(--surf);border-radius:var(--r2);
+padding:11px 13px;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.aviso.ok{border-color:#bcd9c4;background:#f1f8f3;color:var(--pos)}
+.aviso.ruim{border-color:#e6c4cb;background:#fdf4f5;color:var(--neg)}
+.aviso button{border:0;min-height:auto;padding:0 2px;color:inherit;margin-left:auto;opacity:.7}
+
+/* gaveta */
+#fundo{position:fixed;inset:0;background:rgba(9,45,41,.42);z-index:30;opacity:0;
+ pointer-events:none;transition:opacity .16s}
+#fundo.on{opacity:1;pointer-events:auto}
+#gav{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--bg);
+ z-index:31;transform:translateX(101%);transition:transform 160ms cubic-bezier(.32,.72,0,1);
+ display:flex;flex-direction:column;box-shadow:var(--sh3)}
+#gav.on{transform:none}
+#gav .gh{background:var(--surf);border-bottom:1px solid var(--bd);padding:16px;
+ display:flex;gap:12px;align-items:flex-start;position:sticky;top:0}
+#gav .gh .quem{min-width:0}
+#gav .gh h2{font-size:15px;font-weight:600;line-height:1.3;word-break:break-word}
+#gav .gh .e{color:var(--tx3);font-size:12px;word-break:break-all}
+#gav .fechar{flex:0 0 auto;border:0;min-height:44px;min-width:44px;padding:6px 8px;font-size:18px;
+ line-height:1;color:var(--tx3)}
+#gav .fechar:hover{color:var(--tx)}
+#gav .corpo{overflow-y:auto;flex:1 1 auto;padding:16px 16px calc(24px + var(--safe));
+ display:flex;flex-direction:column;gap:14px}
+.bloco{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r2);padding:14px}
+.bloco h3{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);
+ font-weight:500;margin-bottom:12px}
+.campo{margin-bottom:12px}
+.campo:last-of-type{margin-bottom:0}
+.campo label{display:block;font-size:12px;color:var(--tx2);margin-bottom:5px;font-weight:500}
+.linha{display:flex;gap:8px;align-items:stretch}
+.linha input{flex:1 1 auto;min-width:0}
+.linha button{flex:0 0 auto;white-space:nowrap}
+.acoes{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.dica{color:var(--tx3);font-size:12px;margin-top:10px}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12px}
+.meta dt{color:var(--tx3)}
+.meta dd{text-align:right;word-break:break-all}
+.risco{border-color:#e6c4cb}
+.risco h3{color:var(--neg)}
+
+/* login */
+.entrada{max-width:340px;margin:12vh auto;padding:0 16px}
+.entrada .cx{background:var(--surf);border:1px solid var(--bdf);border-radius:var(--r2);
+box-shadow:var(--sh3);padding:22px}
+.entrada h1{font-size:16px;font-weight:600;margin-bottom:4px}
+.entrada p.sub{color:var(--tx3);margin-bottom:18px}
+.entrada .campo{margin-bottom:12px}
+.entrada button{width:100%;margin-top:4px}
+.erro{color:var(--neg);margin-top:10px}
+
+.carregando{color:var(--tx3);padding:24px 2px}
+@media (max-width:560px){
+ .dir .quando{display:none}
+ #gav{width:100%}
+ main{padding:16px 12px calc(40px + var(--safe))}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fundo"></div>
+<div id="gav" role="dialog" aria-modal="true" aria-label="Detalhes da pessoa"></div>
+
+<script>
+/* Oren · administração
+   A página não guarda segredo nenhum. Tudo que é privilegiado passa por
+   /api/admin, que roda no servidor com a chave secreta. Aqui só existe a chave
+   publicável, a mesma do painel, usada para entrar e para saber quem você é.
+   A restrição de quem administra é decidida no servidor, não neste arquivo. */
+const SUPABASE_URL="https://ktnngkyyocvfhnqfajmz.supabase.co";
+const SUPABASE_KEY="sb_publishable_BZgO_66U6hFiY2ZwhqtnkQ_-vNXSvVq";
+const SESSAO="oren.sessao.v1";      /* a mesma do painel: entrar num, entra no outro */
+const SENHA_PADRAO="Asd@1234";
+/* Trocado pelo publicar.sh no arquivo que sobe. Ver o comentário no painel. */
+const VERSAO="ec415d5 · 04/09/2026 16:25 UTC";
+const PAPEIS=["editor","leitor"];
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sessao=()=>{try{return JSON.parse(localStorage.getItem(SESSAO)||"null")}catch(e){return null}};
+const guardar=s=>{try{s?localStorage.setItem(SESSAO,JSON.stringify(s)):localStorage.removeItem(SESSAO)}catch(e){}};
+
+const SECOES=[["pessoas","Pessoas e acessos"],["responsaveis","Responsáveis"]];
+/* Os mesmos quatro que o painel usa quando o documento não traz lista. */
+const RESPS_PADRAO=["Paulo","Theo","Adriano","Adolfo"];
+const state={eu:null,pessoas:[],busca:"",aberta:null,carregando:true,aviso:null,ocupado:false,
+ secao:"pessoas",
+ /* Responsaveis nao sao contas de acesso: sao os nomes que aparecem nos
+    negocios. Vivem no proprio documento do pipeline, nao no auth. */
+ resp:{lista:null,versao:0,uso:{},carregando:false,novo:""}};
+
+const dt=v=>{if(!v)return"—";const d=new Date(v);return isNaN(d)?"—":
+ d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
+const dia=v=>{if(!v)return"nunca";const d=new Date(v);return isNaN(d)?"—":d.toLocaleDateString("pt-BR")};
+const iniciais=p=>{
+ const base=(p.nome||"").trim()||(p.email||"").split("@")[0].replace(/[._-]+/g," ");
+ const ps=base.split(/\s+/).filter(Boolean);
+ return ps.length?((ps[0][0]||"")+(ps.length>1?ps[ps.length-1][0]:"")):"?"};
+
+function aviso(texto,tipo){state.aviso=texto?{texto:texto,tipo:tipo||"ok"}:null;render()}
+
+/* ---------- conversa com o servidor ---------- */
+async function chamar(acao,dados){
+ const s=sessao();
+ if(!s)throw new Error("Sua sessão expirou. Entre de novo.");
+ const r=await fetch("/api/admin",{method:"POST",
+  headers:{"content-type":"application/json",Authorization:"Bearer "+s.access_token},
+  body:JSON.stringify(Object.assign({acao:acao},dados||{}))});
+ const c=await r.json().catch(()=>({}));
+ if(r.status===401){guardar(null);state.eu=null;throw new Error("Sua sessão expirou. Entre de novo.")}
+ /* No GitHub Pages não existe função de servidor: /api/admin devolve 404 e a
+    mensagem tem de dizer isso, em vez de um "não consegui" sem pista.
+    Responsáveis não passa por aqui e funciona nos dois endereços. */
+ if(r.status===404||r.status===405)throw new Error(
+  "Esta parte precisa da função de servidor (api/admin.js), que só existe no endereço do Vercel. "+
+  "Aqui dá para gerenciar responsáveis; criar pessoa e definir senha, não.");
+ if(!r.ok)throw new Error(c.erro||"Não consegui concluir.");
+ return c.dados;
+}
+
+/* O documento do pipeline e o mesmo que o painel le e grava. A RLS decide se
+   este login pode escrever; a chave secreta nao entra aqui. */
+async function pipeline(opcoes){
+ const s=sessao();
+ if(!s)throw new Error("Sua sessão expirou. Entre de novo.");
+ const r=await fetch(SUPABASE_URL+"/rest/v1/pipeline"+((opcoes&&opcoes.consulta)||""),
+  {method:(opcoes&&opcoes.metodo)||"GET",
+   headers:Object.assign({apikey:SUPABASE_KEY,Authorization:"Bearer "+s.access_token,
+    "content-type":"application/json"},(opcoes&&opcoes.extras)||{}),
+   body:opcoes&&opcoes.corpo?JSON.stringify(opcoes.corpo):undefined});
+ if(r.status===401){guardar(null);state.eu=null;throw new Error("Sua sessão expirou. Entre de novo.")}
+ if(!r.ok)throw new Error("Não consegui falar com o banco dos negócios.");
+ return r.json().catch(()=>[]);
+}
+/* Cada nome contado onde ele realmente aparece. Sem isto, remover alguem
+   deixaria negocios apontando para um nome que nao existe mais. */
+/* Nome de pessoa é chave no painel: é por ele que o To Do agrupa e o filtro de
+   responsável se monta. E "Vinícius" tem duas grafias Unicode que a tela desenha
+   igual -- o í como um caractere (NFC) ou i + acento combinante (NFD), que é o
+   que teclado de Mac costuma produzir. Digitadas as duas, o mesmo Vinícius
+   aparecia como duas pessoas no painel. NFC é a forma canônica: normalizar não
+   junta nomes diferentes, junta o mesmo nome escrito de dois jeitos. */
+function nomePessoa(x){
+ const t=String(x==null?"":x);
+ return (t.normalize?t.normalize("NFC"):t).replace(/\s+/g," ").trim();
+}
+function usoDeNomes(d){
+ const u={};
+ const soma=(cru,onde)=>{const nome=nomePessoa(cru);if(!nome)return;
+  u[nome]=u[nome]||{negocios:0,pendencias:0,contas:0,atividades:0,historico:0};u[nome][onde]++;};
+ (d.deals||[]).forEach(x=>{
+  soma(x.responsavel,"negocios");
+  (x.pendencias||[]).forEach(pd=>soma(pd.responsavel,"pendencias"));
+  (x.historico||[]).forEach(h=>soma(h.quem,"historico"));
+ });
+ (d.customers||[]).forEach(c=>soma(c.responsavel,"contas"));
+ (d.partners||[]).forEach(c=>soma(c.responsavel,"contas"));
+ /* Atividades de comercial e marketing. Sem isto, quem entrou no painel só por
+    uma atividade -- Vinícius e André, na carga da ata de 02/09 -- não aparecia
+    em "Em uso, fora da lista", e a única pista de que faltava acrescentá-los
+    era o "(fora da lista)" no select do painel. */
+ (d.atividades||[]).forEach(a=>{
+  soma(a.responsavel,"atividades");
+  soma(a.demandante,"atividades");
+ });
+ return u;
+}
+async function carregarResponsaveis(){
+ state.resp.carregando=true;render();
+ try{
+  const linhas=await pipeline({consulta:"?select=dados,versao&id=eq.1"});
+  const linha=linhas[0]||{dados:{},versao:0};
+  const d=linha.dados||{};
+  state.resp.uso=usoDeNomes(d);
+  const cruas=Array.isArray(d.responsaveis)
+   ?d.responsaveis.filter(x=>typeof x==="string"&&x.trim()).map(nomePessoa):null;
+  /* Duas grafias do mesmo nome na lista dariam duas linhas idênticas na tela e
+     duas opções idênticas no select do painel. */
+  const daBase=cruas?cruas.filter((x,i)=>x&&cruas.indexOf(x)===i):null;
+  /* Sem lista gravada, a lista é a mesma que o painel usa por padrão. Antes eu
+     semeava com todos os nomes em uso, e quem só aparecia numa pendência —
+     Vinícius, nas OB-03 e OB-04 da ata — entrava como responsável na primeira
+     gravação. Quem está em uso e fora da lista aparece à parte, para você
+     decidir, em vez de virar responsável por tabela. */
+  state.resp.lista=daBase&&daBase.length?daBase.slice():RESPS_PADRAO.slice();
+  state.resp.gravada=!!(daBase&&daBase.length);
+  state.resp.versao=linha.versao;
+ }catch(e){state.aviso={texto:e.message,tipo:"ruim"}}
+ state.resp.carregando=false;render();
+}
+/* Uma gravacao, uma versao: se alguem no painel gravou no meio, recarrego e
+   nao sobrescrevo o trabalho dele. */
+async function gravarResponsaveis(lista,renomear){
+ const linhas=await pipeline({consulta:"?select=dados,versao&id=eq.1"});
+ const linha=linhas[0];
+ if(!linha)throw new Error("O documento dos negócios não existe ainda.");
+ if(linha.versao!==state.resp.versao){
+  await carregarResponsaveis();
+  throw new Error("Alguém gravou no painel enquanto você editava. Recarreguei a lista: confira e tente de novo.");
+ }
+ const d=linha.dados||{};
+ const limpa=(lista||[]).map(nomePessoa).filter(x=>!!x);
+ d.responsaveis=limpa.filter((x,i)=>limpa.indexOf(x)===i);
+ if(renomear&&renomear.de&&renomear.para&&nomePessoa(renomear.de)!==nomePessoa(renomear.para)){
+  /* Compara normalizado dos dois lados: sem isto, renomear a grafia NFD para a
+     NFC não trocava nada -- o de nunca casava com o que estava gravado. */
+  const de=nomePessoa(renomear.de),para=nomePessoa(renomear.para);
+  (d.deals||[]).forEach(x=>{
+   if(nomePessoa(x.responsavel)===de)x.responsavel=para;
+   (x.pendencias||[]).forEach(pd=>{if(nomePessoa(pd.responsavel)===de)pd.responsavel=para;});
+   /* Historico tambem: e a mesma pessoa com outro nome, nao outra pessoa. */
+   (x.historico||[]).forEach(h=>{if(nomePessoa(h.quem)===de)h.quem=para;});
+  });
+  (d.customers||[]).forEach(c=>{if(nomePessoa(c.responsavel)===de)c.responsavel=para;});
+  (d.partners||[]).forEach(c=>{if(nomePessoa(c.responsavel)===de)c.responsavel=para;});
+  /* Atividades: responsável, demandante e o rastro de quem mexeu. Mesma regra
+     do histórico do negócio -- é a mesma pessoa com outro nome, não outra
+     pessoa. Sem isto, renomear alguém deixava as atividades dele apontando
+     para um nome que saiu da lista. */
+  (d.atividades||[]).forEach(a=>{
+   if(nomePessoa(a.responsavel)===de)a.responsavel=para;
+   if(nomePessoa(a.demandante)===de)a.demandante=para;
+   if(nomePessoa(a.criadaPor)===de)a.criadaPor=para;
+   if(nomePessoa(a.atualizadoPor)===de)a.atualizadoPor=para;
+   if(nomePessoa(a.feitaPor)===de)a.feitaPor=para;
+   (a.evidencias||[]).forEach(e=>{if(nomePessoa(e.por)===de)e.por=para;});
+  });
+ }
+ const gravadas=await pipeline({metodo:"PATCH",
+  consulta:"?id=eq.1&versao=eq."+encodeURIComponent(state.resp.versao),
+  corpo:{dados:d},extras:{Prefer:"return=representation"}});
+ if(!gravadas.length){
+  await carregarResponsaveis();
+  throw new Error("Não consegui gravar: a lista mudou no servidor. Confira e tente de novo.");
+ }
+ await carregarResponsaveis();
+}
+
+async function entrar(email,senha){
+ const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",
+  {method:"POST",headers:{apikey:SUPABASE_KEY,"content-type":"application/json"},
+   body:JSON.stringify({email:email,password:senha})});
+ const c=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(c.error_description||c.msg||"E-mail ou senha não conferem.");
+ guardar(c);
+ return c;
+}
+
+/* ---------- login ---------- */
+function telaLogin(erro){
+ return '<div class="entrada"><div class="cx">'+
+  "<h1>Administração</h1>"+
+  '<p class="sub">Entre com a sua conta do painel.</p>'+
+  '<form id="flogin">'+
+  '<div class="campo"><label for="lemail">E-mail</label>'+
+  '<input id="lemail" type="email" autocomplete="username" required></div>'+
+  '<div class="campo"><label for="lsenha">Senha</label>'+
+  '<input id="lsenha" type="password" autocomplete="current-password" required></div>'+
+  '<button class="pri" type="submit">Entrar</button>'+
+  (erro?'<p class="erro">'+esc(erro)+"</p>":"")+
+  "</form></div></div>";
+}
+
+/* ---------- lista ---------- */
+function badges(p){
+ let h="";
+ if(p.ehVoce)h+=' <span class="badge voce">você</span>';
+ if(p.papel==="leitor")h+=' <span class="badge leitor">leitor</span>';
+ else if(p.papel==="editor")h+=' <span class="badge">editor</span>';
+ if(p.semPerfil)h+=' <span class="badge alerta">sem perfil</span>';
+ if(p.senhaProvisoria)h+=' <span class="badge alerta">senha provisória</span>';
+ if(!p.confirmado)h+=' <span class="badge alerta">não confirmado</span>';
+ return h;
+}
+
+function linhaPessoa(p){
+ const nome=p.nome?esc(p.nome):'<span class="semnome">sem nome</span>';
+ return '<button class="row" data-abre="'+esc(p.id)+'">'+
+  '<span class="av'+(p.nome?"":" vazio")+'">'+esc(iniciais(p))+"</span>"+
+  '<span class="quem"><span class="n">'+nome+badges(p)+"</span>"+
+   '<span class="e">'+esc(p.email)+"</span></span>"+
+  '<span class="dir"><span class="quando">'+esc(dia(p.ultimoAcesso))+"</span>"+
+   '<svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>'+
+  "</button>";
+}
+
+/* Cabecalho e menu iguais nas duas secoes: o mesmo lugar para trocar de tela. */
+function moldura(){
+ let h="<header>"+
+  '<span class="marca">Oren<span>Administração</span></span>'+
+  '<span class="eu"><span class="mail">'+esc(state.eu?state.eu.email:"")+"</span>"+
+  /* Relativo, não "/": no GitHub Pages a administração fica em /pipe-oren/admin/
+     e a barra sozinha levaria para fora do site. */
+  '<a href="../">painel</a><a href="#" data-sair>sair</a>'+
+  '<span class="ver" title="Versão publicada">'+esc(VERSAO)+"</span></span></header><main>";
+ h+='<nav class="menu" aria-label="Seções da administração">'+SECOES.map(([k,l])=>
+  '<button data-secao="'+k+'" class="'+(state.secao===k?"on":"")+'"'+
+  (state.secao===k?' aria-current="page"':"")+">"+esc(l)+"</button>").join("")+"</nav>";
+ if(state.aviso)h+='<div class="aviso '+state.aviso.tipo+'"><span>'+esc(state.aviso.texto)+
+  '</span><button data-fecha-aviso aria-label="Fechar aviso">×</button></div>';
+ return h;
+}
+function telaLista(){
+ const q=state.busca.trim().toLowerCase();
+ const vis=state.pessoas.filter(p=>!q||
+  (p.nome||"").toLowerCase().includes(q)||(p.email||"").toLowerCase().includes(q));
+ let h=moldura();
+
+ h+='<div class="barra">'+
+  '<span class="busca"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/>'+
+   '<path d="M20 20l-4-4"/></svg>'+
+   '<input id="busca" type="search" placeholder="Buscar por nome ou e-mail" value="'+esc(state.busca)+'"></span>'+
+  '<button class="pri" data-nova>Nova pessoa</button></div>';
+
+ if(state.carregando)h+='<p class="carregando">Carregando…</p>';
+ else if(!state.pessoas.length)h+='<div class="vazio-msg">Nenhuma pessoa cadastrada ainda.</div>';
+ else if(!vis.length)h+='<div class="vazio-msg">Nada encontrado para essa busca.</div>';
+ else h+='<p class="cont">'+vis.length+(vis.length===1?" pessoa":" pessoas")+
+  (q?" de "+state.pessoas.length:"")+'</p><div class="lista">'+vis.map(linhaPessoa).join("")+"</div>";
+
+ return h+"</main>";
+}
+
+/* ---------- responsáveis ---------- */
+function totalUso(u){return u?u.negocios+u.pendencias+u.contas+u.atividades:0;}
+function detalheUso(u){
+ if(!u)return "sem nada no nome ainda";
+ const ps=[];
+ if(u.negocios)ps.push(u.negocios+(u.negocios===1?" negócio":" negócios"));
+ if(u.pendencias)ps.push(u.pendencias+(u.pendencias===1?" pendência":" pendências"));
+ if(u.contas)ps.push(u.contas+(u.contas===1?" conta":" contas"));
+ if(u.atividades)ps.push(u.atividades+(u.atividades===1?" atividade":" atividades"));
+ if(!ps.length&&u.historico)return "só no histórico";
+ return ps.length?ps.join(" · "):"sem nada no nome ainda";
+}
+/* Só negócio e conta travam a saída da lista: são registros que passariam a
+   apontar para um responsável que não existe. Pendência e histórico não travam,
+   porque o nome continua escrito neles e o painel mostra "fora da lista". */
+function trava(nome){
+ const u=state.resp.uso[nome];
+ return u?u.negocios+u.contas:0;
+}
+function linhaResp(nome,foraDaLista){
+ const u=state.resp.uso[nome],n=totalUso(u),t=trava(nome);
+ return '<div class="row"><span class="av'+(n?"":" vazio")+'">'+esc(iniciais({nome:nome}))+"</span>"+
+  '<span class="quem"><span class="n">'+esc(nome)+
+  (foraDaLista?'<span class="badge alerta">fora da lista</span>':n?"":'<span class="badge">sem uso</span>')+"</span>"+
+  '<span class="e">'+esc(detalheUso(u))+"</span></span>"+
+  '<span class="dir">'+(foraDaLista
+   ?'<button data-add-nome="'+esc(nome)+'">Acrescentar à lista</button>'
+   :'<button data-renomear="'+esc(nome)+'">Renomear</button>'+
+    '<button class="per" data-tirar="'+esc(nome)+'"'+(t?" disabled":"")+
+    ' title="'+(t?"Responde por negócio ou conta":"Tirar da lista")+'">Tirar</button>')+
+  "</span></div>";
+}
+function telaResponsaveis(){
+ let h=moldura();
+ h+='<div class="bloco" style="margin-bottom:16px">'+
+  '<h3>Quem pode ser responsável por um negócio</h3>'+
+  '<div class="linha"><input id="rnovo" placeholder="Nome como aparece no painel" value="'+esc(state.resp.novo)+'">'+
+  '<button class="pri" data-add-resp>Acrescentar</button></div>'+
+  '<p class="dica">Esta lista é a que o painel oferece nos campos de responsável. '+
+  'Renomear troca o nome em todos os negócios, pendências, contas, atividades e no histórico. '+
+  'Tirar fica travado para quem responde por negócio ou conta; quem só carrega '+
+  'pendência ou atividade sai da lista e continua com o nome escrito nela.</p></div>';
+ if(state.resp.carregando)h+='<p class="carregando">Carregando…</p>';
+ else if(!state.resp.lista)h+='<div class="vazio-msg">Não consegui ler a lista.</div>';
+ else if(!state.resp.lista.length)h+='<div class="vazio-msg">Nenhum responsável na lista. Acrescente o primeiro acima.</div>';
+ else{
+  h+='<p class="cont">'+state.resp.lista.length+
+   (state.resp.lista.length===1?" responsável":" responsáveis")+
+   (state.resp.gravada?"":" · lista padrão, ainda não gravada")+
+   '</p><div class="lista">'+state.resp.lista.map(n=>linhaResp(n,false)).join("")+"</div>";
+  const fora=Object.keys(state.resp.uso).filter(n=>state.resp.lista.indexOf(n)<0)
+   .sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  if(fora.length)h+='<p class="cont" style="margin-top:20px">Em uso, fora da lista</p>'+
+   '<div class="lista">'+fora.map(n=>linhaResp(n,true)).join("")+"</div>"+
+   '<p class="dica">Nomes que aparecem em algum registro sem estar na lista de '+
+   'responsáveis. O painel mostra cada um marcado como “fora da lista”, para o '+
+   'registro não trocar de dono sozinho. Acrescente quem deve poder ser escolhido; '+
+   'deixe fora quem só carrega pendência.</p>';
+ }
+ return h+"</main>";
+}
+
+/* ---------- gaveta ---------- */
+function gavetaNova(){
+ return '<div class="gh"><div class="quem"><h2>Nova pessoa</h2>'+
+  '<p class="e">A conta nasce confirmada e com senha provisória.</p></div>'+
+  '<button class="fechar" data-fechar aria-label="Fechar">×</button></div>'+
+  '<div class="corpo"><form id="fnova"><div class="bloco">'+
+  '<div class="campo"><label for="nemail">E-mail</label>'+
+  '<input id="nemail" type="email" autocomplete="off" required></div>'+
+  '<div class="campo"><label for="nnome">Nome</label>'+
+  '<input id="nnome" type="text" autocomplete="off" placeholder="Como aparece no painel"></div>'+
+  '<div class="campo"><label for="npapel">Papel</label><select id="npapel">'+
+   '<option value="editor">editor · vê e grava</option>'+
+   '<option value="leitor">leitor · só vê</option></select></div>'+
+  '<div class="campo"><label for="nsenha">Senha inicial</label>'+
+  '<div class="linha"><input id="nsenha" type="text" value="'+SENHA_PADRAO+'" required>'+
+  '<button type="button" data-gerar>Gerar</button></div></div>'+
+  '<div class="acoes"><button class="pri" type="submit">Criar pessoa</button>'+
+  '<button type="button" data-fechar>Cancelar</button></div>'+
+  '<p class="dica">A pessoa é obrigada a trocar a senha no primeiro acesso ao painel. '+
+  "Combine a senha inicial por um canal direto, não por grupo.</p>"+
+  "</div></form></div>";
+}
+
+function gavetaPessoa(p){
+ return '<div class="gh"><div class="quem"><h2>'+(p.nome?esc(p.nome):"Sem nome")+"</h2>"+
+  '<p class="e">'+esc(p.email)+"</p></div>"+
+  '<button class="fechar" data-fechar aria-label="Fechar">×</button></div><div class="corpo">'+
+
+  '<div class="bloco"><h3>Identificação</h3>'+
+  '<div class="campo"><label for="enome">Nome</label>'+
+  '<input id="enome" type="text" value="'+esc(p.nome||"")+'" placeholder="Como aparece no painel"></div>'+
+  '<div class="campo"><label for="epapel">Papel</label><select id="epapel">'+
+   PAPEIS.map(v=>'<option value="'+v+'"'+(p.papel===v?" selected":"")+">"+
+    (v==="editor"?"editor · vê e grava":"leitor · só vê")+"</option>").join("")+
+   "</select></div>"+
+  '<div class="acoes"><button class="pri" data-salvar="'+esc(p.id)+'">Salvar</button></div>'+
+  (p.semPerfil?'<p class="dica">Esta conta existe no login mas não tem perfil no banco. '+
+   "Salvar aqui cria o perfil.</p>":"")+
+  "</div>"+
+
+  '<div class="bloco"><h3>Senha</h3>'+
+  '<div class="campo"><label for="esenha">Definir senha provisória</label>'+
+  '<div class="linha"><input id="esenha" type="text" placeholder="mínimo 8 caracteres">'+
+  '<button data-senha="'+esc(p.id)+'">Definir</button></div></div>'+
+  '<div class="acoes"><button data-link="'+esc(p.email)+'">Enviar link por e-mail</button></div>'+
+  '<p class="dica">Definir aqui exige a troca no próximo acesso. O link por e-mail deixa a '+
+  "pessoa escolher a senha sozinha.</p></div>"+
+
+  '<div class="bloco"><h3>Conta</h3><dl class="meta">'+
+  "<dt>Papel</dt><dd>"+esc(p.papel||"sem papel")+"</dd>"+
+  "<dt>Senha provisória</dt><dd>"+(p.senhaProvisoria?"sim":"não")+"</dd>"+
+  "<dt>E-mail confirmado</dt><dd>"+(p.confirmado?"sim":"não")+"</dd>"+
+  "<dt>Último acesso</dt><dd>"+esc(dt(p.ultimoAcesso))+"</dd>"+
+  "<dt>Criado em</dt><dd>"+esc(dt(p.criadoEm))+"</dd>"+
+  "</dl></div>"+
+
+  (p.ehVoce?'<p class="dica">Esta é a sua conta. Você não pode remover a si mesmo.</p>':
+   '<div class="bloco risco"><h3>Zona de risco</h3>'+
+   '<p class="dica" style="margin:0 0 12px">Remover apaga a conta e o acesso. '+
+   "O que a pessoa já gravou no pipeline continua lá.</p>"+
+   '<button class="per" data-remover="'+esc(p.id)+'">Remover pessoa</button></div>')+
+
+  "</div>";
+}
+
+function renderGaveta(){
+ const g=$("#gav"),f=$("#fundo");
+ if(!state.aberta){g.className="";f.className="";g.innerHTML="";return}
+ if(state.aberta==="nova")g.innerHTML=gavetaNova();
+ else{
+  const p=state.pessoas.find(x=>x.id===state.aberta);
+  if(!p){state.aberta=null;return renderGaveta()}
+  g.innerHTML=gavetaPessoa(p);
+ }
+ g.className="on";f.className="on";
+ const primeiro=g.querySelector("input,select,button");
+ if(primeiro)setTimeout(()=>primeiro.focus(),60);
+}
+
+function render(){
+ const app=$("#app");
+ if(!state.eu){app.innerHTML=telaLogin(state.erroLogin);state.aberta=null;renderGaveta();
+  const c=$("#lemail");if(c)setTimeout(()=>c.focus(),50);return}
+ const foco=document.activeElement,idFoco=foco&&foco.id;
+ const eraCampo=idFoco==="busca"||idFoco==="rnovo";
+ const pos=eraCampo?foco.selectionStart:0;
+ app.innerHTML=state.secao==="responsaveis"?telaResponsaveis():telaLista();
+ if(eraCampo){const b=$("#"+idFoco);if(b){b.focus();try{b.setSelectionRange(pos,pos)}catch(e){}}}
+ renderGaveta();
+}
+
+/* ---------- ações ---------- */
+async function comOcupado(botao,fn){
+ if(state.ocupado)return;
+ state.ocupado=true;
+ const rotulo=botao?botao.textContent:null;
+ if(botao){botao.disabled=true;botao.textContent="Aguarde…"}
+ try{await fn()}
+ catch(e){aviso(e.message||"Não consegui concluir.","ruim")}
+ finally{
+  state.ocupado=false;
+  if(botao&&document.body.contains(botao)){botao.disabled=false;botao.textContent=rotulo}
+ }
+}
+
+async function carregar(){
+ state.carregando=true;render();
+ try{
+  const lista=await chamar("listar");
+  state.pessoas=(lista||[]).map(p=>Object.assign({},p,
+   {ehVoce:state.eu&&p.email&&p.email.toLowerCase()===state.eu.email.toLowerCase()}));
+ }catch(e){state.aviso={texto:e.message,tipo:"ruim"}}
+ state.carregando=false;render();
+}
+
+const senhaGerada=()=>{
+ const abc="abcdefghijkmnopqrstuvwxyz",ABC="ABCDEFGHJKLMNPQRSTUVWXYZ",num="23456789",sim="!@#$%&*";
+ const todos=abc+ABC+num+sim,n=14,a=new Uint32Array(n);crypto.getRandomValues(a);
+ let s=ABC[a[0]%ABC.length]+abc[a[1]%abc.length]+num[a[2]%num.length]+sim[a[3]%sim.length];
+ for(let i=4;i<n;i++)s+=todos[a[i]%todos.length];
+ return s;
+};
+
+/* ---------- eventos ---------- */
+document.addEventListener("submit",async e=>{
+ if(e.target.id==="flogin"){
+  e.preventDefault();
+  const b=e.target.querySelector('button[type="submit"]');
+  const email=$("#lemail").value.trim(),senha=$("#lsenha").value;
+  await comOcupado(b,async()=>{
+   try{
+    await entrar(email,senha);
+    state.erroLogin=null;
+    await iniciar();
+   }catch(err){state.erroLogin=err.message;render();}
+  });
+  return;
+ }
+ if(e.target.id==="fnova"){
+  e.preventDefault();
+  const b=e.target.querySelector('button[type="submit"]');
+  const d={email:$("#nemail").value.trim(),nome:$("#nnome").value.trim(),
+   papel:$("#npapel").value,senha:$("#nsenha").value};
+  await comOcupado(b,async()=>{
+   await chamar("criar",d);
+   state.aberta=null;
+   await carregar();
+   aviso("Pessoa criada. Combine a senha inicial por um canal direto.","ok");
+  });
+ }
+});
+
+document.addEventListener("click",async e=>{
+ const t=e.target,g=s=>t.closest(s);
+ let el;
+
+ if(el=g("[data-fecha-aviso]")){aviso(null);return}
+
+ if(el=g("[data-secao]")){
+  const k=el.dataset.secao;
+  if(k===state.secao)return;
+  state.secao=k;state.aviso=null;render();
+  if(k==="responsaveis"&&state.resp.lista===null)await carregarResponsaveis();
+  return;
+ }
+
+ if(el=g("[data-add-resp]")){
+  const c=$("#rnovo"),nome=nomePessoa(c?c.value:"");
+  if(!nome){aviso("Escreva o nome antes de acrescentar.","ruim");return}
+  if((state.resp.lista||[]).some(x=>nomePessoa(x).toLowerCase()===nome.toLowerCase())){
+   aviso("“"+nome+"” já está na lista.","ruim");return}
+  await comOcupado(el,async()=>{
+   await gravarResponsaveis((state.resp.lista||[]).concat([nome]));
+   state.resp.novo="";
+   aviso("“"+nome+"” entrou na lista de responsáveis.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-add-nome]")){
+  const nome=nomePessoa(el.dataset.addNome);
+  await comOcupado(el,async()=>{
+   await gravarResponsaveis((state.resp.lista||[]).concat([nome]));
+   aviso("“"+nome+"” entrou na lista de responsáveis.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-renomear]")){
+  const de=el.dataset.renomear;
+  const para=(prompt("Novo nome para “"+de+"”:",de)||"").trim();
+  if(!para||para===de)return;
+  if((state.resp.lista||[]).some(x=>x!==de&&x.toLowerCase()===para.toLowerCase())){
+   aviso("Já existe “"+para+"” na lista.","ruim");return}
+  const u=state.resp.uso[de],n=totalUso(u);
+  if(n&&!confirm("Trocar “"+de+"” por “"+para+"” em "+detalheUso(u)+" e no histórico?"))return;
+  await comOcupado(el,async()=>{
+   await gravarResponsaveis((state.resp.lista||[]).map(x=>x===de?para:x),{de:de,para:para});
+   aviso("Agora é “"+para+"” em todos os registros.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-tirar]")){
+  const nome=el.dataset.tirar,u=state.resp.uso[nome];
+  if(trava(nome)){aviso("“"+nome+"” responde por "+detalheUso(u)+". Passe para outra pessoa antes de tirar.","ruim");return}
+  const resto=u&&(u.pendencias||u.historico);
+  if(!confirm("Tirar “"+nome+"” da lista? Ele deixa de aparecer nos campos de responsável."+
+   (resto?" O nome dele continua escrito nas pendências e no histórico, marcado como fora da lista.":"")))return;
+  await comOcupado(el,async()=>{
+   await gravarResponsaveis((state.resp.lista||[]).filter(x=>x!==nome));
+   aviso("“"+nome+"” saiu da lista.","ok");
+  });
+  return;
+ }
+ if(el=g("[data-sair]")){e.preventDefault();guardar(null);state.eu=null;state.pessoas=[];render();return}
+ if(el=g("[data-nova]")){state.aberta="nova";renderGaveta();return}
+ if(el=g("[data-fechar]")||t.id==="fundo"){state.aberta=null;renderGaveta();return}
+ if(el=g("[data-gerar]")){const c=$("#nsenha");if(c)c.value=senhaGerada();return}
+ if(el=g("[data-abre]")){state.aberta=el.dataset.abre;renderGaveta();return}
+
+ if(el=g("[data-salvar]")){
+  const id=el.dataset.salvar,nome=$("#enome").value.trim(),papel=$("#epapel").value;
+  if(!nome){aviso("O nome não pode ficar vazio.","ruim");return}
+  await comOcupado(el,async()=>{
+   await chamar("perfil",{id:id,nome:nome,papel:papel});
+   state.aberta=null;
+   await carregar();
+   aviso("Nome e papel salvos.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-senha]")){
+  const id=el.dataset.senha,c=$("#esenha"),senha=c?c.value:"";
+  if(!senha||senha.length<8){aviso("A senha precisa de pelo menos 8 caracteres.","ruim");return}
+  await comOcupado(el,async()=>{
+   await chamar("senha",{id:id,senha:senha});
+   state.aberta=null;
+   await carregar();
+   aviso("Senha definida. A pessoa vai trocá-la no próximo acesso.","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-link]")){
+  const email=el.dataset.link;
+  await comOcupado(el,async()=>{
+   await chamar("recuperar",{email:email});
+   aviso("Link de redefinição enviado para "+email+".","ok");
+  });
+  return;
+ }
+
+ if(el=g("[data-remover]")){
+  const id=el.dataset.remover,p=state.pessoas.find(x=>x.id===id);
+  if(!confirm("Remover "+((p&&(p.nome||p.email))||"esta pessoa")+"? A conta e o acesso são apagados."))return;
+  await comOcupado(el,async()=>{
+   await chamar("remover",{id:id});
+   state.aberta=null;
+   await carregar();
+   aviso("Pessoa removida.","ok");
+  });
+ }
+});
+
+document.addEventListener("input",e=>{
+ if(e.target.id==="busca"){state.busca=e.target.value;render()}
+ else if(e.target.id==="rnovo")state.resp.novo=e.target.value;
+});
+
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape"&&state.aberta){state.aberta=null;renderGaveta()}
+});
+
+/* ---------- partida ---------- */
+async function iniciar(){
+ const s=sessao();
+ if(!s||!s.access_token){state.eu=null;render();return}
+ try{
+  const r=await fetch(SUPABASE_URL+"/auth/v1/user",
+   {headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+s.access_token}});
+  if(!r.ok)throw new Error("sessao");
+  const u=await r.json();
+  state.eu={id:u.id,email:u.email};
+ }catch(e){guardar(null);state.eu=null;render();return}
+ render();
+ await carregar();
+}
+iniciar();
+</script>
+</body>
+</html>
