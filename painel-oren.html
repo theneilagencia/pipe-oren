@@ -1069,7 +1069,6 @@ const TEXTOS={
   nova:"Nova atividade",
   novaAqui:s=>"Nova atividade em "+s.toLowerCase(),
   semTitulo:"(sem nome)",
-  rotulo:"Atividade",
   detalhe:"Atividade",
   /* Os sete campos, com o nome que a equipe usa. */
   fTitulo:"Nome da atividade",
@@ -3944,27 +3943,12 @@ function itensTodo(){
   if(String(d.proximoPasso||"").trim())out.push(item(d,"passo",d.proximoPasso,d.responsavel,d.prazo));
   else out.push(item(d,"definir","Definir o próximo passo deste negócio",d.responsavel,d.prazo));
  });
- /* Atividade de comercial e marketing entra na MESMA fila. O To Do responde
-    "o que eu tenho para fazer" -- se a atividade ficasse só na tela dela,
-    cada pessoa passaria a ter dois lugares para olhar, e o segundo é o que
-    ninguém abre. A tela de Atividades é onde se cadastra e se muda status;
-    aqui ela é só mais uma linha, marcada como atividade.
-    Os filtros de frente, tipo de venda e público são atributos de NEGÓCIO:
-    atividade não tem nenhum deles, então não há como aplicá-los -- e inventar
-    uma frente para ela seria dado falso. Busca e responsável valem. */
- const q=f.busca.trim().toLowerCase();
- atividades().filter(atAberta).forEach(a=>{
-  if(q&&((a.titulo||"")+" "+(a.descricao||"")+" "+(a.responsavel||"")+" "+
-   (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+prioridadeAtiv(a)+" "+
-   TEXTOS.ativ.rotulo).toLowerCase().indexOf(q)<0)return;
-  const o={tipo:"atividade",ativ:a,d:null,texto:tituloAtiv(a)||TEXTOS.ativ.semTitulo,
-   quem:nomePessoa(a.responsavel),
-   /* Quem pediu é quem cobra: no To Do ele entra na coluna de quem responde,
-      onde o negócio põe o responsável dele. */
-   aprova:nomePessoa(a.demandante),consultados:[],
-   prazo:a.fim||"",atraso:atAtraso(a)};
-  o.estado=estadoTodo(o);out.push(o);
- });
+ /* O To Do é FILA DOS NEGÓCIOS, e só. Atividade de comercial e marketing tem
+    tela própria, com cadastro, status e agrupamento próprios -- misturar as
+    duas aqui fazia uma linha de pendência de negócio e uma linha de campanha
+    de marketing disputarem a mesma seção, com réguas diferentes por baixo
+    (bloqueio, etapa e frente de um lado; prioridade e área do outro). Duas
+    filas, duas telas. */
  const alvo=nomePessoa(f.responsavel);
  return alvo?out.filter(x=>x.quem===alvo):out;
 }
@@ -4017,10 +4001,8 @@ function textoTodo(quem){
      :x.atraso===0?" (hoje)":"")
    :"sem data";
   L.push("- ["+TODO_ESTADOS[x.estado].lbl.toLowerCase()+"] "+x.texto);
-  const de=x.ativ
-   ?TEXTOS.ativ.rotulo+" · "+AT_AREAS[areaDaAtiv(x.ativ)]+" · "+AT_STATUS_LBL[statusDaAtiv(x.ativ)]
-   :nomeNegocio(x.d)+" · "+frenteRotulo(x.d);
-  L.push("  "+de+" · "+quando+(quem?"":" · "+(x.quem||TEXTOS.semQuem)));
+  L.push("  "+nomeNegocio(x.d)+" · "+frenteRotulo(x.d)+" · "+quando+
+   (quem?"":" · "+(x.quem||TEXTOS.semQuem)));
  });
  if(itens.length>ENC_TETO)L.push("… e mais "+(itens.length-ENC_TETO)+" na lista completa.");
  L.push("");
@@ -4371,23 +4353,16 @@ function linhasTodo(itens,dentroDoGrupo){
    h+='<div class="tvirada"><span class="ic">'+ICO_ESTADO.semPrazo+"</span>"+
     esc(TEXTOS.semPrazoT)+'<span class="td">'+esc(TEXTOS.semPrazoSub)+"</span></div>";
   }
-  /* TODO_FOCO guarda o que abrir, não só um id: a fila tem negócio e
-     atividade, e Enter tem de saber para onde ir. */
-  const i=TODO_FOCO.length;
-  TODO_FOCO.push(x.ativ?{tipo:"ativ",id:x.ativ.id}:{tipo:"deal",id:x.d.id});
+  const i=TODO_FOCO.length;TODO_FOCO.push(x.d.id);
   const quando=x.prazo
    ?(x.atraso>0?"vencido há "+x.atraso+(x.atraso===1?" dia":" dias")
      :x.atraso===0?"hoje":"em "+(-x.atraso)+(x.atraso===-1?" dia":" dias"))
    :"";
-  const meta=x.ativ
-   ?[esc(TEXTOS.ativ.rotulo)+" · "+esc(AT_AREAS[areaDaAtiv(x.ativ)]),
-     [prioridadeAtiv(x.ativ),AT_STATUS_LBL[statusDaAtiv(x.ativ)]].filter(Boolean).map(esc).join(" · ")]
-   :[esc(nomeNegocio(x.d)),esc(frenteRotulo(x.d))+" · "+esc(etapaNome(x.d))];
+  const meta=[esc(nomeNegocio(x.d)),esc(frenteRotulo(x.d))+" · "+esc(etapaNome(x.d))];
   if(!dentroDoGrupo)meta.push(x.quem?esc(x.quem):'<span class="late">'+esc(TEXTOS.semQuem)+"</span>");
   if(x.aprova&&x.aprova!==x.quem)meta.push("responde: "+esc(x.aprova));
-  h+='<div class="ti '+x.estado+(state.todoSel===i?" sel":"")+'"'+
-   (x.ativ?' data-abreativ="'+esc(x.ativ.id)+'"':' data-abre="'+x.d.id+'"')+
-   ' data-tirow="'+i+'" style="--tkc:'+e.cor+'" title="'+esc(e.lbl)+'">'+
+  h+='<div class="ti '+x.estado+(state.todoSel===i?" sel":"")+'" data-abre="'+x.d.id+
+   '" data-tirow="'+i+'" style="--tkc:'+e.cor+'" title="'+esc(e.lbl)+'">'+
    '<span class="ic">'+ICO_ESTADO[x.estado]+"</span>"+
    '<span class="mid"><span class="tt">'+esc(x.texto)+"</span>"+
     '<span class="mt">'+meta.join(SEP)+"</span></span>"+
@@ -5286,10 +5261,10 @@ function rosca(itens){
 const HINTS={
  atDemandante:{t:"Responsável e demandante",
   a:"Responsável é quem faz. Demandante é quem pediu — normalmente quem cadastrou, e por isso o campo já nasce com o seu nome. Os dois saem da mesma lista de pessoas do painel.",
-  b:"Serve para duas coisas concretas: no To Do do responsável, o demandante aparece como quem responde pela atividade, do mesmo jeito que o negócio mostra o dono dele; e a busca acha pelos dois, então procurar por um nome traz o que a pessoa faz e o que ela pediu. Se quem pediu está fora da equipe — um cliente, um parceiro —, deixe o campo vazio e escreva na descrição: chutar um nome de dentro seria inventar."},
+  b:"Serve para saber a quem prestar contas quando a atividade travar, e para a busca achar pelos dois lados: procurar por um nome traz o que a pessoa faz e o que ela pediu. Se quem pediu está fora da equipe — um cliente, um parceiro —, deixe o campo vazio e escreva na descrição: chutar um nome de dentro seria inventar."},
  atividades:{t:"Atividades de comercial e marketing",
   a:"O que o time precisa fazer fora do funil: uma campanha, um material, uma lista para prospectar, uma apresentação a refazer. Quatro campos e nada mais — o que precisa ser feito, em que status está, de quem é e para quando. Clique em qualquer valor da linha para editar no lugar.",
-  b:"O status agrupa a lista: A fazer, Em andamento e Concluída. Concluídas saem da fila e ficam atrás do próprio cartão, com quem concluiu e quando — o número continua à vista, então nada fica escondido. Tudo o que está em aberto aqui também aparece no To Do da pessoa responsável, marcado como atividade: cadastrar e mover status é aqui, cobrar é lá. Sem data é estado legítimo para atividade nova, e é o cartão “sem data” que lembra de marcar — o painel não inventa prazo."},
+  b:"Esta tela é separada do To Do de propósito, e as duas não se misturam: o To Do é a fila que sai dos negócios — pendências, bloqueios e próximo passo, com etapa e frente por baixo. Aqui é trabalho que não pende de negócio nenhum, com área, prioridade e status próprios. Cada uma tem a sua régua; juntar as duas numa lista faria as duas mentirem. Sem data é estado legítimo para atividade nova, e é a pastilha “sem data de fim” que lembra de marcar — o painel não inventa prazo."},
  frenteConj:{t:"Frente conjugada",
   a:"Um negócio pode envolver mais de uma frente na mesma operação — Capital e Payments juntos, por exemplo. Marque aqui as outras, e ele passa a aparecer no filtro de cada uma delas.",
   b:"A frente PRINCIPAL continua mandando no funil: as etapas, a coluna do quadro e a regra de fechamento são as dela, porque etapa só existe dentro de um funil e a operação comercial é uma só. No quadro, o negócio aparece na faixa da principal mesmo quando você filtra por outra frente dele. E a soma: sem filtro ele conta uma vez; filtrando cada frente ele aparece nas duas, então somar os filtros passa do total. Dividir o valor entre frentes exigiria uma regra que não existe."},
@@ -6706,7 +6681,6 @@ document.addEventListener("click",e=>{
   marcar();toast(TEXTOS.ativ.excluiu);return;}
  /* Clicar numa linha também move o foco do teclado para ela. */
  if(el=g("[data-atrow]"))state.atSel=Number(el.dataset.atrow);
- if(el=g("[data-abreativ]")){irParaAtividade(el.dataset.abreativ,true);return;}
  if(el=g("[data-abre]")){abrirPainel({tipo:"deal",id:el.dataset.abre});return;}
  /* O "?" do cartão explica o indicador; o resto do cartão abre a lista. */
  if((el=g("[data-kpi]"))&&!t.closest("[data-hint]")){abrirPainel({tipo:"kpi",id:el.dataset.kpi});return;}
@@ -6963,10 +6937,7 @@ document.addEventListener("keydown",e=>{
   if(state.tela==="todo"&&!state.painel&&(k==="j"||k==="k"||tecla==="Enter")){
    if(!TODO_FOCO.length)return;
    if(tecla==="Enter"){
-    const alvo=state.todoSel>=0?TODO_FOCO[state.todoSel]:null;
-    if(alvo){e.preventDefault();
-     if(alvo.tipo==="ativ")irParaAtividade(alvo.id);
-     else abrirPainel({tipo:"deal",id:alvo.id});}
+    if(state.todoSel>=0){e.preventDefault();abrirPainel({tipo:"deal",id:TODO_FOCO[state.todoSel]});}
     return;}
    e.preventDefault();
    state.todoSel=Math.max(0,Math.min(TODO_FOCO.length-1,state.todoSel+(k==="j"?1:-1)));

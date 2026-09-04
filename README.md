@@ -327,9 +327,11 @@ entregue, ou cole um link que comprove (o cartão no Linear, o material, a pasta
 Reabrir exige o motivo por escrito — link não explica o que mudou. Tudo fica
 registrado com quem fez e quando, e nada é sobrescrito.
 
-Tudo o que está em aberto aqui também aparece no **To Do** da pessoa
-responsável, marcado como atividade, com o demandante na coluna de quem
-responde: cadastrar e mover status é na tela de Atividades, cobrar é no To Do.
+**Esta tela é separada do To Do, e as duas não se misturam.** O To Do é a fila
+que sai dos negócios — pendências, bloqueios e próximo passo, com etapa e frente
+por baixo. Atividades é trabalho que não pende de negócio nenhum, com área,
+prioridade e status próprios. Cada uma tem a sua régua; juntar as duas numa
+lista faria as duas mentirem.
 
 #### Agrupar e compartilhar
 
