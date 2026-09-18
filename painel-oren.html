@@ -1215,7 +1215,7 @@ const TEXTOS={
   ponderada:"Os mesmos negócios em aberto, cada um multiplicado pela chance de fechar.",
   fechado:"Negócios que fecharam dentro do período selecionado.",
   conversao:"O denominador da taxa: tudo que teve desfecho no período, fechado ou perdido."},
- vazio:{todoMinhas:"Nada no seu nome agora. Para ver o que está com o resto do time:",
+ vazio:{contas:"Nenhuma conta.",todoMinhas:"Nada no seu nome agora. Para ver o que está com o resto do time:",
   todoFiltro:"Nada neste estado. Toque no cartão aceso para ver o resto.",
   todo:"Nada em aberto com estes filtros. Se a base tem negócios, ou tudo tem próximo passo e nenhuma pendência, ou os filtros estão estreitos.",
   origem:"Nenhum cliente nasceu deste negócio ainda.",kpi:"Nenhum negócio compõe este número agora.",grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
@@ -5828,6 +5828,9 @@ function telaContas(){
     :'<div class="card"><div class="empty" style="border:0">Nenhuma conta.</div></div>';
    return h;
   }
+  /* Sem registro, a tabela ficaria só com o cabeçalho, que lê como defeito.
+     O celular já dizia isto; a tela grande não. */
+  if(!cs.length)return h+'<div class="card"><div class="empty" style="border:0">'+TEXTOS.vazio.contas+"</div></div>";
   h+='<div class="card tbl" style="padding:0"><table><thead><tr><th>Cliente</th><th>Tipo</th>'+
    '<th>'+esc(TEXTOS.publicoLbl)+'</th><th>'+esc(TEXTOS.origemLbl)+"</th>"+
    '<th>Frente</th><th>UF</th><th>Responsável</th><th>Negócios</th></tr></thead><tbody>'+
@@ -5846,6 +5849,9 @@ function telaContas(){
     :'<div class="card"><div class="empty" style="border:0">Nenhuma conta.</div></div>';
    return h;
   }
+  /* Sem registro, a tabela ficaria só com o cabeçalho, que lê como defeito.
+     O celular já dizia isto; a tela grande não. */
+  if(!ps.length)return h+'<div class="card"><div class="empty" style="border:0">'+TEXTOS.vazio.contas+"</div></div>";
   h+='<div class="card tbl" style="padding:0"><table><thead><tr><th>Parceiro</th><th>Frentes</th><th>Nível'+iconeHint("tier")+'</th><th>Situação</th><th>Responsável</th><th>Negócios</th></tr></thead><tbody>'+
    ps.map(p=>{const ds=negs(p);
     return '<tr class="clk" data-conta="parceiro:'+p.id+'"><td>'+esc(p.nome)+"</td><td>"+

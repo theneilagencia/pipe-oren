@@ -8,7 +8,7 @@ Não existe servidor. São três peças:
 |---|---|
 | `painel-oren.html` | o painel inteiro, um arquivo só, sem framework |
 | `supabase/schema.sql` | as tabelas e as regras de acesso, para colar no Supabase |
-| `carga-inicial.json` | os dados de partida: 43 parceiros, 4 clientes, 47 negócios |
+| `carga-inicial.json` | os dados de partida: 4 clientes e 4 negócios de Capital |
 
 O painel fala direto com o Supabase. Quem protege o dado são as regras de acesso
 do banco: **sem login, o banco recusa tudo** — não existe caminho para ler nem
@@ -53,7 +53,7 @@ navegador, e sozinha ela não abre nada — sem login, as regras do banco recusa
   forma.
 
 **5. Os dados.** Entre com uma conta editora e use **Importar** no menu, escolhendo
-`carga-inicial.json`. Isso grava os 47 negócios no banco, e todo mundo passa a
+`carga-inicial.json`. Isso grava os 4 negócios no banco, e todo mundo passa a
 ver. Faça uma vez só.
 
 O negócio da ata de 21/08/2026 (cliente `C-05` e negócio `N-048`) não precisa de
@@ -423,7 +423,7 @@ Tudo pelo painel do Supabase. Não precisa de terminal.
 inteiro → Run. Roda uma vez só.
 
 **2. Carregar os dados.** SQL Editor → New query → cole o
-`supabase/carga-inicial.sql` → Run. São os 43 parceiros, 4 clientes e 47
+`supabase/carga-inicial.sql` → Run. São os 4 clientes e os 4
 negócios. No fim ele mostra uma tabelinha com esses três números: se bater, deu
 certo. (Alternativa: pular este passo e usar **Importar** dentro do painel, com o
 `carga-inicial.json`.)
