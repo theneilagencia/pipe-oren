@@ -227,6 +227,13 @@ transition:border-color var(--fast) ease-out,background var(--fast) ease-out}
 .ci .t{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .ci .s{font-size:12px;color:var(--tx3);overflow-wrap:anywhere}
 /* ================= GRÁFICOS ================= */
+.brs{display:flex;flex-direction:column;gap:12px}
+.br .brt{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;justify-content:space-between;margin-bottom:5px}
+.br .brn{color:var(--tx2);min-width:0}
+.br .brv{color:var(--tx);white-space:nowrap;font-variant-numeric:tabular-nums}
+.br .brl{height:16px;background:var(--alt);border:1px solid var(--bd)}
+.br .brb{display:block;height:100%}
+.br.zero .brn,.br.zero .brv{color:var(--tx3)}
 .gsvg{display:block;width:100%;height:auto}
 .rosca{display:flex;flex-direction:column;gap:16px;min-width:0}
 .rosca>svg{width:100%;max-width:180px;height:auto;align-self:center;flex:0 0 auto}
@@ -1215,7 +1222,7 @@ const TEXTOS={
   ponderada:"Os mesmos negócios em aberto, cada um multiplicado pela chance de fechar.",
   fechado:"Negócios que fecharam dentro do período selecionado.",
   conversao:"O denominador da taxa: tudo que teve desfecho no período, fechado ou perdido."},
- vazio:{contas:"Nenhuma conta.",todoMinhas:"Nada no seu nome agora. Para ver o que está com o resto do time:",
+ vazio:{semNegocio:"nenhum negócio",contas:"Nenhuma conta.",todoMinhas:"Nada no seu nome agora. Para ver o que está com o resto do time:",
   todoFiltro:"Nada neste estado. Toque no cartão aceso para ver o resto.",
   todo:"Nada em aberto com estes filtros. Se a base tem negócios, ou tudo tem próximo passo e nenhuma pendência, ou os filtros estão estreitos.",
   origem:"Nenhum cliente nasceu deste negócio ainda.",kpi:"Nenhum negócio compõe este número agora.",grafico:"Nada para mostrar neste período.",atencao:"Nenhum negócio precisa de atenção agora.",lista:"Nenhum negócio com esses filtros.",hist:"Sem movimentações registradas.",
@@ -5208,26 +5215,22 @@ window.auditoria=auditoria;
 function barras(itens,total,porContagem){
  const base=porContagem?itens.reduce((a,i)=>a+(i.n||0),0):total;
  if(!itens.length||!base)return '<div class="empty">'+TEXTOS.vazio.grafico+"</div>";
- const cel=ehCel();
- const w=cel?320:560,lw=cel?0:140,rw=cel?0:(porContagem?230:200),bw=w-lw-rw,hb=cel?16:18,lin=cel?40:32;
- let s='<svg class="gsvg" viewBox="0 0 '+w+' '+(itens.length*lin)+'" width="100%" preserveAspectRatio="xMinYMin meet" role="img">';
- itens.forEach((it,i)=>{
-  const medida=porContagem?(it.n||0):it.valor;
-  const y=i*lin,len=Math.max(2,Math.round((medida/base)*bw));
-  const vlr=porContagem
-   ?it.n+(it.n===1?" negócio · ":" negócios · ")+(Number(it.valor)>0?brlV(it.valor):"valor a definir")
+ /* Rótulo e números numa linha, barra de largura cheia embaixo. Antes o rótulo
+    ficava numa coluna de 140px e a barra começava ali: nome de etapa maior que
+    isso era desenhado por baixo da barra. Nenhuma largura conserta layout de
+    coluna fixa com texto variável, então o texto ganhou a linha dele. */
+ return '<div class="brs">'+itens.map(it=>{
+  const medida=porContagem?(it.n||0):(Number(it.valor)||0);
+  const pct=Math.round((medida/base)*100);
+  const vlr=(porContagem&&!it.n)?TEXTOS.vazio.semNegocio
+   :porContagem?it.n+(it.n===1?" negócio · ":" negócios · ")+(Number(it.valor)>0?brlV(it.valor):TAG_VALOR)
    :it.n+" · "+brlV(it.valor);
-  if(cel){
-   s+='<text x="0" y="'+(y+12)+'" font-size="12" fill="#4a564f">'+esc(it.nome)+"</text>";
-   s+='<text x="'+w+'" y="'+(y+12)+'" text-anchor="end" font-size="12" fill="#1a1a1a">'+esc(vlr)+"</text>";
-   s+='<rect x="0" y="'+(y+18)+'" width="'+len+'" height="'+hb+'" fill="'+(it.cor||"#0e5351")+'"></rect>';
-  }else{
-   s+='<text x="0" y="'+(y+18)+'" font-size="13" fill="#4a564f">'+esc(it.nome)+"</text>";
-   s+='<rect x="'+lw+'" y="'+(y+6)+'" width="'+len+'" height="'+hb+'" fill="'+(it.cor||"#0e5351")+'"></rect>';
-   s+='<text x="'+(lw+bw+8)+'" y="'+(y+18)+'" font-size="13" fill="#1a1a1a">'+esc(vlr)+"</text>";
-  }
- });
- return s+"</svg>";
+  return '<div class="br'+(medida?"":" zero")+'">'+
+   '<div class="brt"><span class="brn">'+esc(it.nome)+'</span>'+
+   '<span class="brv">'+esc(vlr)+"</span></div>"+
+   '<div class="brl">'+(medida?'<span class="brb" style="width:'+Math.max(1,pct)+
+     "%;background:"+(it.cor||"#0e5351")+'"></span>':"")+"</div></div>";
+ }).join("")+"</div>";
 }
 function rosca(itens){
  const tot=itens.reduce((s,i)=>s+i.valor,0);
@@ -5654,7 +5657,7 @@ function telaPainel(){
   const itens=FUNIS[fr].slice(0,CORTE[fr].ganho-1).map((nome,i)=>{
    const a=abertos.filter(d=>Number(d.etapa)===i+1);
    return{nome:(i+1)+" · "+nome,n:a.length,valor:a.reduce((s,d)=>s+(+d.valor||0),0),cor:CORF[fr]};
-  }).filter(x=>x.n);
+  });   /* etapa sem negócio fica na lista: o buraco no funil é o que se quer ver */
   return '<div class="fun"><div class="lbl" style="margin:0 0 8px"><span class="dot" style="background:'+
    CORF[fr]+'"></span>'+esc(TEXTOS.frentesLbl[fr])+"</div>"+
    barras(itens,itens.reduce((t,i)=>t+i.valor,0),true)+"</div>";
