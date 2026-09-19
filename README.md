@@ -181,12 +181,15 @@ resultado na branch **`gh-pages`** — isso acontece sempre, sem segredo nenhum.
 
 | Destino | Como recebe o que está no repositório | O que fica no ar |
 |---|---|---|
-| Vercel (oficial) | ligando o projeto ao repositório em *vercel.com → crm-oren → Settings → Git*, **ou** com `VERCEL_TOKEN`, `VERCEL_ORG_ID` e `VERCEL_PROJECT_ID` nos segredos do repositório, **ou** `./publicar.sh` na mão | painel, `/admin` e `api/admin.js` |
+| Vercel (oficial) | já ligado ao repositório: todo push no `main` publica sozinho. `./publicar.sh` continua existindo como reserva, para quando o Git estiver fora do ar | painel, `/admin` e `api/admin.js` |
 | GitHub Pages | já ligado em *Settings → Pages → Source: GitHub Actions* | painel e `/admin`, sem a função de servidor |
 
-Enquanto o Vercel não estiver ligado ao repositório, ele fica na versão do último
-`./publicar.sh` que alguém rodou — e foi assim que ele ficou semanas atrás do
-repositório. O Pages serve de conferência: ele sempre tem o `main`.
+O Pages serve de conferência: ele sempre tem o `main`.
+
+`./publicar.sh` sai sem fazer nada quando o endereço já serve o commit deste
+clone, que é o caso normal agora que o Git publica sozinho. Para publicar assim
+mesmo, `./publicar.sh --forcar`. E `./publicar.sh --conferir` só compara, sem
+publicar: é o comando para responder "isto já está no ar?".
 
 ### Ligar o Vercel ao repositório
 

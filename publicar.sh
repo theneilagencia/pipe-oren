@@ -14,6 +14,10 @@ ENDERECO=${ENDERECO:-https://crm-oren.vercel.app}
 # Le o selo de versao da pagina que esta no ar. Existe porque "publiquei e nao
 # mudou nada" precisa de uma resposta que nao seja opiniao: ou o selo do ar e' o
 # do commit, ou nao e'.
+# So o commit do selo. O resto e' data, e data do build do Git nunca vai bater
+# com a do relogio de quem roda isto aqui.
+sha_do_selo() { printf %s "${1%% *}"; }
+
 selo_no_ar() {
   curl -fsS -H "Cache-Control: no-cache" "$ENDERECO/?c=$$$(date +%s)" 2>/dev/null \
     | grep -o 'const VERSAO="[^"]*"' | head -1 | sed -e 's/^const VERSAO="//' -e 's/"$//'
@@ -36,7 +40,23 @@ if [ "$1" = "--conferir" ]; then
   exit 0
 fi
 
+FORCAR=""
+if [ "$1" = "--forcar" ]; then FORCAR=1; shift; fi
 PASTA=${1:-$HOME/painel-oren}
+
+# O Vercel publica sozinho a cada push no main. Entao, antes de montar pasta e
+# chamar a CLI, olha se o ar ja esta neste commit: era isto que faltava para
+# "publiquei e deu erro" nao aparecer quando nao havia nada a publicar.
+if [ -z "$FORCAR" ]; then
+  AQUI=$(cd "$REPO" && git rev-parse --short HEAD 2>/dev/null || echo sem-git)
+  AR=$(selo_no_ar || true)
+  if [ -n "$AR" ] && [ "$(sha_do_selo "$AR")" = "$AQUI" ]; then
+    echo "O ar ja esta em $AQUI, publicado em \"$AR\"."
+    echo "Nada a publicar. O Vercel recebe sozinho a cada push no main."
+    echo "Para publicar assim mesmo: ./publicar.sh --forcar"
+    exit 0
+  fi
+fi
 
 # Antes de qualquer copia, trazer o repositorio para o dia. A causa mais comum
 # de "publiquei e nao mudou nada" e' deploy de um clone atrasado: o arquivo que
@@ -99,15 +119,21 @@ cd "$PASTA"
 CLI=${VERCEL_CLI:-vercel@59.3.0}
 
 # set -e mataria o script antes da mensagem de ajuda abaixo.
+SAIDA=$(mktemp)
 set +e
+# NO_UPDATE_NOTIFIER: sem isto a CLI oferece atualizacao no meio do deploy, e foi
+# assim que um "Error: Not authorized" terminou devolvendo codigo 0.
 if [ -n "$VERCEL_TOKEN" ]; then
   # Caminho do CI: token no ambiente, nenhuma pergunta.
-  npx --yes "$CLI" --prod --yes --token "$VERCEL_TOKEN"
+  NO_UPDATE_NOTIFIER=1 npx --yes "$CLI" --prod --yes --token "$VERCEL_TOKEN" 2>&1 | tee "$SAIDA"
 else
-  npx --yes "$CLI" --prod
+  NO_UPDATE_NOTIFIER=1 npx --yes "$CLI" --prod 2>&1 | tee "$SAIDA"
 fi
 CODIGO=$?
 set -e
+# Codigo de saida nao basta: a CLI ja imprimiu "Error: Not authorized" e saiu 0.
+if grep -qiE "^Error:|Not authorized|no longer available" "$SAIDA"; then CODIGO=1; fi
+rm -f "$SAIDA"
 if [ "$CODIGO" -ne 0 ]; then
   echo
   echo "O deploy nao saiu (codigo $CODIGO)."
@@ -138,6 +164,12 @@ while [ "$TENTATIVA" -le 6 ]; do
   [ "$TENTATIVA" -le 6 ] && sleep 5
 done
 echo
+if [ -n "$AR" ] && [ "$(sha_do_selo "$AR")" = "$(sha_do_selo "$SELO")" ]; then
+  echo "O endereco ja serve este commit, $(sha_do_selo "$SELO"), publicado pelo Git."
+  echo "  no ar: $AR"
+  echo "A unica diferenca e' a data do selo, que vem do build de la."
+  exit 0
+fi
 echo "O deploy saiu, mas o endereco continua servindo outra versao."
 echo "  aqui:  $SELO"
 echo "  no ar: ${AR:-nao consegui ler}"
