@@ -156,6 +156,9 @@ select 'registros ainda no nome deles (tem de ser 0)', 0,
          where pg_temp.sai(r->>'responsavel'))
   from public.pipeline p where p.id = 1
 union all
+select 'PARA VOLTAR ATRÁS: restaure esta versão', a.versao, a.versao
+  from _antes a
+union all
 select 'no histórico, "movido por" com o nome deles (não mexo)', 0,
        (select count(*)::int from jsonb_array_elements(p.dados->'deals') d,
                jsonb_array_elements(coalesce(d->'historico','[]'::jsonb)) hh
