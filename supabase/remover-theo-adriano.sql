@@ -2,176 +2,140 @@
 -- Oren · remover Theo e Adriano
 -- Cole no SQL Editor do Supabase e execute UMA vez.
 -- =============================================================================
--- Tira as duas pessoas da lista de responsáveis e apaga o que estava no nome
--- delas: atividades e pendências. Também limpa as citações nominais em notas e
--- em textos de apoio de atividades que ficam.
+-- Apaga negócio, conta, atividade e pendência no nome dos dois, tira os nomes
+-- da lista de responsáveis e limpa as citações em notas e textos de apoio.
 --
--- Apaga também negócio e conta no nome deles. Isto é destrutivo: uma
--- oportunidade comercial some junto com a pessoa. É o que foi pedido depois de
--- a primeira versão deixar esses registros de pé e eles continuarem na tela.
+-- Isto é destrutivo: a carteira pode estar num nome só. Rode antes o
+-- conferir-remocao.sql, que lista o que vai sair e não altera nada.
 --
--- O histórico NÃO é reescrito. Se o nome deles aparece num "movido por", aquilo
--- é registro do que aconteceu, e o relatório do fim conta quantos são para você
--- decidir. Apagar histórico para limpar a tela é falsificar o passado.
+-- Tudo numa instrução só, de propósito: sem tabela temporária e sem função
+-- auxiliar. No SQL Editor do Supabase a sessão é agrupada, e objeto temporário
+-- pode não sobreviver entre instruções -- o script quebraria no meio, depois de
+-- já ter mudado parte do dado. Uma instrução ou muda tudo, ou não muda nada.
 --
--- Antes de rodar: use Exportar no painel. O gatilho também arquiva a versão
--- anterior em pipeline_historico, e o rodapé traz o comando de volta.
+-- O histórico não é reescrito: "movido por" é registro do que aconteceu. O
+-- relatório conta quantos são, para você decidir em separado.
+--
+-- Antes de rodar: Exportar no painel. O gatilho também arquiva a versão
+-- anterior em pipeline_historico, e o relatório diz qual restaurar.
 
-create or replace function pg_temp.sai(nome text) returns boolean
-language sql immutable as $$ select nome in ('Theo','Adriano') $$;
-
--- Tira o nome das citações, preservando o resto da frase.
-create or replace function pg_temp.limpa_texto(t text) returns text
-language sql immutable as $$
-  select nullif(trim(regexp_replace(regexp_replace(regexp_replace(coalesce(t,''),
-    '\s*(Theo|Adriano) é quem [^.]*\.', '', 'g'),
-    '(Apoio:\s*)(Theo|Adriano),\s*', '\1', 'g'),
-    ',?\s*(e\s+)?(Theo|Adriano)(,|\.|\s|$)', '\3', 'g')), '')
-$$;
-
-create temp table _antes as
-select jsonb_array_length(coalesce(dados->'atividades','[]'::jsonb)) as atividades,
-       (select count(*) from jsonb_array_elements(dados->'deals') d,
-               jsonb_array_elements(coalesce(d->'pendencias','[]'::jsonb)) p
-         where pg_temp.sai(p->>'responsavel')) as pendencias,
-       jsonb_array_length(coalesce(dados->'responsaveis','[]'::jsonb)) as responsaveis,
-       jsonb_array_length(dados->'deals') as negocios,
-       jsonb_array_length(dados->'customers') as clientes,
-       jsonb_array_length(dados->'partners') as parceiros,
-       versao
-  from public.pipeline where id = 1;
-
-with atual as (select dados from public.pipeline where id = 1),
-ativ as (
-  select coalesce(jsonb_agg(
-           jsonb_set(e,'{descricao}', to_jsonb(coalesce(pg_temp.limpa_texto(e->>'descricao'),'')))
-           order by ord),'[]'::jsonb) as v
-    from atual, jsonb_array_elements(coalesce(dados->'atividades','[]'::jsonb))
-         with ordinality as t(e, ord)
-   where not pg_temp.sai(e->>'responsavel')
+with antes as (
+  select dados as d0, versao as v0 from public.pipeline where id = 1
 ),
+-- Atividades: as deles saem; nas que ficam, o nome sai do texto de apoio.
+ativ as (
+  select coalesce(jsonb_agg(jsonb_set(e,'{descricao}',
+           to_jsonb(coalesce(nullif(trim(regexp_replace(regexp_replace(regexp_replace(
+       coalesce(e->>'descricao',''),
+       '\s*(Theo|Adriano) é quem [^.]*\.', '', 'g'),
+       '(Apoio:\s*)(Theo|Adriano),\s*', '\1', 'g'),
+       ',?\s*(e\s+)?(Theo|Adriano)(,|\.|\s|$)', '\3', 'g')), ''),''))) order by ord),'[]'::jsonb) as v
+    from antes, jsonb_array_elements(coalesce(d0->'atividades','[]'::jsonb))
+         with ordinality as t(e, ord)
+   where not (e->>'responsavel') in ('Theo','Adriano')
+),
+-- Contas deles saem; nas que ficam, o nome sai da nota.
+conts as (
+  select coalesce(jsonb_agg(jsonb_set(e,'{notas}',
+           to_jsonb(coalesce(nullif(trim(regexp_replace(regexp_replace(regexp_replace(
+       coalesce(e->>'notas',''),
+       '\s*(Theo|Adriano) é quem [^.]*\.', '', 'g'),
+       '(Apoio:\s*)(Theo|Adriano),\s*', '\1', 'g'),
+       ',?\s*(e\s+)?(Theo|Adriano)(,|\.|\s|$)', '\3', 'g')), ''),''))) order by ord),'[]'::jsonb) as v
+    from antes, jsonb_array_elements(d0->'customers') with ordinality as t(e, ord)
+   where not (e->>'responsavel') in ('Theo','Adriano')
+),
+parcs as (
+  select coalesce(jsonb_agg(jsonb_set(e,'{notas}',
+           to_jsonb(coalesce(nullif(trim(regexp_replace(regexp_replace(regexp_replace(
+       coalesce(e->>'notas',''),
+       '\s*(Theo|Adriano) é quem [^.]*\.', '', 'g'),
+       '(Apoio:\s*)(Theo|Adriano),\s*', '\1', 'g'),
+       ',?\s*(e\s+)?(Theo|Adriano)(,|\.|\s|$)', '\3', 'g')), ''),''))) order by ord),'[]'::jsonb) as v
+    from antes, jsonb_array_elements(d0->'partners') with ordinality as t(e, ord)
+   where not (e->>'responsavel') in ('Theo','Adriano')
+),
+ids_cli as (select jsonb_array_elements(v)->>'id' as id from conts),
+ids_par as (select jsonb_array_elements(v)->>'id' as id from parcs),
+-- Negócios deles saem. Nos que ficam: pendência deles sai, nome sai da nota, e
+-- referência para conta que saiu vira vazia, senão o painel mostraria o título
+-- do negócio no lugar do nome da conta.
 negs as (
   select coalesce(jsonb_agg(
            jsonb_set(
-             jsonb_set(e,'{pendencias}',
-               coalesce((select jsonb_agg(p order by o)
-                           from jsonb_array_elements(coalesce(e->'pendencias','[]'::jsonb))
-                                with ordinality as q(p,o)
-                          where not pg_temp.sai(p->>'responsavel')), '[]'::jsonb)),
-             '{notas}', to_jsonb(coalesce(pg_temp.limpa_texto(e->>'notas'),'')))
+             jsonb_set(
+               jsonb_set(
+                 jsonb_set(e,'{pendencias}',
+                   coalesce((select jsonb_agg(p order by o)
+                               from jsonb_array_elements(coalesce(e->'pendencias','[]'::jsonb))
+                                    with ordinality as q(p,o)
+                              where not (p->>'responsavel') in ('Theo','Adriano')), '[]'::jsonb)),
+                 '{notas}', to_jsonb(coalesce(nullif(trim(regexp_replace(regexp_replace(regexp_replace(
+       coalesce(e->>'notas',''),
+       '\s*(Theo|Adriano) é quem [^.]*\.', '', 'g'),
+       '(Apoio:\s*)(Theo|Adriano),\s*', '\1', 'g'),
+       ',?\s*(e\s+)?(Theo|Adriano)(,|\.|\s|$)', '\3', 'g')), ''),''))),
+               '{clienteId}',
+               case when e->>'clienteId' is not null
+                     and not exists (select 1 from ids_cli where id = e->>'clienteId')
+                    then 'null'::jsonb else coalesce(e->'clienteId','null'::jsonb) end),
+             '{parceiroId}',
+             case when e->>'parceiroId' is not null
+                   and not exists (select 1 from ids_par where id = e->>'parceiroId')
+                  then 'null'::jsonb else coalesce(e->'parceiroId','null'::jsonb) end)
            order by ord),'[]'::jsonb) as v
-    from atual, jsonb_array_elements(dados->'deals') with ordinality as t(e, ord)
-   where not pg_temp.sai(e->>'responsavel')
-),
-conts as (
-  select coalesce(jsonb_agg(
-           jsonb_set(e,'{notas}', to_jsonb(coalesce(pg_temp.limpa_texto(e->>'notas'),'')))
-           order by ord),'[]'::jsonb) as v
-    from atual, jsonb_array_elements(dados->'customers') with ordinality as t(e, ord)
-   where not pg_temp.sai(e->>'responsavel')
-),
-parcs as (
-  select coalesce(jsonb_agg(
-           jsonb_set(e,'{notas}', to_jsonb(coalesce(pg_temp.limpa_texto(e->>'notas'),'')))
-           order by ord),'[]'::jsonb) as v
-    from atual, jsonb_array_elements(dados->'partners') with ordinality as t(e, ord)
-   where not pg_temp.sai(e->>'responsavel')
+    from antes, jsonb_array_elements(d0->'deals') with ordinality as t(e, ord)
+   where not (e->>'responsavel') in ('Theo','Adriano')
 ),
 resp as (
   select coalesce(jsonb_agg(to_jsonb(r) order by ord),'[]'::jsonb) as v
-    from atual, jsonb_array_elements_text(coalesce(dados->'responsaveis','[]'::jsonb))
+    from antes, jsonb_array_elements_text(coalesce(d0->'responsaveis','[]'::jsonb))
          with ordinality as t(r, ord)
-   where not pg_temp.sai(r)
+   where r not in ('Theo','Adriano')
+),
+novo as (
+  select jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(
+           d0,'{atividades}',(select v from ativ)),
+           '{deals}',(select v from negs)),
+           '{customers}',(select v from conts)),
+           '{partners}',(select v from parcs)),
+           '{responsaveis}',(select v from resp)) as v
+    from antes
+),
+gravado as (
+  update public.pipeline p set dados = (select v from novo)
+   where p.id = 1
+  returning p.dados as d1, p.versao as v1
 )
-update public.pipeline
-   set dados = jsonb_set(
-                 jsonb_set(
-                   jsonb_set(
-                     jsonb_set(
-                       jsonb_set(dados,'{atividades}',(select v from ativ)),
-                       '{deals}',(select v from negs)),
-                     '{customers}',(select v from conts)),
-                   '{partners}',(select v from parcs)),
-                 '{responsaveis}',(select v from resp))
- where id = 1;
+select x.registro, x.antes, x.depois
+  from antes a, gravado g,
+  lateral (values
+    ('negócios',        jsonb_array_length(a.d0->'deals'),      jsonb_array_length(g.d1->'deals')),
+    ('clientes',        jsonb_array_length(a.d0->'customers'),  jsonb_array_length(g.d1->'customers')),
+    ('parceiros',       jsonb_array_length(a.d0->'partners'),   jsonb_array_length(g.d1->'partners')),
+    ('atividades',      jsonb_array_length(coalesce(a.d0->'atividades','[]'::jsonb)),
+                        jsonb_array_length(coalesce(g.d1->'atividades','[]'::jsonb))),
+    ('nomes na lista de responsáveis',
+                        jsonb_array_length(coalesce(a.d0->'responsaveis','[]'::jsonb)),
+                        jsonb_array_length(coalesce(g.d1->'responsaveis','[]'::jsonb))),
+    ('registros ainda no nome deles (tem de ser 0)', 0,
+      (select count(*)::int from jsonb_array_elements(
+         (g.d1->'deals') || (g.d1->'customers') || (g.d1->'partners')
+         || coalesce(g.d1->'atividades','[]'::jsonb)) r
+        where (r->>'responsavel') in ('Theo','Adriano'))),
+    ('pendências ainda no nome deles (tem de ser 0)', 0,
+      (select count(*)::int from jsonb_array_elements(g.d1->'deals') d,
+              jsonb_array_elements(coalesce(d->'pendencias','[]'::jsonb)) q
+        where (q->>'responsavel') in ('Theo','Adriano'))),
+    ('no histórico, "movido por" com o nome deles (não mexo)', 0,
+      (select count(*)::int from jsonb_array_elements(g.d1->'deals') d,
+              jsonb_array_elements(coalesce(d->'historico','[]'::jsonb)) h
+        where (h->>'quem') in ('Theo','Adriano'))),
+    ('PARA VOLTAR ATRÁS: restaure esta versão', a.v0, a.v0)
+  ) as x(registro, antes, depois);
 
--- Conta que saiu deixa referência órfã em negócio que ficou. Apontar para quem
--- não existe faria o painel exibir o título do negócio como se fosse a conta.
-update public.pipeline p
-   set dados = jsonb_set(dados, '{deals}', coalesce((
-     select jsonb_agg(
-       case when d->>'clienteId' is not null and not exists (
-              select 1 from jsonb_array_elements(p.dados->'customers') c
-               where c->>'id' = d->>'clienteId')
-            then jsonb_set(d,'{clienteId}','null'::jsonb) else d end
-       order by o)
-       from jsonb_array_elements(p.dados->'deals') with ordinality as t(d,o)),'[]'::jsonb))
- where id = 1;
-
-update public.pipeline p
-   set dados = jsonb_set(dados, '{deals}', coalesce((
-     select jsonb_agg(
-       case when d->>'parceiroId' is not null and not exists (
-              select 1 from jsonb_array_elements(p.dados->'partners') q
-               where q->>'id' = d->>'parceiroId')
-            then jsonb_set(d,'{parceiroId}','null'::jsonb) else d end
-       order by o)
-       from jsonb_array_elements(p.dados->'deals') with ordinality as t(d,o)),'[]'::jsonb))
- where id = 1;
-
--- =============================================================================
--- Conferência
--- =============================================================================
-select 'atividades' as registro, a.atividades as antes,
-       jsonb_array_length(coalesce(p.dados->'atividades','[]'::jsonb)) as depois
-  from _antes a, public.pipeline p where p.id = 1
-union all
-select 'pendências no nome deles', a.pendencias,
-       (select count(*)::int from jsonb_array_elements(p.dados->'deals') d,
-               jsonb_array_elements(coalesce(d->'pendencias','[]'::jsonb)) q
-         where pg_temp.sai(q->>'responsavel'))
-  from _antes a, public.pipeline p where p.id = 1
-union all
-select 'nomes na lista de responsáveis', a.responsaveis,
-       jsonb_array_length(coalesce(p.dados->'responsaveis','[]'::jsonb))
-  from _antes a, public.pipeline p where p.id = 1
-union all
-select 'menções que sobraram no texto', 0,
-       (select count(*)::int from regexp_matches(p.dados::text,'Theo|Adriano','g'))
-  from public.pipeline p where p.id = 1
-union all
-select 'negócios', a.negocios, jsonb_array_length(p.dados->'deals')
-  from _antes a, public.pipeline p where p.id = 1
-union all
-select 'clientes', a.clientes, jsonb_array_length(p.dados->'customers')
-  from _antes a, public.pipeline p where p.id = 1
-union all
-select 'parceiros', a.parceiros, jsonb_array_length(p.dados->'partners')
-  from _antes a, public.pipeline p where p.id = 1
-union all
-select 'registros ainda no nome deles (tem de ser 0)', 0,
-       (select count(*)::int from jsonb_array_elements(
-          p.dados->'deals'||p.dados->'customers'||p.dados->'partners'
-          ||coalesce(p.dados->'atividades','[]'::jsonb)) r
-         where pg_temp.sai(r->>'responsavel'))
-  from public.pipeline p where p.id = 1
-union all
-select 'PARA VOLTAR ATRÁS: restaure esta versão', a.versao, a.versao
-  from _antes a
-union all
-select 'no histórico, "movido por" com o nome deles (não mexo)', 0,
-       (select count(*)::int from jsonb_array_elements(p.dados->'deals') d,
-               jsonb_array_elements(coalesce(d->'historico','[]'::jsonb)) hh
-         where pg_temp.sai(hh->>'quem'))
-  from public.pipeline p where p.id = 1;
-
--- Os ids, se sobrou algum:
---   select d->>'id', d->>'titulo' from public.pipeline p,
---          jsonb_array_elements(p.dados->'deals') d
---    where d->>'responsavel' in ('Theo','Adriano') and p.id=1;
---
--- Para voltar atrás, troque N pela versão que aparece em "antes":
+-- Para voltar atrás, com o número que o relatório mostrou na última linha:
 --   update public.pipeline
 --      set dados = (select dados from public.pipeline_historico
---                    where versao = N order by id desc limit 1)
+--                    where versao = <aquele numero> order by id desc limit 1)
 --    where id = 1;
