@@ -6,10 +6,13 @@
 -- delas: atividades e pendências. Também limpa as citações nominais em notas e
 -- em textos de apoio de atividades que ficam.
 --
--- O que este script NÃO faz, de propósito: apagar negócio ou conta que esteja
--- no nome de um dos dois. Apagar uma oportunidade comercial porque o dono saiu
--- é perder a operação, não a pessoa. Se houver algum, o relatório do fim mostra
--- o id para você reatribuir na tela.
+-- Apaga também negócio e conta no nome deles. Isto é destrutivo: uma
+-- oportunidade comercial some junto com a pessoa. É o que foi pedido depois de
+-- a primeira versão deixar esses registros de pé e eles continuarem na tela.
+--
+-- O histórico NÃO é reescrito. Se o nome deles aparece num "movido por", aquilo
+-- é registro do que aconteceu, e o relatório do fim conta quantos são para você
+-- decidir. Apagar histórico para limpar a tela é falsificar o passado.
 --
 -- Antes de rodar: use Exportar no painel. O gatilho também arquiva a versão
 -- anterior em pipeline_historico, e o rodapé traz o comando de volta.
@@ -32,6 +35,9 @@ select jsonb_array_length(coalesce(dados->'atividades','[]'::jsonb)) as atividad
                jsonb_array_elements(coalesce(d->'pendencias','[]'::jsonb)) p
          where pg_temp.sai(p->>'responsavel')) as pendencias,
        jsonb_array_length(coalesce(dados->'responsaveis','[]'::jsonb)) as responsaveis,
+       jsonb_array_length(dados->'deals') as negocios,
+       jsonb_array_length(dados->'customers') as clientes,
+       jsonb_array_length(dados->'partners') as parceiros,
        versao
   from public.pipeline where id = 1;
 
@@ -55,12 +61,21 @@ negs as (
              '{notas}', to_jsonb(coalesce(pg_temp.limpa_texto(e->>'notas'),'')))
            order by ord),'[]'::jsonb) as v
     from atual, jsonb_array_elements(dados->'deals') with ordinality as t(e, ord)
+   where not pg_temp.sai(e->>'responsavel')
 ),
 conts as (
   select coalesce(jsonb_agg(
            jsonb_set(e,'{notas}', to_jsonb(coalesce(pg_temp.limpa_texto(e->>'notas'),'')))
            order by ord),'[]'::jsonb) as v
     from atual, jsonb_array_elements(dados->'customers') with ordinality as t(e, ord)
+   where not pg_temp.sai(e->>'responsavel')
+),
+parcs as (
+  select coalesce(jsonb_agg(
+           jsonb_set(e,'{notas}', to_jsonb(coalesce(pg_temp.limpa_texto(e->>'notas'),'')))
+           order by ord),'[]'::jsonb) as v
+    from atual, jsonb_array_elements(dados->'partners') with ordinality as t(e, ord)
+   where not pg_temp.sai(e->>'responsavel')
 ),
 resp as (
   select coalesce(jsonb_agg(to_jsonb(r) order by ord),'[]'::jsonb) as v
@@ -72,10 +87,36 @@ update public.pipeline
    set dados = jsonb_set(
                  jsonb_set(
                    jsonb_set(
-                     jsonb_set(dados,'{atividades}',(select v from ativ)),
-                     '{deals}',(select v from negs)),
-                   '{customers}',(select v from conts)),
+                     jsonb_set(
+                       jsonb_set(dados,'{atividades}',(select v from ativ)),
+                       '{deals}',(select v from negs)),
+                     '{customers}',(select v from conts)),
+                   '{partners}',(select v from parcs)),
                  '{responsaveis}',(select v from resp))
+ where id = 1;
+
+-- Conta que saiu deixa referência órfã em negócio que ficou. Apontar para quem
+-- não existe faria o painel exibir o título do negócio como se fosse a conta.
+update public.pipeline p
+   set dados = jsonb_set(dados, '{deals}', coalesce((
+     select jsonb_agg(
+       case when d->>'clienteId' is not null and not exists (
+              select 1 from jsonb_array_elements(p.dados->'customers') c
+               where c->>'id' = d->>'clienteId')
+            then jsonb_set(d,'{clienteId}','null'::jsonb) else d end
+       order by o)
+       from jsonb_array_elements(p.dados->'deals') with ordinality as t(d,o)),'[]'::jsonb))
+ where id = 1;
+
+update public.pipeline p
+   set dados = jsonb_set(dados, '{deals}', coalesce((
+     select jsonb_agg(
+       case when d->>'parceiroId' is not null and not exists (
+              select 1 from jsonb_array_elements(p.dados->'partners') q
+               where q->>'id' = d->>'parceiroId')
+            then jsonb_set(d,'{parceiroId}','null'::jsonb) else d end
+       order by o)
+       from jsonb_array_elements(p.dados->'deals') with ordinality as t(d,o)),'[]'::jsonb))
  where id = 1;
 
 -- =============================================================================
@@ -99,14 +140,26 @@ select 'menções que sobraram no texto', 0,
        (select count(*)::int from regexp_matches(p.dados::text,'Theo|Adriano','g'))
   from public.pipeline p where p.id = 1
 union all
-select 'NEGÓCIOS ainda no nome deles (reatribua na tela)', 0,
-       (select count(*)::int from jsonb_array_elements(p.dados->'deals') d
-         where pg_temp.sai(d->>'responsavel'))
+select 'negócios', a.negocios, jsonb_array_length(p.dados->'deals')
+  from _antes a, public.pipeline p where p.id = 1
+union all
+select 'clientes', a.clientes, jsonb_array_length(p.dados->'customers')
+  from _antes a, public.pipeline p where p.id = 1
+union all
+select 'parceiros', a.parceiros, jsonb_array_length(p.dados->'partners')
+  from _antes a, public.pipeline p where p.id = 1
+union all
+select 'registros ainda no nome deles (tem de ser 0)', 0,
+       (select count(*)::int from jsonb_array_elements(
+          p.dados->'deals'||p.dados->'customers'||p.dados->'partners'
+          ||coalesce(p.dados->'atividades','[]'::jsonb)) r
+         where pg_temp.sai(r->>'responsavel'))
   from public.pipeline p where p.id = 1
 union all
-select 'CONTAS ainda no nome deles (reatribua na tela)', 0,
-       (select count(*)::int from jsonb_array_elements(p.dados->'customers'||p.dados->'partners') c
-         where pg_temp.sai(c->>'responsavel'))
+select 'no histórico, "movido por" com o nome deles (não mexo)', 0,
+       (select count(*)::int from jsonb_array_elements(p.dados->'deals') d,
+               jsonb_array_elements(coalesce(d->'historico','[]'::jsonb)) hh
+         where pg_temp.sai(hh->>'quem'))
   from public.pipeline p where p.id = 1;
 
 -- Os ids, se sobrou algum:
