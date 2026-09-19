@@ -82,7 +82,7 @@ insert into public.pipeline (id) values (1) on conflict (id) do nothing;
 -- Quando você criar uma pessoa em Authentication → Users, o perfil nasce junto.
 --
 -- No formulário do Supabase existe o campo "User Metadata". Se você preencher
---   {"nome": "Adriano", "papel": "leitor"}
+--   {"nome": "Ana", "papel": "leitor"}
 -- o perfil nasce com esse nome e esse papel. Deixando em branco, o nome sai do
 -- e-mail e o papel é editor.
 --

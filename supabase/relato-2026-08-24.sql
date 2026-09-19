@@ -50,7 +50,7 @@ update public.pipeline set dados = jsonb_set(dados,'{customers}',(dados->'custom
   "status": "",
   "porte": "",
   "receitaRecorrente": 0,
-  "notas": "Razão social e CNPJ não informados. Theo é quem detém o detalhe da negociação.",
+  "notas": "Razão social e CNPJ não informados.",
   "exemplo": false,
   "criadoEm": "2026-08-24",
   "atualizadoEm": "2026-08-24",
@@ -269,14 +269,7 @@ update public.pipeline set dados = jsonb_set(dados,'{deals}',(dados->'deals') ||
   "prazo": "",
   "chance": "",
   "pendencias": [
-   {
-    "id": "PD-A50",
-    "texto": "Esclarecer o estágio e o objeto da negociação do Shopping Oiapoque.",
-    "responsavel": "Theo",
-    "prazo": "",
-    "bloqueante": true,
-    "resolvida": false
-   },
+   
    {
     "id": "PD-B50",
     "texto": "Definir valor e estrutura da operação.",
@@ -378,7 +371,7 @@ update public.pipeline set dados = jsonb_set(dados,'{deals}',(dados->'deals') ||
    "validadeAte": ""
   },
   "motivoPerda": "",
-  "notas": "Em negociação, segundo o relato. Theo é quem sabe esclarecer.\nOrigem: relato de Vinícius em 24/08/2026. Campo sem base no relato fica vazio. Nada aqui foi calculado ou inferido além do que está escrito nas notas.",
+  "notas": "Em negociação, segundo o relato.\nOrigem: relato de Vinícius em 24/08/2026. Campo sem base no relato fica vazio. Nada aqui foi calculado ou inferido além do que está escrito nas notas.",
   "tags": [
    "revisar-cadastro"
   ],

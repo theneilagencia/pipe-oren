@@ -183,7 +183,7 @@ const guardar=s=>{try{s?localStorage.setItem(SESSAO,JSON.stringify(s)):localStor
 
 const SECOES=[["pessoas","Pessoas e acessos"],["responsaveis","Responsáveis"]];
 /* Os mesmos quatro que o painel usa quando o documento não traz lista. */
-const RESPS_PADRAO=["Paulo","Theo","Adriano","Adolfo"];
+const RESPS_PADRAO=["Paulo","Adolfo"];
 const state={eu:null,pessoas:[],busca:"",aberta:null,carregando:true,aviso:null,ocupado:false,
  secao:"pessoas",
  /* Responsaveis nao sao contas de acesso: sao os nomes que aparecem nos

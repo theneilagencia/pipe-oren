@@ -1285,7 +1285,7 @@ const CHECKETAPAS={payments:[3,4]};
 const CORF={payments:"#affa57",capital:"#62cc6d"};
 const CLIENTE_NOVO="__novo";   /* valor sentinela do select de cliente */
 const TAG_VALOR="valor a definir";
-const RESPS_PADRAO=["Paulo","Theo","Adriano","Adolfo"];
+const RESPS_PADRAO=["Paulo","Adolfo"];
 /* Mesma referência de array a vida toda: o Admin grava a lista em
    dados.responsaveis e aqui ela é trocada no lugar, sem tocar em quem usa. */
 const RESPS=RESPS_PADRAO.slice();
@@ -1814,14 +1814,6 @@ const CARGA_ATA={
     "resolvida": false
    },
    {
-    "id": "PD-R9WBT2",
-    "texto": "Contraparte de stablecoin BRL não definida. A ata usa BRID e Bridge de forma intercambiável e são contrapartes distintas. Ref. OB-02 e P4",
-    "responsavel": "Theo",
-    "prazo": "2026-08-27",
-    "bloqueante": true,
-    "resolvida": false
-   },
-   {
     "id": "PD-H3ZLD8",
     "texto": "Parecer jurídico sobre o posicionamento comercial da frente pendente. Não abrir conta antes da conclusão. Ref. OB-03 e D1",
     "responsavel": "Vinícius",
@@ -2042,7 +2034,7 @@ const CARGA_RELATO={
    "status": "",
    "porte": "",
    "receitaRecorrente": 0,
-   "notas": "Razão social e CNPJ não informados. Theo é quem detém o detalhe da negociação.",
+   "notas": "Razão social e CNPJ não informados.",
    "exemplo": false,
    "criadoEm": "2026-08-24",
    "atualizadoEm": "2026-08-24",
@@ -2244,14 +2236,6 @@ const CARGA_RELATO={
    "chance": "",
    "pendencias": [
     {
-     "id": "PD-A50",
-     "texto": "Esclarecer o estágio e o objeto da negociação do Shopping Oiapoque.",
-     "responsavel": "Theo",
-     "prazo": "",
-     "bloqueante": true,
-     "resolvida": false
-    },
-    {
      "id": "PD-B50",
      "texto": "Definir valor e estrutura da operação.",
      "responsavel": "Paulo",
@@ -2352,7 +2336,7 @@ const CARGA_RELATO={
     "validadeAte": ""
    },
    "motivoPerda": "",
-   "notas": "Em negociação, segundo o relato. Theo é quem sabe esclarecer.\nOrigem: relato de Vinícius em 24/08/2026. Campo sem base no relato fica vazio. Nada aqui foi calculado ou inferido além do que está escrito nas notas.",
+   "notas": "Em negociação, segundo o relato.\nOrigem: relato de Vinícius em 24/08/2026. Campo sem base no relato fica vazio. Nada aqui foi calculado ou inferido além do que está escrito nas notas.",
    "tags": [
     "revisar-cadastro"
    ],
@@ -3035,50 +3019,12 @@ function aplicarCargaLista(d,chave,itens,lista){
    descrição dela. */
 const CARGA_ATIV_ATA0209=[
  {
-  "id": "AT-ATA-01",
-  "titulo": "Revisar as pendências do CRM atribuídas ao Theo",
-  "descricao": "Item 27 do plano de ação (P0), com o desdobramento do item 25: na data da reunião havia aproximadamente 5 pendências no nome de Theo. Confirmar a validade de cada uma, atualizar o responsável, registrar o próximo passo, inserir prazo e encerrar o que perdeu sentido. Prazo no plano: 02/09/2026. Apoio: Vinícius.",
-  "area": "comercial",
-  "prioridade": "P0",
-  "responsavel": "Theo",
-  "demandante": "Vinícius",
-  "status": "aberta",
-  "inicio": "2026-09-02",
-  "fim": "2026-09-02",
-  "evidencias": [],
-  "criadaEm": "2026-09-02",
-  "criadaPor": "Ata de 02/09/2026",
-  "atualizadoEm": "2026-09-02",
-  "atualizadoPor": "Ata de 02/09/2026",
-  "feitaEm": "",
-  "feitaPor": ""
- },
- {
   "id": "AT-ATA-02",
   "titulo": "Revisar as pendências do CRM atribuídas ao Paulo",
   "descricao": "Item 27 do plano de ação (P0), com o desdobramento do item 25: na data da reunião havia aproximadamente 21 pendências no nome de Paulo. Confirmar a validade de cada uma, atualizar o responsável, registrar o próximo passo, inserir prazo e encerrar o que perdeu sentido. Prazo no plano: 02/09/2026. Apoio: Vinícius.",
   "area": "comercial",
   "prioridade": "P0",
   "responsavel": "Paulo",
-  "demandante": "Vinícius",
-  "status": "aberta",
-  "inicio": "2026-09-02",
-  "fim": "2026-09-02",
-  "evidencias": [],
-  "criadaEm": "2026-09-02",
-  "criadaPor": "Ata de 02/09/2026",
-  "atualizadoEm": "2026-09-02",
-  "atualizadoPor": "Ata de 02/09/2026",
-  "feitaEm": "",
-  "feitaPor": ""
- },
- {
-  "id": "AT-ATA-03",
-  "titulo": "Revisar as pendências do CRM atribuídas ao Adriano",
-  "descricao": "Item 27 do plano de ação (P0), com o desdobramento do item 25: na data da reunião havia aproximadamente 36 pendências no nome de Adriano. Confirmar a validade de cada uma, atualizar o responsável, registrar o próximo passo, inserir prazo e encerrar o que perdeu sentido. Prazo no plano: 02/09/2026. Apoio: Vinícius.",
-  "area": "comercial",
-  "prioridade": "P0",
-  "responsavel": "Adriano",
   "demandante": "Vinícius",
   "status": "aberta",
   "inicio": "2026-09-02",
@@ -3132,7 +3078,7 @@ const CARGA_ATIV_ATA0209=[
  {
   "id": "AT-ATA-06",
   "titulo": "Consolidar todas as oportunidades relevantes no CRM",
-  "descricao": "Item 27 do plano de ação (P0). Cada oportunidade deve conter, no mínimo (item 3): cliente e oportunidade, vertical, originador, responsável atual, valor estimado, estágio, próxima ação, dependências, responsável pela dependência, prazo final e observações relevantes. Apoio: Paulo, Adriano, Afrânio e demais originadores. Prazo no plano: imediato.",
+  "descricao": "Item 27 do plano de ação (P0). Cada oportunidade deve conter, no mínimo (item 3): cliente e oportunidade, vertical, originador, responsável atual, valor estimado, estágio, próxima ação, dependências, responsável pela dependência, prazo final e observações relevantes. Apoio: Paulo, Afrânio e demais originadores. Prazo no plano: imediato.",
   "area": "comercial",
   "prioridade": "P0",
   "responsavel": "Vinícius",
@@ -3187,63 +3133,6 @@ const CARGA_ATIV_ATA0209=[
   "feitaPor": ""
  },
  {
-  "id": "AT-ATA-09",
-  "titulo": "Orenpay: definir e executar o backlog tecnológico prioritário",
-  "descricao": "Item 27 do plano de ação (P0) e item 29. Entregas: visão de saldo e posição financeira, histórico de movimentações, status das transferências e operações, comprovantes por operação, documentos vinculados, pendências do cliente, visão consolidada de operações em andamento e capacidade operacional para atualização de status e registros. Theo deve coordenar a priorização com o time de tecnologia, definir responsáveis técnicos e devolver cronograma e dependências no CRM. Apoio: Vinícius, Produto/TI e Operação. Prazo no plano: prioritário.",
-  "area": "produto",
-  "prioridade": "P0",
-  "responsavel": "Theo",
-  "demandante": "Vinícius",
-  "status": "aberta",
-  "inicio": "2026-09-02",
-  "fim": "",
-  "evidencias": [],
-  "criadaEm": "2026-09-02",
-  "criadaPor": "Ata de 02/09/2026",
-  "atualizadoEm": "2026-09-02",
-  "atualizadoPor": "Ata de 02/09/2026",
-  "feitaEm": "",
-  "feitaPor": ""
- },
- {
-  "id": "AT-ATA-10",
-  "titulo": "Orenpay: entregar o escopo mínimo do primeiro ciclo",
-  "descricao": "Item 27 do plano de ação (P0) e item 30. Escopo: Dashboard (saldo, posição, operações em andamento), Movimentações (entradas, saídas, histórico, comprovantes), Operações (status, timeline, próxima etapa), Documentos (enviados, pendentes, aprovados, rejeitados) e Pendências (ação necessária, responsável, prazo). Critério de sucesso: o cliente responder sozinho quanto dinheiro tem, onde ele está, o que aconteceu, qual operação está em andamento, qual é o status, se existe pendência, qual é o próximo passo e onde está o comprovante. Apoio: Vinícius, Produto/TI e Operação. Prazo no plano: prioritário.",
-  "area": "produto",
-  "prioridade": "P0",
-  "responsavel": "Theo",
-  "demandante": "Vinícius",
-  "status": "aberta",
-  "inicio": "2026-09-02",
-  "fim": "",
-  "evidencias": [],
-  "criadaEm": "2026-09-02",
-  "criadaPor": "Ata de 02/09/2026",
-  "atualizadoEm": "2026-09-02",
-  "atualizadoPor": "Ata de 02/09/2026",
-  "feitaEm": "",
-  "feitaPor": ""
- },
- {
-  "id": "AT-ATA-11",
-  "titulo": "Disponibilizar o contrato atualizado de parceria",
-  "descricao": "Item 27 do plano de ação (P0) e item 24. Algumas oportunidades antigas precisarão reiniciar o processo de assinatura. Acompanhamento: Vinícius. Prazo no plano: a definir no CRM.",
-  "area": "juridico",
-  "prioridade": "P0",
-  "responsavel": "Theo",
-  "demandante": "Vinícius",
-  "status": "aberta",
-  "inicio": "2026-09-02",
-  "fim": "",
-  "evidencias": [],
-  "criadaEm": "2026-09-02",
-  "criadaPor": "Ata de 02/09/2026",
-  "atualizadoEm": "2026-09-02",
-  "atualizadoPor": "Ata de 02/09/2026",
-  "feitaEm": "",
-  "feitaPor": ""
- },
- {
   "id": "AT-ATA-12",
   "titulo": "Compartilhar os materiais e links já estruturados",
   "descricao": "Item 27 do plano de ação (P1) e item 20. Adolfo informou que já existem materiais estruturados ou parcialmente estruturados; os conteúdos serão compartilhados para revisão, com validação de Paulo e Vinícius. Sem apoio designado no plano. Prazo no plano: imediato.",
@@ -3284,7 +3173,7 @@ const CARGA_ATIV_ATA0209=[
  {
   "id": "AT-ATA-14",
   "titulo": "Definir o ICP de cada vertical",
-  "descricao": "Item 27 do plano de ação (P1). Responsáveis no plano: Paulo e Vinícius. Cada vertical (Payments/Orenpay, Capital e Governance) deve ter proposta de valor, ICP, critérios de entrada, documentação, esteira, materiais e modelo econômico próprios (item 4). Apoio: Adriano, Adolfo e demais envolvidos. Prazo no plano: próxima rodada.",
+  "descricao": "Item 27 do plano de ação (P1). Responsáveis no plano: Paulo e Vinícius. Cada vertical (Payments/Orenpay, Capital e Governance) deve ter proposta de valor, ICP, critérios de entrada, documentação, esteira, materiais e modelo econômico próprios (item 4). Apoio: Adolfo e demais envolvidos. Prazo no plano: próxima rodada.",
   "area": "comercial",
   "prioridade": "P1",
   "responsavel": "Paulo",
@@ -3341,7 +3230,7 @@ const CARGA_ATIV_ATA0209=[
  {
   "id": "AT-ATA-17",
   "titulo": "Definir ticket mínimo e critérios de elegibilidade de Capital",
-  "descricao": "Item 27 do plano de ação (P1) e item 17. Responsáveis no plano: Paulo e Eduardo. Definir ticket mínimo, ticket ideal, setores prioritários, garantias aceitas, prazos, documentação, critérios eliminatórios e operações não elegíveis. Foi discutido que, no estágio atual, operações muito pequenas podem não justificar a complexidade operacional exigida. Apoio: Adriano, Afrânio. Prazo no plano: próxima reunião específica.",
+  "descricao": "Item 27 do plano de ação (P1) e item 17. Responsáveis no plano: Paulo e Eduardo. Definir ticket mínimo, ticket ideal, setores prioritários, garantias aceitas, prazos, documentação, critérios eliminatórios e operações não elegíveis. Foi discutido que, no estágio atual, operações muito pequenas podem não justificar a complexidade operacional exigida. Apoio: Afrânio. Prazo no plano: próxima reunião específica.",
   "area": "comercial",
   "prioridade": "P1",
   "responsavel": "Paulo",
@@ -3398,7 +3287,7 @@ const CARGA_ATIV_ATA0209=[
  {
   "id": "AT-ATA-20",
   "titulo": "Criar o modelo econômico das operações e a remuneração de parceiros e originadores",
-  "descricao": "Item 27 do plano de ação (P1) e item 23. Responsáveis no plano: Paulo e Eduardo. Definir a participação da Oren, dos estruturadores, dos originadores e dos parceiros, além do evento que gera pagamento, o momento do pagamento, a recorrência e as regras de proteção da origem. Foi reforçado que quem origina uma operação precisa ter incentivo econômico relevante. Apoio: Comercial e Adriano. Prazo no plano: pendente.",
+  "descricao": "Item 27 do plano de ação (P1) e item 23. Responsáveis no plano: Paulo e Eduardo. Definir a participação da Oren, dos estruturadores, dos originadores e dos parceiros, além do evento que gera pagamento, o momento do pagamento, a recorrência e as regras de proteção da origem. Foi reforçado que quem origina uma operação precisa ter incentivo econômico relevante. Apoio: Comercial. Prazo no plano: pendente.",
   "area": "comercial",
   "prioridade": "P1",
   "responsavel": "Paulo",
@@ -3922,7 +3811,7 @@ const estadoTodo=x=>x.tipo==="bloqueio"?"bloqueio"
 function itensTodo(){
  const h=hoje(),out=[];
  /* O filtro de responsável desta tela vale para quem FAZ, não para o dono do
-    negócio: senão filtrar por Theo esconderia a pendência dele dentro de um
+    negócio: senão filtrar por Adolfo esconderia a pendência dele dentro de um
     negócio do Paulo, que é justamente o que se quer ver. */
  const f=state.filtros;
  const base=state.data.deals.filter(d=>{
@@ -4460,7 +4349,7 @@ function telaAtividades(){
  const q=state.filtros.busca.trim().toLowerCase();
  const resp=state.filtros.responsavel;
  /* A busca varre nome, descrição, quem faz e quem pediu: procurar por
-    "Adriano" tem de achar o que ele pediu, não só o que ele faz. */
+    "Adolfo" tem de achar o que ele pediu, não só o que ele faz. */
  const cabe=a=>(!resp||nomeResp(a)===nomePessoa(resp))&&
   (!q||((a.titulo||"")+" "+(a.descricao||"")+" "+(a.responsavel||"")+" "+
    (a.demandante||"")+" "+AT_AREAS[areaDaAtiv(a)]+" "+prioridadeAtiv(a))

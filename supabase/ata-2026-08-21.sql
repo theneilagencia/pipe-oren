@@ -58,14 +58,7 @@ update public.pipeline
     "bloqueante": true,
     "resolvida": false
    },
-   {
-    "id": "PD-R9WBT2",
-    "texto": "Contraparte de stablecoin BRL não definida. A ata usa BRID e Bridge de forma intercambiável e são contrapartes distintas. Ref. OB-02 e P4",
-    "responsavel": "Theo",
-    "prazo": "2026-08-27",
-    "bloqueante": true,
-    "resolvida": false
-   },
+   
    {
     "id": "PD-H3ZLD8",
     "texto": "Parecer jurídico sobre o posicionamento comercial da frente pendente. Não abrir conta antes da conclusão. Ref. OB-03 e D1",

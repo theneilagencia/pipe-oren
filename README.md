@@ -437,7 +437,7 @@ user*. Para cada uma:
 - No campo **User Metadata**, escreva quem é a pessoa:
 
 ```json
-{"nome": "Adriano"}
+{"nome": "Ana"}
 ```
 
 Para alguém que só pode olhar, sem mexer em nada:
