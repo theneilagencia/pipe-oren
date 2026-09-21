@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Oren · Envio de documentos</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20viewBox%3D'0%200%2032%2032'%3E%3Crect%20width%3D'32'%20height%3D'32'%20fill%3D'%23092d29'/%3E%3Ccircle%20cx%3D'16'%20cy%3D'16'%20r%3D'8.5'%20fill%3D'none'%20stroke%3D'%23affa57'%20stroke-width%3D'4'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#092d29">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--deep:#092d29;--mid:#0e5351;--luz:#affa57;--creme:#e8f3e8;
+--bg:#f3f3f1;--surf:#fff;--alt:#fafaf8;--bd:#e3e6e3;--bdf:#d4d8d4;
+--tx:#1a1a1a;--tx2:#4a564f;--tx3:#6b7672;--neg:#b00020;--pos:#1a6e3a;
+--safe:env(safe-area-inset-bottom,0px)}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+ font-size:15px;line-height:1.55;color:var(--tx);background:var(--bg);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;background:none;border:1px solid var(--bdf);
+ padding:10px 14px;min-height:44px;border-radius:0;color:inherit}
+button:hover{border-color:var(--mid)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.pri{background:var(--deep);color:#fff;border-color:var(--deep);font-weight:500}
+.pri:hover{background:var(--mid);border-color:var(--mid)}
+header{background:var(--deep);color:var(--creme);padding:20px 16px}
+header .w{max-width:680px;margin:0 auto}
+header .marca{font-size:15px;font-weight:600}
+header .marca span{font-size:10px;letter-spacing:.16em;opacity:.72;margin-left:8px;text-transform:uppercase}
+header h1{font-size:19px;font-weight:600;margin-top:14px;line-height:1.3}
+header p{opacity:.8;font-size:13px;margin-top:4px}
+main{max-width:680px;margin:0 auto;padding:20px 16px calc(48px + var(--safe))}
+.prog{background:var(--surf);border:1px solid var(--bd);padding:14px 16px;margin-bottom:20px}
+.prog .n{font-size:22px;font-weight:600}
+.prog .tr{height:8px;background:var(--alt);border:1px solid var(--bd);margin-top:10px}
+.prog .ba{display:block;height:100%;background:var(--mid)}
+.cat{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);
+ margin:26px 0 8px}
+.doc{background:var(--surf);border:1px solid var(--bd);padding:14px;margin-bottom:8px;
+ display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.doc .t{flex:1 1 220px;min-width:0}
+.doc .ac{flex:0 0 auto}
+.doc.ok{background:var(--alt)}
+.doc.ok .t{color:var(--tx3)}
+.selo{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+ border:1px solid var(--bd);border-radius:999px;padding:2px 8px;color:var(--tx3);margin-top:6px}
+.selo.ok{border-color:#bcd9c4;background:#f1f8f3;color:var(--pos)}
+.selo.ped{border-color:#e4d9a8;background:#fbf7e6;color:#6b5a12}
+.erro{color:var(--neg);font-size:13px;margin-top:6px}
+.aviso{border:1px solid var(--bd);background:var(--surf);padding:16px;margin-bottom:16px}
+.aviso.ruim{border-color:#e6c4cb;background:#fdf4f5;color:var(--neg)}
+.fim{text-align:center;padding:40px 16px;color:var(--tx3)}
+.carg{color:var(--tx3);padding:28px 4px}
+input[type=file]{display:none}
+@media (max-width:560px){.doc .ac{width:100%}.doc .ac button{width:100%}}
+</style>
+</head>
+<body>
+<div id="app"><p class="carg" style="max-width:680px;margin:0 auto;padding:28px 16px">Carregando…</p></div>
+<input type="file" id="arq" accept="application/pdf,image/jpeg,image/png">
+<script>
+/* Oren · envio de documentos pelo cliente.
+   A página não fala com o banco: tudo passa por /api/envio, que valida o token
+   do endereço. O arquivo, esse sim, vai DIRETO para o armazenamento, com uma
+   URL assinada de curta duração — sem isso, um laudo de 12 MB esbarraria no
+   limite de corpo de requisição da função. */
+const VERSAO="c4203ce · 21/09/2026 23:12 UTC";   /* o build carimba o commit aqui, como nas outras páginas */
+const LIMITE=15*1024*1024;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+/* O token vem depois do "#": fragmento fica no navegador e não é enviado ao
+   servidor, então não aparece em log de acesso nem em Referer. Links antigos
+   ainda vêm com "?t=" — aceitamos, e trocamos o endereço na hora para o
+   formato novo, tirando o token da barra que o servidor enxergaria num F5. */
+const T=(location.hash.match(/(?:^#|[#&])t=([A-Za-z0-9_-]{32,})/)||[])[1]||
+        new URLSearchParams(location.search).get("t")||"";
+if(T&&location.search){try{history.replaceState(null,"",location.pathname+"#t="+T);}catch(e){}}
+const st={negocio:"",itens:[],carregando:true,erro:"",ocupado:""};
+
+async function chamar(acao,extra){
+ const r=await fetch("/api/envio",{method:"POST",headers:{"content-type":"application/json"},
+  body:JSON.stringify(Object.assign({acao:acao,t:T},extra||{}))});
+ const c=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(c.erro||"Não consegui concluir.");
+ return c.dados;
+}
+/* O hash é calculado aqui, no navegador: serve para o servidor saber se este
+   conteúdo já está guardado e não pedir o mesmo arquivo duas vezes. */
+async function hashDe(f){
+ const b=await f.arrayBuffer();
+ const h=await crypto.subtle.digest("SHA-256",b);
+ return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+const feitos=()=>st.itens.filter(i=>i.status==="recebido"||i.status==="aprovado").length;
+
+function render(){
+ if(st.carregando)return void($("#app").innerHTML='<p class="carg" style="max-width:680px;margin:0 auto;padding:28px 16px">Carregando…</p>');
+ if(st.erro)return void($("#app").innerHTML='<main><div class="aviso ruim">'+esc(st.erro)+"</div></main>");
+ const ok=feitos(),tot=st.itens.length,pct=tot?Math.round(ok/tot*100):0;
+ let h="<header><div class=w><span class=marca>Oren<span>Envio de documentos</span></span>"+
+  "<h1>"+esc(st.negocio)+"</h1>"+
+  "<p>Envie os documentos abaixo. Pode parar e voltar depois: o que já foi enviado fica guardado.</p></div></header><main>";
+ h+='<div class="prog"><div class="n">'+ok+" de "+tot+"</div>"+
+  '<div class="tr"><span class="ba" style="width:'+pct+'%"></span></div></div>';
+ if(ok===tot&&tot)h+='<div class="aviso"><strong>Tudo enviado.</strong> Não falta nada da nossa lista. Se precisarmos de algo mais, você recebe um aviso.</div>';
+ let cat="";
+ st.itens.forEach(i=>{
+  if(i.categoria!==cat){cat=i.categoria;h+='<div class="cat">'+esc(cat)+"</div>";}
+  const pronto=i.status==="recebido"||i.status==="aprovado";
+  h+='<div class="doc'+(pronto?" ok":"")+'"><div class="t">'+esc(i.texto)+
+   (pronto?'<br><span class="selo ok">enviado</span>':
+     i.status==="recusado"?'<br><span class="selo ped">reenviar</span>':
+     i.status==="solicitado"?'<br><span class="selo ped">pedido</span>':"")+
+   (i.arquivo?'<br><span class="selo">'+esc(i.arquivo)+"</span>":"")+
+   (i.erro?'<div class="erro">'+esc(i.erro)+"</div>":"")+
+   "</div>"+
+   '<div class="ac"><button '+(st.ocupado?"disabled":"")+' data-enviar="'+i.n+'" class="'+(pronto?"":"pri")+'">'+
+   (st.ocupado===String(i.n)?"Enviando…":pronto?"Enviar outro":"Enviar arquivo")+"</button></div></div>";
+ });
+ h+='<p class="fim">Aceitamos PDF, JPG e PNG, até 15 MB por arquivo.<br><span style="font-size:11px;opacity:.6">'+esc(VERSAO)+'</span></p></main>';
+ $("#app").innerHTML=h;
+}
+
+async function enviar(n,f){
+ const item=st.itens.find(x=>String(x.n)===String(n));if(!item)return;
+ item.erro="";
+ if(f.size>LIMITE){item.erro="Arquivo acima de 15 MB. Envie uma versão menor.";return render();}
+ st.ocupado=String(n);render();
+ try{
+  const hash=await hashDe(f);
+  const r=await chamar("subir",{n:n,nome:f.name,tamanho:f.size,tipo:f.type,hash:hash});
+  if(!r.jaExistia){
+   /* Os dois modos de falhar aqui são diferentes e pedem conserto diferente.
+      Sem distinguir, a pessoa recebe "tente de novo" para um problema que
+      tentar de novo nunca resolve. */
+   let up;
+   try{up=await fetch(r.url,{method:"PUT",body:f});}
+   catch(err){throw new Error("O navegador bloqueou o envio antes de sair. "+
+     "Avise quem te mandou o link: falta liberar o envio no armazenamento (CORS).");}
+   if(!up.ok){
+    const txt=await up.text().catch(()=>"");
+    const cod=(txt.match(/<Code>([^<]+)<\/Code>/)||[])[1]||"";
+    throw new Error("O armazenamento recusou o arquivo ("+up.status+(cod?" · "+cod:"")+"). "+
+     "Avise quem te mandou o link.");
+   }
+   await chamar("confirmar",{n:n,hash:hash,ext:r.ext,nome:f.name});
+  }
+  item.status="recebido";item.arquivo=f.name;
+ }catch(e){item.erro=e.message||"Não consegui enviar.";}
+ st.ocupado="";render();
+}
+
+let alvo=null;
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-enviar]");
+ if(b){alvo=b.dataset.enviar;$("#arq").value="";$("#arq").click();}
+});
+$("#arq").addEventListener("change",e=>{
+ const f=e.target.files&&e.target.files[0];
+ if(f&&alvo!=null)enviar(alvo,f);
+});
+
+(async function(){
+ if(!T){st.carregando=false;st.erro="Link incompleto. Peça um novo a quem te enviou.";return render();}
+ try{
+  const d=await chamar("abrir");
+  st.negocio=d.negocio;st.itens=d.itens;
+ }catch(e){st.erro=e.message;}
+ st.carregando=false;render();
+})();
+</script>
+</body>
+</html>
