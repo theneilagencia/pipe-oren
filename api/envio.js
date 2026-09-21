@@ -43,7 +43,7 @@ async function abrirToken(c, t) {
 
 async function lerPipeline(c) {
   const r = await sb(c, "/rest/v1/pipeline?select=dados,versao&id=eq.1");
-  if (!r.ok) throw new Error("pipeline-indisponivel");
+  if (!r.ok) throw new Error("o banco recusou a leitura (" + r.status + ")");
   const l = await r.json();
   if (!l[0]) throw new Error("pipeline-vazio");
   return l[0];
@@ -63,7 +63,7 @@ async function gravarDoc(c, negocioId, num, registro) {
     const r = await sb(c, "/rest/v1/pipeline?id=eq.1&versao=eq." + encodeURIComponent(versao),
       { method: "PATCH", body: JSON.stringify({ dados: dados }),
         headers: { Prefer: "return=representation" } });
-    if (!r.ok) throw new Error("gravacao-falhou");
+    if (!r.ok) throw new Error("o banco recusou a gravação (" + r.status + ")");
     const linhas = await r.json();
     if (linhas.length) return true;          /* gravou */
     await new Promise(s => setTimeout(s, 120 * (tentativa + 1)));   /* conflito: tenta de novo */

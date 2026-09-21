@@ -15,6 +15,15 @@ const sb = (c, caminho, opcoes) => fetch(c.url + caminho, Object.assign({}, opco
     "content-type": "application/json" }, (opcoes || {}).headers || {})
 }));
 
+/* Erro do banco chega inteiro a quem clicou. "criar-falhou" já custou uma
+   rodada inteira de conversa para descobrir que faltava rodar a migração. */
+async function erroDe(r, oque) {
+  let detalhe = "";
+  try { const c = JSON.parse(await r.text()); detalhe = c.message || c.hint || c.details || ""; }
+  catch (e) { detalhe = ""; }
+  return new Error("o banco recusou " + oque + " (" + r.status + ")" + (detalhe ? ": " + detalhe : ""));
+}
+
 /* Quem está chamando, segundo o Supabase — não segundo o navegador. */
 async function quem(c, autorizacao) {
   if (!autorizacao || !/^Bearer\s+\S+/i.test(autorizacao)) return null;
@@ -64,7 +73,7 @@ module.exports = async (req, res) => {
         headers: { Prefer: "return=representation" },
         body: JSON.stringify({ token_hash: impressao(token), negocio_id: corpo.negocioId,
           criado_por: eu.nome, expira_em: expira }) });
-      if (!r.ok) throw new Error("criar-falhou");
+      if (!r.ok) throw await erroDe(r, "o link");
       /* O token vai depois do "#": fragmento não é enviado ao servidor, então
          não entra no log de acesso da Vercel nem em cabeçalho Referer. Só o
          navegador do cliente o enxerga. */
@@ -77,7 +86,7 @@ module.exports = async (req, res) => {
       const r = await sb(c, "/rest/v1/envio?negocio_id=eq." + encodeURIComponent(corpo.negocioId) + "&revogado_em=is.null",
         { method: "PATCH", headers: { Prefer: "return=representation" },
           body: JSON.stringify({ revogado_em: new Date().toISOString() }) });
-      if (!r.ok) throw new Error("revogar-falhou");
+      if (!r.ok) throw await erroDe(r, "a revogação");
       const linhas = await r.json();
       return res.status(200).json({ ok: true, dados: { revogados: linhas.length } });
     }
