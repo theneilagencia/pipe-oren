@@ -30,6 +30,10 @@ begin
   end if;
 end $$;
 
+-- Depois de mexer em coluna, a API do Supabase continua com o esquema antigo
+-- em cache e recusa a gravação com PGRST204. Isto avisa que mudou.
+notify pgrst, 'reload schema';
+
 -- Conferência: 'token' tem de sumir e 'token_hash' tem de ser a chave.
 select
   (select count(*) from information_schema.columns
