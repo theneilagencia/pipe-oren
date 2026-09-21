@@ -1234,7 +1234,9 @@ const TEXTOS={
  novoAjuda:"Três passos: para quem, o que, e como está.",
  origemCliente:"A lista vem das contas da aba Clientes. Se ainda não está lá, escolha “Cadastrar cliente novo”.",
  valorADefinir:"Sem valor definido ainda? Deixe vazio: o negócio entra marcado como valor a definir.",
- frentesLbl:{payments:"Payments",capital:"Capital"},
+ frentesLbl:{payments:"Payments",capital:"Capital",bts:"Built to Suit",
+  slb:"Sale & Leaseback",reperfilamento:"Reperfilamento de dívida",
+  aeronaves:"Financiamento de Aeronaves"},
  erros:{
   parceiro:"Venda por parceiro precisa de um parceiro escolhido.",
   cliente:"Venda direta precisa de um cliente escolhido.",
@@ -1259,16 +1261,30 @@ const TEXTOS={
    diferentes, então nada aqui pode ser lido sem saber de que frente é o
    negócio. Antes existia um funil único, desenhado para Capital, e imposto às
    outras frentes, que nunca ocuparam as etapas do meio porque não existem lá. */
+/* Capital virou uma família: as quatro frentes desmembradas usam o MESMO
+   funil, e é por isso que elas compartilham a constante em vez de repetir a
+   lista. Funis diferentes fariam a etapa perder o sentido ao trocar a frente
+   de um negócio — a etapa 5 de um vira etapa 5 de outro e continua sendo
+   "Estrutura indicativa". Reclassificar passa a ser só trocar o rótulo. */
+const FUNIL_CAPITAL=["Entrada","Qualificação","Coleta de documentos",
+ "Análise financeira e imobiliária","Estrutura indicativa","Aprovação",
+ "Busca de capital","Documentação","Fechamento","Acompanhamento"];
+const FAMILIA_CAPITAL=["capital","bts","slb","reperfilamento","aeronaves"];
+const ehCapital=fr=>FAMILIA_CAPITAL.indexOf(fr)>=0;
 const FUNIS={
- capital:["Entrada","Qualificação","Coleta de documentos",
-  "Análise financeira e imobiliária","Estrutura indicativa","Aprovação",
-  "Busca de capital","Documentação","Fechamento","Acompanhamento"],
+ capital:FUNIL_CAPITAL,
+ bts:FUNIL_CAPITAL,
+ slb:FUNIL_CAPITAL,
+ reperfilamento:FUNIL_CAPITAL,
+ aeronaves:FUNIL_CAPITAL,
  payments:["Entrada","Qualificação","Coleta de documentos",
   "Análise de compliance","Aprovação","Ativação","Acompanhamento"]
 };
 /* Onde a venda termina em cada funil. ganho é a etapa que conta como fechada;
    posVenda é a primeira etapa de depois da venda, que não é pipeline aberto. */
-const CORTE={capital:{ganho:9,posVenda:10},payments:{ganho:6,posVenda:7}};
+const CORTE_CAPITAL={ganho:9,posVenda:10};
+const CORTE={capital:CORTE_CAPITAL,bts:CORTE_CAPITAL,slb:CORTE_CAPITAL,
+ reperfilamento:CORTE_CAPITAL,aeronaves:CORTE_CAPITAL,payments:{ganho:6,posVenda:7}};
 /* B2C não tem funil próprio: usa o funil da frente, igual a um B2B. */
 const PUBLICOS={"":"Todos",B2B:"B2B",B2C:"B2C",B2B2C:"B2B2C"};
 const PUBLICOS_VALIDOS=["B2B","B2C","B2B2C"];
@@ -1282,7 +1298,15 @@ const CHECKLISTS={
   ["compEndereco","Comprovante de endereço"],["restricao","Consulta de restrição"]]
 };
 const CHECKETAPAS={payments:[3,4]};
-const CORF={payments:"#affa57",capital:"#62cc6d"};
+/* Cores das SÉRIES dos gráficos, não da interface. Com seis frentes os dois
+   verdes da marca ficam abaixo do piso de distinção até para quem enxerga
+   todas as cores (ΔE 8,4 contra o mínimo de 15), então aqui vale a paleta
+   categórica validada: passa em banda de luminosidade, chroma, separação para
+   daltonismo e piso de visão normal sobre o fundo #f3f3f1. O contraste baixo
+   contra o fundo é coberto porque toda frente aparece com rótulo escrito ao
+   lado, nunca só pela cor. */
+const CORF={payments:"#2a78d6",capital:"#eb6834",bts:"#1baf7a",
+ slb:"#eda100",reperfilamento:"#e87ba4",aeronaves:"#4a3aa7"};
 const CLIENTE_NOVO="__novo";   /* valor sentinela do select de cliente */
 const TAG_VALOR="valor a definir";
 const RESPS_PADRAO=["Paulo","Adolfo"];
@@ -1417,7 +1441,7 @@ function frenteDe(d){
    a etapa, a coluna do quadro e a regra de fechamento -- porque etapa só existe
    dentro de um funil, e a operação comercial é uma só. Ausente, o conjunto é a
    principal sozinha: nada precisa de migração. */
-const FRENTES_ORDEM=["payments","capital"];
+const FRENTES_ORDEM=["payments","capital","bts","slb","reperfilamento","aeronaves"];
 function frentesDe(d){
  const p=frenteDe(d);
  const set={};set[p]=1;
@@ -1520,7 +1544,7 @@ function validarEtapa(d,etapa){
  if(d.tipoVenda==="direta"&&d.parceiroId)return TEXTOS.erros.semParceiro;
  if(etapa==="perdido")return d.motivoPerda?null:TEXTOS.erros.perda;
  const n=Number(etapa);
- if(d.frente==="capital"&&!d.tese)return TEXTOS.erros.tese;
+ if(ehCapital(d.frente)&&!d.tese)return TEXTOS.erros.tese;
  /* Payments: pendência bloqueante em aberto trava o avanço além de Análise de
     compliance (etapa 4). Ata de 21/08/2026, seção 7.1 — conversa exploratória
     pode seguir, assinatura e onboarding não, antes da OB-03 e da OB-04. */
@@ -1529,7 +1553,7 @@ function validarEtapa(d,etapa){
  /* As exigências abaixo são de Capital. Antes valiam para todas as frentes, e
     com os funis por frente isso travaria Payments na etapa 6 pedindo campos
     que a frente não tem. */
- if(d.frente==="capital"){
+ if(ehCapital(d.frente)){
   const cm=d.comite||{};
   if(n>=6&&CINCO.some(([k])=>(d.cincoPerguntas||{})[k]==="NaoAvaliada"||!(d.cincoPerguntas||{})[k])) return TEXTOS.erros.cinco;
   if(n>=7&&!d.frenteCapital)return TEXTOS.erros.frenteCap;
@@ -5800,7 +5824,7 @@ function abrirPainel(p){
  /* Em Capital o miolo da conversa esta nessas duas secoes. Nascendo fechadas,
     os campos existem e ninguem acha. */
  const d=p&&p.tipo==="deal"?state.data.deals.find(x=>x.id===p.id):null;
- state.secoes=d&&d.frente==="capital"?{analise:true,capital:true}:{};
+ state.secoes=d&&ehCapital(d.frente)?{analise:true,capital:true}:{};
  /* Checklist fechado é checklist que ninguém marca. Se ele aparece nesta
     etapa, aparece aberto. */
  if(d&&checklistVisivel(d)&&checklistDe(d))state.secoes.check=true;
@@ -6017,7 +6041,7 @@ function painelDeal(id){
     '<input type="checkbox" data-check="'+d.id+":"+k+'"'+((d.checklist||{})[k]?" checked":"")+">"+
     '<span style="flex:1">'+esc(l)+"</span></div>").join(""),"check");
  }
- if(d.frente==="capital"){
+ if(ehCapital(d.frente)){
   const ops5={};NOTAS5.forEach(n=>ops5[n]=LBL5[n]);
   let a='<div class="lbl" style="margin-bottom:4px">Cinco perguntas'+iconeHint("cinco")+"</div>";
   CINCO.forEach(([k,l])=>{a+=fld(l,ed("cinco",d.id,k,(d.cincoPerguntas||{})[k]||"NaoAvaliada","select",ops5));});
@@ -6157,7 +6181,7 @@ function painelNovo(){
  /* Cliente PJ nasce B2B, PF nasce B2C. Sugestao, nao imposicao. */
  h+=fld(TEXTOS.publicoLbl,'<select data-novo="publico">'+PUBLICOS_VALIDOS.map(v=>
   '<option value="'+v+'"'+(n.publico===v?" selected":"")+">"+v+"</option>").join("")+"</select>","publico");
- if(n.frente==="capital")h+=fld("Tese",txt("tese")+err("tese"),"tese");
+ if(ehCapital(n.frente))h+=fld("Tese",txt("tese")+err("tese"),"tese");
 
  h+=passoNovo(3,"Como o neg\u00f3cio est\u00e1");
  h+=fld(TEXTOS.col.valor,'<input data-novo="valor" inputmode="numeric" value="'+esc(n.valor)+
@@ -6924,7 +6948,7 @@ function criar(){
  if(n.tipoVenda==="direta"&&!n.clienteId)er.clienteId=TEXTOS.erros.cliente;
  if(n.clienteId===CLIENTE_NOVO&&!n.clienteNovoNome.trim())er.clienteNovoNome=TEXTOS.erros.clienteNovo;
  if(n.tipoVenda==="parceiro"&&!n.parceiroId)er.parceiroId=TEXTOS.erros.parceiro;
- if(n.frente==="capital"&&!n.tese.trim())er.tese=TEXTOS.erros.tese;
+ if(ehCapital(n.frente)&&!n.tese.trim())er.tese=TEXTOS.erros.tese;
  if(Object.keys(er).length){n.erros=er;renderPainelLateral();return;}
  snapshot();
  /* Cliente novo nasce com o mínimo que o formulário sabe. O que ele não sabe
