@@ -11,9 +11,10 @@
 set -e
 
 rm -rf site
-mkdir -p site/admin
+mkdir -p site/admin site/envio
 cp painel-oren.html site/index.html
 cp admin-oren.html  site/admin/index.html
+cp envio-oren.html  site/envio/index.html
 
 # Mesmo selo de versao do publicar.sh e do workflow, para a pergunta "isto ja
 # esta no ar?" ter resposta na propria tela. Selo errado e' pior que nenhum,
@@ -21,7 +22,7 @@ cp admin-oren.html  site/admin/index.html
 SHA=$(printf %.7s "${VERCEL_GIT_COMMIT_SHA:-}")
 [ -n "$SHA" ] || SHA=$(git rev-parse --short HEAD 2>/dev/null || echo sem-git)
 SELO="$SHA · $(date -u +%d/%m/%Y\ %H:%M) UTC"
-for F in site/index.html site/admin/index.html; do
+for F in site/index.html site/admin/index.html site/envio/index.html; do
   sed "s|const VERSAO=\"local\"|const VERSAO=\"$SELO\"|" "$F" > "$F.novo"
   mv "$F.novo" "$F"
   grep -q "const VERSAO=\"$SELO\"" "$F" || { echo "Nao consegui gravar o selo em $F"; exit 1; }

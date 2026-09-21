@@ -227,7 +227,10 @@ transition:border-color var(--fast) ease-out,background var(--fast) ease-out}
 .ci .t{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .ci .s{font-size:12px;color:var(--tx3);overflow-wrap:anywhere}
 /* ================= GRÁFICOS ================= */
-.docbar{margin-bottom:12px}
+.docbar{margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.linkbox{background:var(--alt);border:1px solid var(--bd);padding:10px 12px;margin-bottom:12px}
+.linkbox input{width:100%;margin-top:6px;border:1px solid var(--bd);background:var(--surf);padding:8px;font-size:12px;font-family:inherit}
+
 .doccat{display:flex;gap:10px;align-items:baseline;justify-content:space-between;margin:16px 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3)}
 .doccat .cnt{text-transform:none;letter-spacing:0}
 .docit{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)}
@@ -6345,9 +6348,16 @@ function painelDeal(id){
  const grupos=docsDaFrente(d),resumo=docsResumo(d);
  if(grupos){
   const opsDoc={};DOC_ESTADOS.forEach(([k,l])=>opsDoc[k]=l);
+  const lk=state.linkEnvio&&state.linkEnvio.id===d.id?state.linkEnvio:null;
   let corpo='<div class="docbar">'+
-   '<button data-pedirdocs="'+d.id+'">Marcar pendentes como solicitados</button>'+
-   iconeHint("docs")+"</div>";
+   '<button data-pedirdocs="'+d.id+'">Marcar pendentes como solicitados</button> '+
+   '<button data-linkenvio="'+d.id+'">Gerar link para o cliente</button>'+
+   iconeHint("docs")+"</div>"+
+   (lk?'<div class="linkbox"><div class="soft" style="font-size:11px">'+
+     (lk.erro?"":"Vale até "+dt(lk.expira_em)+" · criar outro invalida este")+"</div>"+
+     (lk.erro?'<div class="erro">'+esc(lk.erro)+"</div>"
+            :'<input readonly value="'+esc(lk.url)+'" onclick="this.select()">')+
+     "</div>":"");
   grupos.forEach(([cat,itens])=>{
    const faltam=itens.filter(([n])=>!docResolvido(docEstado(d,n))).length;
    corpo+='<div class="doccat"><span>'+esc(cat)+"</span>"+
@@ -6809,6 +6819,25 @@ document.addEventListener("click",e=>{
   state.tela="contas";state.aba="clientes";
   state.painel={tipo:"conta",kind:"cliente",id:c.id};
   marcar();return;}
+ if(el=g("[data-linkenvio]")){
+  /* O link é criado pelo servidor, que guarda o token e a validade. O painel só
+     mostra o endereço para copiar: não inventa token nem sabe a chave. */
+  const id=el.dataset.linkenvio;
+  state.linkEnvio={id:id,url:"",erro:"",expira_em:""};
+  el.disabled=true;el.textContent="Gerando…";
+  (async()=>{
+   try{
+    const s=sessaoGuardada();
+    const r=await fetch("/api/links",{method:"POST",
+     headers:{"content-type":"application/json",Authorization:"Bearer "+(s&&s.access_token)},
+     body:JSON.stringify({acao:"criar",negocioId:id,dias:30})});
+    const c=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(c.erro||"Não consegui gerar o link.");
+    state.linkEnvio={id:id,url:c.dados.url,expira_em:c.dados.expira_em,erro:""};
+   }catch(e){state.linkEnvio={id:id,url:"",expira_em:"",erro:e.message};}
+   renderPainelLateral();
+  })();
+  return;}
  if(el=g("[data-pedirdocs]")){
   /* Pedir de uma vez o que ainda não foi pedido. Não toca em quem já está
      solicitado ou resolvido: repetir o pedido reabriria a data e faria o
