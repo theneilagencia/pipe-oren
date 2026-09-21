@@ -1236,7 +1236,7 @@ const TEXTOS={
  valorADefinir:"Sem valor definido ainda? Deixe vazio: o negócio entra marcado como valor a definir.",
  frentesLbl:{payments:"Payments",capital:"Capital",bts:"Built to Suit",
   slb:"Sale & Leaseback",reperfilamento:"Reperfilamento de dívida",
-  aeronaves:"Financiamento de Aeronaves"},
+  aeronaves:"Financiamento de Aeronaves",captacao:"Captação de Recursos"},
  erros:{
   parceiro:"Venda por parceiro precisa de um parceiro escolhido.",
   cliente:"Venda direta precisa de um cliente escolhido.",
@@ -1269,7 +1269,7 @@ const TEXTOS={
 const FUNIL_CAPITAL=["Entrada","Qualificação","Coleta de documentos",
  "Análise financeira e imobiliária","Estrutura indicativa","Aprovação",
  "Busca de capital","Documentação","Fechamento","Acompanhamento"];
-const FAMILIA_CAPITAL=["capital","bts","slb","reperfilamento","aeronaves"];
+const FAMILIA_CAPITAL=["capital","bts","slb","reperfilamento","aeronaves","captacao"];
 const ehCapital=fr=>FAMILIA_CAPITAL.indexOf(fr)>=0;
 const FUNIS={
  capital:FUNIL_CAPITAL,
@@ -1277,6 +1277,7 @@ const FUNIS={
  slb:FUNIL_CAPITAL,
  reperfilamento:FUNIL_CAPITAL,
  aeronaves:FUNIL_CAPITAL,
+ captacao:FUNIL_CAPITAL,
  payments:["Entrada","Qualificação","Coleta de documentos",
   "Análise de compliance","Aprovação","Ativação","Acompanhamento"]
 };
@@ -1284,7 +1285,8 @@ const FUNIS={
    posVenda é a primeira etapa de depois da venda, que não é pipeline aberto. */
 const CORTE_CAPITAL={ganho:9,posVenda:10};
 const CORTE={capital:CORTE_CAPITAL,bts:CORTE_CAPITAL,slb:CORTE_CAPITAL,
- reperfilamento:CORTE_CAPITAL,aeronaves:CORTE_CAPITAL,payments:{ganho:6,posVenda:7}};
+ reperfilamento:CORTE_CAPITAL,aeronaves:CORTE_CAPITAL,captacao:CORTE_CAPITAL,
+ payments:{ganho:6,posVenda:7}};
 /* B2C não tem funil próprio: usa o funil da frente, igual a um B2B. */
 const PUBLICOS={"":"Todos",B2B:"B2B",B2C:"B2C",B2B2C:"B2B2C"};
 const PUBLICOS_VALIDOS=["B2B","B2C","B2B2C"];
@@ -1306,7 +1308,7 @@ const CHECKETAPAS={payments:[3,4]};
    contra o fundo é coberto porque toda frente aparece com rótulo escrito ao
    lado, nunca só pela cor. */
 const CORF={payments:"#2a78d6",capital:"#eb6834",bts:"#1baf7a",
- slb:"#eda100",reperfilamento:"#e87ba4",aeronaves:"#4a3aa7"};
+ slb:"#eda100",reperfilamento:"#e87ba4",aeronaves:"#4a3aa7",captacao:"#008300"};
 const CLIENTE_NOVO="__novo";   /* valor sentinela do select de cliente */
 const TAG_VALOR="valor a definir";
 const RESPS_PADRAO=["Paulo","Adolfo"];
@@ -1441,7 +1443,7 @@ function frenteDe(d){
    a etapa, a coluna do quadro e a regra de fechamento -- porque etapa só existe
    dentro de um funil, e a operação comercial é uma só. Ausente, o conjunto é a
    principal sozinha: nada precisa de migração. */
-const FRENTES_ORDEM=["payments","capital","bts","slb","reperfilamento","aeronaves"];
+const FRENTES_ORDEM=["payments","capital","bts","slb","reperfilamento","aeronaves","captacao"];
 function frentesDe(d){
  const p=frenteDe(d);
  const set={};set[p]=1;

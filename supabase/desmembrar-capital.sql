@@ -64,6 +64,9 @@ select x.frente, x.antes, x.depois
     ('aeronaves · Financiamento de Aeronaves',
       (select count(*)::int from jsonb_array_elements(a.d0->'deals') d where d->>'frente'='aeronaves'),
       (select count(*)::int from jsonb_array_elements(g.d1->'deals') d where d->>'frente'='aeronaves')),
+    ('captacao · Captação de Recursos (movida por id, não por regra)',
+      (select count(*)::int from jsonb_array_elements(a.d0->'deals') d where d->>'frente'='captacao'),
+      (select count(*)::int from jsonb_array_elements(g.d1->'deals') d where d->>'frente'='captacao')),
     ('TOTAL de negócios (tem de ser igual)',
       jsonb_array_length(a.d0->'deals'), jsonb_array_length(g.d1->'deals')),
     ('PARA VOLTAR ATRÁS: restaure esta versão', a.v0, a.v0)
