@@ -122,8 +122,19 @@ async function enviar(n,f){
   const hash=await hashDe(f);
   const r=await chamar("subir",{n:n,nome:f.name,tamanho:f.size,tipo:f.type,hash:hash});
   if(!r.jaExistia){
-   const up=await fetch(r.url,{method:"PUT",body:f});
-   if(!up.ok)throw new Error("O envio falhou no meio do caminho. Tente de novo.");
+   /* Os dois modos de falhar aqui são diferentes e pedem conserto diferente.
+      Sem distinguir, a pessoa recebe "tente de novo" para um problema que
+      tentar de novo nunca resolve. */
+   let up;
+   try{up=await fetch(r.url,{method:"PUT",body:f});}
+   catch(err){throw new Error("O navegador bloqueou o envio antes de sair. "+
+     "Avise quem te mandou o link: falta liberar o envio no armazenamento (CORS).");}
+   if(!up.ok){
+    const txt=await up.text().catch(()=>"");
+    const cod=(txt.match(/<Code>([^<]+)<\/Code>/)||[])[1]||"";
+    throw new Error("O armazenamento recusou o arquivo ("+up.status+(cod?" · "+cod:"")+"). "+
+     "Avise quem te mandou o link.");
+   }
    await chamar("confirmar",{n:n,hash:hash,ext:r.ext,nome:f.name});
   }
   item.status="recebido";item.arquivo=f.name;
