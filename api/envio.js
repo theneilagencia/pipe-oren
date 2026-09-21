@@ -5,6 +5,7 @@
    Sem login, por decisão: o token no endereço é a credencial. Por isso ele tem
    validade, pode ser revogado, e dá acesso a UM negócio e a mais nada.
 */
+const crypto = require("crypto");
 const b2 = require("./_b2.js");
 const CHECKLISTS = require("./_checklists.js");
 const hoje = () => new Date().toISOString().slice(0, 10);
@@ -21,12 +22,17 @@ const sb = (c, caminho, opcoes) => fetch(c.url + caminho, Object.assign({}, opco
     "content-type": "application/json" }, (opcoes || {}).headers || {})
 }));
 
+/* O banco guarda só o SHA-256 do token, nunca o token. Quem consegue ler a
+   tabela — qualquer pessoa logada no painel, inclusive leitor — vê hashes, e
+   com hash não se abre link nenhum. O token só existe no endereço do cliente. */
+const impressao = t => crypto.createHash("sha256").update(t, "utf8").digest("hex");
+
 /* Valida o token e devolve o registro. Um token inexistente, vencido ou
    revogado recebe a MESMA resposta: quem tenta adivinhar não aprende nada com
    a diferença entre "não existe" e "expirou". */
 async function abrirToken(c, t) {
   if (typeof t !== "string" || !/^[A-Za-z0-9_-]{32,}$/.test(t)) return null;
-  const r = await sb(c, "/rest/v1/envio?select=*&token=eq." + encodeURIComponent(t));
+  const r = await sb(c, "/rest/v1/envio?select=*&token_hash=eq." + impressao(t));
   if (!r.ok) return null;
   const linhas = await r.json();
   const e = linhas[0];
@@ -101,7 +107,7 @@ module.exports = async (req, res) => {
     if (!d) return res.status(404).json({ erro: "Negócio não encontrado." });
 
     if (corpo.acao === "abrir") {
-      await sb(c, "/rest/v1/envio?token=eq." + encodeURIComponent(corpo.t), { method: "PATCH",
+      await sb(c, "/rest/v1/envio?token_hash=eq." + envio.token_hash, { method: "PATCH",
         body: JSON.stringify({ ultimo_acesso: new Date().toISOString(), acessos: (envio.acessos || 0) + 1 }) });
       return res.status(200).json({ ok: true, dados: paraOCliente(d, CHECKLISTS) });
     }
@@ -135,7 +141,7 @@ module.exports = async (req, res) => {
       if (!(await b2.existe(hash, ext))) return res.status(400).json({ erro: "O envio não chegou completo. Tente de novo." });
       await gravarDoc(c, envio.negocio_id, n, { status: "recebido", em: hoje(), por: "cliente",
         arquivoHash: hash, arquivoExt: ext, arquivoNome: String(nome || "").slice(0, 120) });
-      await sb(c, "/rest/v1/envio?token=eq." + encodeURIComponent(corpo.t), { method: "PATCH",
+      await sb(c, "/rest/v1/envio?token_hash=eq." + envio.token_hash, { method: "PATCH",
         body: JSON.stringify({ enviados: (envio.enviados || 0) + 1 }) });
       return res.status(200).json({ ok: true, dados: { recebido: true } });
     }

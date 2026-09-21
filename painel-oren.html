@@ -6349,15 +6349,21 @@ function painelDeal(id){
  if(grupos){
   const opsDoc={};DOC_ESTADOS.forEach(([k,l])=>opsDoc[k]=l);
   const lk=state.linkEnvio&&state.linkEnvio.id===d.id?state.linkEnvio:null;
+  let aviso="";
+  if(lk){
+   if(lk.erro)aviso='<div class="erro">'+esc(lk.erro)+"</div>";
+   else if(lk.url)aviso='<div class="soft" style="font-size:11px">Vale até '+dt(lk.expira_em)+
+     ' · criar outro invalida este</div><input readonly value="'+esc(lk.url)+'" onclick="this.select()">';
+   else if(lk.revogados!=null)aviso='<div class="soft" style="font-size:11px">'+
+     (lk.revogados?"Link revogado. Quem tiver o endereço antigo não consegue mais enviar."
+                  :"Não havia link ativo neste negócio.")+"</div>";
+  }
   let corpo='<div class="docbar">'+
    '<button data-pedirdocs="'+d.id+'">Marcar pendentes como solicitados</button> '+
-   '<button data-linkenvio="'+d.id+'">Gerar link para o cliente</button>'+
+   '<button data-linkenvio="'+d.id+'">Gerar link para o cliente</button> '+
+   '<button data-revlink="'+d.id+'">Revogar link</button>'+
    iconeHint("docs")+"</div>"+
-   (lk?'<div class="linkbox"><div class="soft" style="font-size:11px">'+
-     (lk.erro?"":"Vale até "+dt(lk.expira_em)+" · criar outro invalida este")+"</div>"+
-     (lk.erro?'<div class="erro">'+esc(lk.erro)+"</div>"
-            :'<input readonly value="'+esc(lk.url)+'" onclick="this.select()">')+
-     "</div>":"");
+   (aviso?'<div class="linkbox">'+aviso+"</div>":"");
   grupos.forEach(([cat,itens])=>{
    const faltam=itens.filter(([n])=>!docResolvido(docEstado(d,n))).length;
    corpo+='<div class="doccat"><span>'+esc(cat)+"</span>"+
@@ -6835,6 +6841,25 @@ document.addEventListener("click",e=>{
     if(!r.ok)throw new Error(c.erro||"Não consegui gerar o link.");
     state.linkEnvio={id:id,url:c.dados.url,expira_em:c.dados.expira_em,erro:""};
    }catch(e){state.linkEnvio={id:id,url:"",expira_em:"",erro:e.message};}
+   renderPainelLateral();
+  })();
+  return;}
+ if(el=g("[data-revlink]")){
+  /* Link encaminhado para quem não devia? Isto derruba o que estiver ativo
+     neste negócio, sem obrigar a gerar outro e mandar de novo ao cliente. */
+  const id=el.dataset.revlink;
+  state.linkEnvio={id:id,url:"",erro:"",expira_em:"",revogados:null};
+  el.disabled=true;el.textContent="Revogando…";
+  (async()=>{
+   try{
+    const s=sessaoGuardada();
+    const r=await fetch("/api/links",{method:"POST",
+     headers:{"content-type":"application/json",Authorization:"Bearer "+(s&&s.access_token)},
+     body:JSON.stringify({acao:"revogar",negocioId:id})});
+    const c=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(c.erro||"Não consegui revogar o link.");
+    state.linkEnvio={id:id,url:"",expira_em:"",erro:"",revogados:c.dados.revogados};
+   }catch(e){state.linkEnvio={id:id,url:"",expira_em:"",erro:e.message,revogados:null};}
    renderPainelLateral();
   })();
   return;}

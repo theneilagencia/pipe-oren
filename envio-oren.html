@@ -66,7 +66,13 @@ const VERSAO="local";   /* o build carimba o commit aqui, como nas outras págin
 const LIMITE=15*1024*1024;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const T=new URLSearchParams(location.search).get("t")||"";
+/* O token vem depois do "#": fragmento fica no navegador e não é enviado ao
+   servidor, então não aparece em log de acesso nem em Referer. Links antigos
+   ainda vêm com "?t=" — aceitamos, e trocamos o endereço na hora para o
+   formato novo, tirando o token da barra que o servidor enxergaria num F5. */
+const T=(location.hash.match(/(?:^#|[#&])t=([A-Za-z0-9_-]{32,})/)||[])[1]||
+        new URLSearchParams(location.search).get("t")||"";
+if(T&&location.search){try{history.replaceState(null,"",location.pathname+"#t="+T);}catch(e){}}
 const st={negocio:"",itens:[],carregando:true,erro:"",ocupado:""};
 
 async function chamar(acao,extra){

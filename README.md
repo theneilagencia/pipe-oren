@@ -314,6 +314,34 @@ O limite é de 15 MB por arquivo, e só PDF, JPG e PNG. Arquivo é guardado pelo
 hash do conteúdo: o mesmo documento em três negócios do mesmo cliente ocupa
 espaço uma vez.
 
+## O link de envio do cliente
+
+O cliente não tem login: o token no endereço é a credencial. São 32 bytes de
+`crypto.randomBytes` — 43 caracteres em base64url — com validade de 30 dias
+(máximo 180) e acesso a **um** negócio. Ele só escreve: nem a lista de
+documentos já enviados pode ser baixada por ali, e o que a página mostra é o
+título do negócio e o que falta, nada de valor, etapa ou responsável.
+
+O token vai depois do `#`, não em `?t=`. Fragmento não é enviado ao servidor,
+então o token não entra no log de acesso da Vercel nem em cabeçalho `Referer`.
+Links antigos no formato `?t=` continuam valendo; a página troca o endereço
+para o formato novo assim que abre.
+
+No banco fica só o SHA-256 do token, em `envio.token_hash`. A tabela é legível
+por qualquer pessoa logada no painel, inclusive quem só tem papel de leitor —
+com hash na mão, ninguém abre link nenhum. Quem já tinha a tabela no formato
+antigo roda `supabase/envio-hash.sql` uma vez: ele calcula os hashes a partir
+dos tokens guardados e apaga a coluna em claro, sem invalidar links já
+entregues.
+
+Na gaveta do negócio, **Documentos do cliente** tem dois botões: *Gerar link
+para o cliente*, que revoga o anterior e devolve o novo endereço, e *Revogar
+link*, para quando o endereço foi encaminhado para quem não devia e não se quer
+mandar outro. Cada abertura fica registrada em `acessos` e `ultimo_acesso`.
+
+Um link inexistente, vencido ou revogado recebe a mesma resposta, com o mesmo
+texto: quem sonda não aprende com a diferença.
+
 ## No dia a dia
 
 Salva sozinho. Cada alteração vai para o banco em menos de um segundo e o canto do
@@ -446,6 +474,12 @@ tentativa de forjar versão ou autor é sobrescrita pelo gatilho.
 O painel foi testado contra uma imitação dos endpoints do Supabase: entrada,
 senha errada, carga dos dados, gravação, renovação de token vencido, conflito
 entre duas abas, troca de senha e acesso somente leitura.
+
+O link de envio também: que o banco recebe o hash e nunca o token, que o hash
+não serve de senha, que revogar derruba o link, que token inexistente, revogado
+e vencido devolvem o mesmo texto, e que a página do cliente aceita o formato
+antigo `?t=` e o tira da barra. A migração `envio-hash.sql` rodou contra um
+Postgres 16 com o mesmo esquema, duas vezes seguidas, sem perder link.
 
 O que **não** foi possível testar aqui: o Supabase real, porque o ambiente onde
 este código foi escrito não tem acesso à rede do Supabase. O primeiro login no

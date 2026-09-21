@@ -3,7 +3,9 @@
 -- Cole no SQL Editor do Supabase e execute uma vez.
 -- =============================================================================
 -- Um link por negócio, com validade e revogação. O token é gerado pela função
--- de servidor, não aqui, e é longo o bastante para não ser adivinhado.
+-- de servidor, não aqui, e é longo o bastante para não ser adivinhado. Aqui
+-- fica só o SHA-256 dele: quem lê esta tabela acha o registro, mas não
+-- consegue abrir link nenhum — hash não volta para token.
 --
 -- Nenhuma política para anon, de propósito: o cliente que abre o link NÃO fala
 -- com o banco. Ele fala com /api/envio, que valida o token e usa a chave
@@ -11,7 +13,7 @@
 -- seria trocar uma porta controlada por uma porta aberta.
 
 create table if not exists public.envio (
-  token         text primary key,
+  token_hash    text primary key,
   negocio_id    text not null,
   criado_em     timestamptz not null default now(),
   criado_por    text,
