@@ -8,7 +8,7 @@ Não existe servidor. São três peças:
 |---|---|
 | `painel-oren.html` | o painel inteiro, um arquivo só, sem framework |
 | `supabase/schema.sql` | as tabelas e as regras de acesso, para colar no Supabase |
-| `carga-inicial.json` | os dados de partida: 4 clientes e 4 negócios de Capital |
+| `carga-inicial.json` | os dados de partida: 4 clientes e 4 negócios de Sale & Leaseback |
 
 O painel fala direto com o Supabase. Quem protege o dado são as regras de acesso
 do banco: **sem login, o banco recusa tudo** — não existe caminho para ler nem
