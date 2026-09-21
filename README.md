@@ -281,6 +281,39 @@ No banco, `supabase/admin.sql` precisa ter rodado uma vez: ele acrescenta o e-ma
 e a marca de senha provisória no perfil, e a função que a pessoa usa para desligar
 essa marca depois de trocar a senha.
 
+## Armazenamento dos documentos
+
+Os arquivos que o cliente envia pelo link não ficam no Supabase: vão para um
+balde S3 (hoje Backblaze B2). O `api/_b2.js` fala o protocolo S3, então trocar
+para R2, Wasabi ou MinIO é trocar as variáveis, não o código.
+
+Cinco variáveis no Vercel, gravadas de uma vez por `./configurar-b2.sh`:
+`B2_ENDPOINT`, `B2_REGION`, `B2_BUCKET`, `B2_KEY_ID` e `B2_KEY`. A chave fica só
+ali, nunca no repositório e nunca no navegador.
+
+**O balde precisa de regra de CORS, e é o passo que passa despercebido.** O
+arquivo sobe direto do navegador do cliente para o balde — é isso que permite
+enviar um laudo apesar do limite de 4,5 MB por requisição do Vercel. Como a
+página está em `crm-oren.vercel.app` e o balde em `s3.<região>.backblazeb2.com`,
+o PUT é cross-origin: sem regra, o navegador bloqueia antes de sair e o cliente
+vê "o envio falhou no meio do caminho", sem pista da causa.
+
+No console do Backblaze, em *Bucket Settings → CORS Rules*, regra própria:
+
+| Campo | Valor |
+|---|---|
+| Origens permitidas | `https://crm-oren.vercel.app` |
+| Operações | `s3_put`, `s3_head`, `s3_get` |
+| Cabeçalhos permitidos | `*` |
+| Validade | 3600 |
+
+Origem específica, e não "todas": o balde é privado e as URLs são assinadas, mas
+não há motivo para deixar qualquer site tentar.
+
+O limite é de 15 MB por arquivo, e só PDF, JPG e PNG. Arquivo é guardado pelo
+hash do conteúdo: o mesmo documento em três negócios do mesmo cliente ocupa
+espaço uma vez.
+
 ## No dia a dia
 
 Salva sozinho. Cada alteração vai para o banco em menos de um segundo e o canto do
