@@ -1,0 +1,22 @@
+B2_ENDPOINT=https://s3.us-west-004.backblazeb2.com
+B2_REGION=us-west-004
+B2_BUCKET=oren-documentos
+B2_KEY_ID=004abc123
+B2_KEY=K004segredo
+deploy
+ARGS: --yes vercel@59.3.0 env rm B2_ENDPOINT production --yes
+ARGS: --yes vercel@59.3.0 env add B2_ENDPOINT production
+RECEBEU B2_ENDPOINT=[https://s3.us-west-004.backblazeb2.com]
+ARGS: --yes vercel@59.3.0 env rm B2_REGION production --yes
+ARGS: --yes vercel@59.3.0 env add B2_REGION production
+RECEBEU B2_REGION=[us-west-004]
+ARGS: --yes vercel@59.3.0 env rm B2_BUCKET production --yes
+ARGS: --yes vercel@59.3.0 env add B2_BUCKET production
+RECEBEU B2_BUCKET=[oren-documentos]
+ARGS: --yes vercel@59.3.0 env rm B2_KEY_ID production --yes
+ARGS: --yes vercel@59.3.0 env add B2_KEY_ID production
+RECEBEU B2_KEY_ID=[004abc123]
+ARGS: --yes vercel@59.3.0 env rm B2_KEY production --yes
+ARGS: --yes vercel@59.3.0 env add B2_KEY production
+RECEBEU B2_KEY=[K004segredo]
+ARGS: --yes vercel@59.3.0 --prod --yes

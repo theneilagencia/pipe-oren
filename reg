@@ -1,0 +1,16 @@
+ARGS: --yes vercel@59.3.0 env rm B2_ENDPOINT production --yes
+ARGS: --yes vercel@59.3.0 env add B2_ENDPOINT production
+RECEBEU B2_ENDPOINT=[https://s3.x.com]
+ARGS: --yes vercel@59.3.0 env rm B2_REGION production --yes
+ARGS: --yes vercel@59.3.0 env add B2_REGION production
+RECEBEU B2_REGION=[reg]
+ARGS: --yes vercel@59.3.0 env rm B2_BUCKET production --yes
+ARGS: --yes vercel@59.3.0 env add B2_BUCKET production
+RECEBEU B2_BUCKET=[bal]
+ARGS: --yes vercel@59.3.0 env rm B2_KEY_ID production --yes
+ARGS: --yes vercel@59.3.0 env add B2_KEY_ID production
+RECEBEU B2_KEY_ID=[kid]
+ARGS: --yes vercel@59.3.0 env rm B2_KEY production --yes
+ARGS: --yes vercel@59.3.0 env add B2_KEY production
+RECEBEU B2_KEY=[seg]
+ARGS: --yes vercel@59.3.0 --prod --yes
