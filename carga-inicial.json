@@ -7,7 +7,7 @@
    "tipo": "PJ",
    "parceiroId": null,
    "responsavel": "Paulo",
-   "frente": "capital",
+   "frente": "slb",
    "setor": "Atacarejo",
    "uf": "MG/BA",
    "tier": "",
@@ -25,7 +25,7 @@
    "tipo": "PJ",
    "parceiroId": null,
    "responsavel": "Paulo",
-   "frente": "capital",
+   "frente": "slb",
    "setor": "Atacarejo",
    "uf": "",
    "tier": "",
@@ -43,7 +43,7 @@
    "tipo": "PJ",
    "parceiroId": null,
    "responsavel": "Paulo",
-   "frente": "capital",
+   "frente": "slb",
    "setor": "Atacarejo",
    "uf": "MG",
    "tier": "",
@@ -61,7 +61,7 @@
    "tipo": "PJ",
    "parceiroId": null,
    "responsavel": "Paulo",
-   "frente": "capital",
+   "frente": "slb",
    "setor": "Academias",
    "uf": "",
    "tier": "",
@@ -78,7 +78,7 @@
   {
    "id": "N-044",
    "titulo": "Rede de atacarejo em Minas Gerais e Bahia",
-   "frente": "capital",
+   "frente": "slb",
    "tipoVenda": "direta",
    "parceiroId": null,
    "clienteId": "C-01",
@@ -204,12 +204,15 @@
    "criadoEm": "2026-05-16",
    "atualizadoEm": "2026-08-13",
    "fechadoEm": null,
-   "historico": []
+   "historico": [],
+   "frentes": [
+    "slb"
+   ]
   },
   {
    "id": "N-045",
    "titulo": "Rede de atacarejo do Nordeste",
-   "frente": "capital",
+   "frente": "slb",
    "tipoVenda": "direta",
    "parceiroId": null,
    "clienteId": "C-02",
@@ -327,12 +330,15 @@
    "criadoEm": "2026-06-28",
    "atualizadoEm": "2026-08-08",
    "fechadoEm": null,
-   "historico": []
+   "historico": [],
+   "frentes": [
+    "slb"
+   ]
   },
   {
    "id": "N-046",
    "titulo": "Rede de atacado e varejo em Minas Gerais",
-   "frente": "capital",
+   "frente": "slb",
    "tipoVenda": "direta",
    "parceiroId": null,
    "clienteId": "C-03",
@@ -458,12 +464,15 @@
    "criadoEm": "2026-04-11",
    "atualizadoEm": "2026-08-16",
    "fechadoEm": null,
-   "historico": []
+   "historico": [],
+   "frentes": [
+    "slb"
+   ]
   },
   {
    "id": "N-047",
    "titulo": "Rede nacional de academias",
-   "frente": "capital",
+   "frente": "slb",
    "tipoVenda": "direta",
    "parceiroId": null,
    "clienteId": "C-04",
@@ -581,7 +590,10 @@
    "criadoEm": "2026-06-10",
    "atualizadoEm": "2026-08-05",
    "fechadoEm": null,
-   "historico": []
+   "historico": [],
+   "frentes": [
+    "slb"
+   ]
   }
  ]
 }

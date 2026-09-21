@@ -16,7 +16,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
 --deep:#092d29;--mid:#0e5351;--luz:#affa57;--creme:#e8f3e8;
---capital:#62cc6d;--feito:#1da688;--payments:#affa57;
+--feito:#1da688;--payments:#affa57;
 --bg:#f7f8f7;--surf:#fff;--alt:#f2f4f2;--bd:#ecefec;--bdf:#dde2dd;
 --tx:#16211d;--tx2:#5b6660;--tx3:#8a938e;--neg:#b00020;--pos:#1a6e3a;
 --crit:#b00020;--warn:#a06400;--ok:#1a6e3a;--neutro:#b9c2bb;
@@ -1216,7 +1216,7 @@ const TEXTOS={
  novoOriundo:"Cadastrar cliente originado",
  backupOk:(c,v)=>"Backup gerado: "+c.parceiros+" parceiros, "+c.clientes+" clientes, "+
   c.negocios+" negócios e "+c.atividades+" atividades, na versão "+v+" do documento.",
- secoes:{origem:"Clientes originados",pend:"Pendências",analise:"Análise",capital:"Capital",check:"Compliance e KYC",hist:"Histórico",notas:"Anotações"},
+ secoes:{origem:"Clientes originados",pend:"Pendências",analise:"Análise",capital:"Estruturação",check:"Compliance e KYC",hist:"Histórico",notas:"Anotações"},
  kpiExplica:{
   aberto:"Todos os negócios em aberto, do maior valor para o menor. Não depende do período.",
   ponderada:"Os mesmos negócios em aberto, cada um multiplicado pela chance de fechar.",
@@ -1234,7 +1234,7 @@ const TEXTOS={
  novoAjuda:"Três passos: para quem, o que, e como está.",
  origemCliente:"A lista vem das contas da aba Clientes. Se ainda não está lá, escolha “Cadastrar cliente novo”.",
  valorADefinir:"Sem valor definido ainda? Deixe vazio: o negócio entra marcado como valor a definir.",
- frentesLbl:{payments:"Payments",capital:"Capital",bts:"Built to Suit",
+ frentesLbl:{payments:"Payments",bts:"Built to Suit",
   slb:"Sale & Leaseback",reperfilamento:"Reperfilamento de dívida",
   aeronaves:"Financiamento de Aeronaves",captacao:"Captação de Recursos"},
  erros:{
@@ -1269,10 +1269,12 @@ const TEXTOS={
 const FUNIL_CAPITAL=["Entrada","Qualificação","Coleta de documentos",
  "Análise financeira e imobiliária","Estrutura indicativa","Aprovação",
  "Busca de capital","Documentação","Fechamento","Acompanhamento"];
-const FAMILIA_CAPITAL=["capital","bts","slb","reperfilamento","aeronaves","captacao"];
+/* "Família Capital" é o nome do processo, não de uma frente: Capital foi
+   desmembrada e não existe mais como opção. O que estas cinco compartilham é
+   o funil e os campos de análise. */
+const FAMILIA_CAPITAL=["bts","slb","reperfilamento","aeronaves","captacao"];
 const ehCapital=fr=>FAMILIA_CAPITAL.indexOf(fr)>=0;
 const FUNIS={
- capital:FUNIL_CAPITAL,
  bts:FUNIL_CAPITAL,
  slb:FUNIL_CAPITAL,
  reperfilamento:FUNIL_CAPITAL,
@@ -1284,9 +1286,8 @@ const FUNIS={
 /* Onde a venda termina em cada funil. ganho é a etapa que conta como fechada;
    posVenda é a primeira etapa de depois da venda, que não é pipeline aberto. */
 const CORTE_CAPITAL={ganho:9,posVenda:10};
-const CORTE={capital:CORTE_CAPITAL,bts:CORTE_CAPITAL,slb:CORTE_CAPITAL,
- reperfilamento:CORTE_CAPITAL,aeronaves:CORTE_CAPITAL,captacao:CORTE_CAPITAL,
- payments:{ganho:6,posVenda:7}};
+const CORTE={bts:CORTE_CAPITAL,slb:CORTE_CAPITAL,reperfilamento:CORTE_CAPITAL,
+ aeronaves:CORTE_CAPITAL,captacao:CORTE_CAPITAL,payments:{ganho:6,posVenda:7}};
 /* B2C não tem funil próprio: usa o funil da frente, igual a um B2B. */
 const PUBLICOS={"":"Todos",B2B:"B2B",B2C:"B2C",B2B2C:"B2B2C"};
 const PUBLICOS_VALIDOS=["B2B","B2C","B2B2C"];
@@ -1307,8 +1308,8 @@ const CHECKETAPAS={payments:[3,4]};
    daltonismo e piso de visão normal sobre o fundo #f3f3f1. O contraste baixo
    contra o fundo é coberto porque toda frente aparece com rótulo escrito ao
    lado, nunca só pela cor. */
-const CORF={payments:"#2a78d6",capital:"#eb6834",bts:"#1baf7a",
- slb:"#eda100",reperfilamento:"#e87ba4",aeronaves:"#4a3aa7",captacao:"#008300"};
+const CORF={payments:"#2a78d6",bts:"#1baf7a",slb:"#eda100",
+ reperfilamento:"#e87ba4",aeronaves:"#4a3aa7",captacao:"#008300"};
 const CLIENTE_NOVO="__novo";   /* valor sentinela do select de cliente */
 const TAG_VALOR="valor a definir";
 const RESPS_PADRAO=["Paulo","Adolfo"];
@@ -1428,7 +1429,11 @@ function nomePessoa(x){
 /* Frente ausente ou desconhecida cai na frente padrão, com aviso no console.
    A tela nunca quebra por causa de um registro torto -- inclusive por um
    registro de Governance que tenha sobrado de antes da frente sair. */
-const FRENTE_PADRAO="capital";
+/* Destino de registro com frente ausente ou extinta — um "capital" vindo de
+   backup antigo, por exemplo. Existe para o negócio continuar aparecendo:
+   sem isso ele sumiria do quadro e do funil, que é pior que aparecer no
+   lugar aproximado. Captação é o balde genérico, e o console diz qual é. */
+const FRENTE_PADRAO="captacao";
 const frentesAvisadas={};
 function frenteDe(d){
  const f=d&&d.frente;
@@ -1443,7 +1448,7 @@ function frenteDe(d){
    a etapa, a coluna do quadro e a regra de fechamento -- porque etapa só existe
    dentro de um funil, e a operação comercial é uma só. Ausente, o conjunto é a
    principal sozinha: nada precisa de migração. */
-const FRENTES_ORDEM=["payments","capital","bts","slb","reperfilamento","aeronaves","captacao"];
+const FRENTES_ORDEM=["payments","bts","slb","reperfilamento","aeronaves","captacao"];
 function frentesDe(d){
  const p=frenteDe(d);
  const set={};set[p]=1;
@@ -2034,7 +2039,7 @@ const CARGA_RELATO={
    "tipo": "PJ",
    "parceiroId": null,
    "responsavel": "Paulo",
-   "frente": "capital",
+   "frente": "slb",
    "setor": "",
    "uf": "",
    "tier": "",
@@ -2053,7 +2058,7 @@ const CARGA_RELATO={
    "tipo": "PJ",
    "parceiroId": null,
    "responsavel": "Paulo",
-   "frente": "capital",
+   "frente": "captacao",
    "setor": "",
    "uf": "",
    "tier": "",
@@ -2072,7 +2077,7 @@ const CARGA_RELATO={
    "tipo": "PJ",
    "parceiroId": null,
    "responsavel": "Paulo",
-   "frente": "capital",
+   "frente": "bts",
    "setor": "",
    "uf": "",
    "tier": "",
@@ -2109,7 +2114,7 @@ const CARGA_RELATO={
   {
    "id": "N-049",
    "titulo": "Transferência da estruturação — Alphabeto",
-   "frente": "capital",
+   "frente": "slb",
    "tipoVenda": "direta",
    "parceiroId": null,
    "clienteId": "C-06",
@@ -2250,7 +2255,7 @@ const CARGA_RELATO={
   {
    "id": "N-050",
    "titulo": "Operação do Shopping Oiapoque — Goulart e Collepicolo",
-   "frente": "capital",
+   "frente": "captacao",
    "tipoVenda": "direta",
    "parceiroId": null,
    "clienteId": "C-07",
@@ -2383,7 +2388,7 @@ const CARGA_RELATO={
   {
    "id": "N-051",
    "titulo": "200.000 m² de telha do Mercado Livre em Betim",
-   "frente": "capital",
+   "frente": "bts",
    "tipoVenda": "direta",
    "parceiroId": null,
    "clienteId": "C-08",
@@ -2524,7 +2529,7 @@ const CARGA_RELATO={
   {
    "id": "N-052",
    "titulo": "Dois shoppings: mandato de venda ou captação de R$ 100 milhões cada",
-   "frente": "capital",
+   "frente": "captacao",
    "tipoVenda": "direta",
    "parceiroId": null,
    "clienteId": null,
@@ -6985,7 +6990,7 @@ function criarConta(kind){
   responsavel:RESPS[0],tier:"",status:"",porte:"",setor:"",notas:"",
   exemplo:false,criadoEm:agora(),atualizadoEm:agora()};
  if(kind==="cliente"){
-  const o=Object.assign(base,{tipo:"PJ",publico:"B2B",frente:"capital",uf:"",receitaRecorrente:0,
+  const o=Object.assign(base,{tipo:"PJ",publico:"B2B",frente:"",uf:"",receitaRecorrente:0,
    parceiroId:null,origemNegocioId:""});
   state.data.customers.push(o);state.aba="clientes";state.painel={tipo:"conta",kind:"cliente",id:o.id};
  }else{
